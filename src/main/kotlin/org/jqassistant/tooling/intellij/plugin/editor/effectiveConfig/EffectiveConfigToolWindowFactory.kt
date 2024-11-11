@@ -16,8 +16,9 @@ import java.io.File
 class EffectiveConfigToolWindowFactory : ToolWindowFactory {
 
     companion object {
-        private const val JQA_EFFECTIVE_CONFIG = "jqassistant:effective-configuration"
+        private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
         private const val GOAL_UNSUCCESSFUL = "Couldn't retrieve data from specified goal"
+        private const val TOP_LEVEL_JQA_NAMESPACE = "jqassistant"
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -25,22 +26,21 @@ class EffectiveConfigToolWindowFactory : ToolWindowFactory {
 
         val contentManager = toolWindow.contentManager
         val contentFactory = ContentFactory.getInstance()
-        showConfig(project, contentManager, contentFactory)
+        refreshConfigContent(project, contentManager, contentFactory)
     }
 
-    private fun showConfig(project: Project, contentManager: ContentManager, contentFactory: ContentFactory ){
+    private fun refreshConfigContent(project: Project, contentManager: ContentManager, contentFactory: ContentFactory ){
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Command line tool: Effective Configuration") {
             override fun run(indicator: ProgressIndicator) {
-                val output = fetchConfig(project)
-                var config = output.substringAfter("Effective configuration for ").substringBefore("[INFO]")
+                var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
 
                 if(config == "") {
-                    config = GOAL_UNSUCCESSFUL
+                    config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
                 }
 
                 ApplicationManager.getApplication().invokeLater {
                     val panel = EffectiveConfigurationPanel(config)
-                    val content = contentFactory.createContent(panel, "", false)
+                    val content = contentFactory.createContent(panel, "Test", false)
                     contentManager.addContent(content)
                 }
             }
@@ -48,14 +48,24 @@ class EffectiveConfigToolWindowFactory : ToolWindowFactory {
     }
 
 
-    private fun fetchConfig(project: Project) : String {
+    private fun fetchConfig(project: Project, goal: String) : String {
         var output = ""
         try {
             val path = project.getBaseDirectories().first().path
-            output = CommandLineTool.runMavenGoal(JQA_EFFECTIVE_CONFIG, File(path))
+            output = CommandLineTool.runMavenGoal(goal, File(path))
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return output
+        return stripConfig(output)
+    }
+
+    private fun stripConfig(text: String) : String {
+        println(text)
+        var result = text.substringAfter("[INFO] Effective configuration for")
+        val index = result.indexOf(TOP_LEVEL_JQA_NAMESPACE)
+        if (index != -1) {
+            result = result.substring(index)
+        }
+        return result.substringBefore("[INFO]")
     }
 }
