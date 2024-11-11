@@ -6,10 +6,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-
-import java.awt.BorderLayout
 import java.io.File
-import javax.swing.JComponent
 
 class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToolWindowPanel(false) {
 
