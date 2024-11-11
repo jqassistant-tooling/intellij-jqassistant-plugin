@@ -60,7 +60,6 @@ class EffectiveConfigToolWindowFactory : ToolWindowFactory {
     }
 
     private fun stripConfig(text: String) : String {
-        println(text)
         var result = text.substringAfter("[INFO] Effective configuration for")
         val index = result.indexOf(TOP_LEVEL_JQA_NAMESPACE)
         if (index != -1) {
