@@ -9,6 +9,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow  factoryClass="org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig.EffectiveConfigToolWindowFactory" id="EffectiveConfigToolWindow" anchor="bottom" icon="com.intellij.icons.ExpUiIcons.Nodes.Template"/>
     </extensions>
 
     <applicationListeners>
