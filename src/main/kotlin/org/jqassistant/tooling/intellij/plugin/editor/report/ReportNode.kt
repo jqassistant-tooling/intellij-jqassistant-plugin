@@ -30,15 +30,15 @@ fun <T> List<T>.toEnumeration(): Enumeration<T> {
     }
 }
 
-open class ReportNode(val daddy: ReportNode?) : TreeNode {
-    val children: ArrayList<ReportNode> = ArrayList()
+open class ReportNode(private val parent: ReportNode?) : TreeNode {
+    private val children: ArrayList<ReportNode> = ArrayList()
 
     fun addChild(child: ReportNode) {
         children.add(child)
     }
 
     override fun toString(): String {
-        return "child of: $daddy"
+        return "child of: $parent"
     }
 
     override fun getChildAt(p0: Int): TreeNode {
@@ -50,7 +50,7 @@ open class ReportNode(val daddy: ReportNode?) : TreeNode {
     }
 
     override fun getParent(): ReportNode? {
-        return daddy
+        return parent
     }
 
     override fun getIndex(p0: TreeNode?): Int {
