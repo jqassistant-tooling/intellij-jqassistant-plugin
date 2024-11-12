@@ -10,10 +10,13 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <spellchecker.bundledDictionaryProvider
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
-        <ProviderFactory implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory" />
+        <ProviderFactory
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory"/>
     </extensions>
 
     <applicationListeners>
