@@ -5,10 +5,15 @@
     <vendor>BUSCHMAIS</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory" />
     </extensions>
 
     <applicationListeners>
