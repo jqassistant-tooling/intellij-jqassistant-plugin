@@ -6,6 +6,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.vfs.isFile
 import org.jqassistant.schema.report.v2.JqassistantReport
 import java.io.File
 
@@ -37,6 +39,11 @@ class ReportProviderService(private val project: Project) {
         // https://github.com/jQAssistant/jqassistant/blob/2e7405df54a63f74d039c95b71b5a0a7431f8be2/maven/src/main/java/com/buschmais/jqassistant/scm/maven/ReportMojo.java
         val selectedXmlReportFile =
             File("${dir.path}/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}");
+
+        val vFile = dir.findFileByRelativePath("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+        val vFile2 = dir.findFileByRelativePath("/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+        val vFile3 = dir.findFileByRelativePath("./target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+
 
         if (!selectedXmlReportFile.exists() || !selectedXmlReportFile.isFile) return null
 

@@ -29,6 +29,7 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    implementation("org.neo4j.community:it-test-support:5.24.0")
     implementation("com.buschmais.jqassistant.core:report:2.5.0")
 
     testImplementation(libs.junit)
