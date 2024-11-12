@@ -71,7 +71,7 @@ open class ReportNode(private val parent: ReportNode?) : TreeNode {
 
 }
 
-open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, daddy: ReportNode?) : ReportNode(daddy) {
+open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, parent: ReportNode?) : ReportNode(parent) {
     constructor(ref: ReferencableRuleType) : this(ref, null) {
     }
 
@@ -92,7 +92,7 @@ open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, daddy: Report
     }
 }
 
-open class ConstraintResultRowNode(val ref: RowType, daddy: ReportNode?) : ReportNode(daddy) {
+open class ConstraintResultRowNode(val ref: RowType, parent: ReportNode?) : ReportNode(parent) {
     constructor(ref: RowType) : this(ref, null) {
     }
 
