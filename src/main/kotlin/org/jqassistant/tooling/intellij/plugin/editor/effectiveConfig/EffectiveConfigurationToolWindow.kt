@@ -13,7 +13,10 @@ class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToo
     companion object {
         private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
         private const val GOAL_UNSUCCESSFUL = "Couldn't retrieve data from specified goal"
-        private const val TOP_LEVEL_JQA_NAMESPACE = "jqassistant"
+        private const val PROCESS_TITLE = "Command line tool: Effective Configuration"
+        private const val SUBSTRING_TOP_LEVEL_JQA = "jqassistant"
+        private const val SUBSTRING_BEFORE_DELIMITER = "\"[INFO] Effective configuration for\""
+        private const val SUBSTRING_AFTER_DELIMITER = "[INFO]"
     }
 
     private var myToolBar : EffectiveConfigurationToolBar = EffectiveConfigurationToolBar(this)
@@ -23,17 +26,18 @@ class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToo
 
         this.toolbar = myToolBar.createToolbar()
         this.setContent(contentArea)
-        this.refresh()
+        this.fullRefresh()
     }
 
     private fun refreshConfigContent(){
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Command line tool: Effective Configuration") {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
             override fun run(indicator: ProgressIndicator) {
                 var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
 
                 if(config == "") {
                     config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
                 }
+
                 contentArea.setText(config)
             }
         })
@@ -52,15 +56,15 @@ class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToo
     }
 
     private fun stripConfig(text: String) : String {
-        var result = text.substringAfter("[INFO] Effective configuration for")
-        val index = result.indexOf(TOP_LEVEL_JQA_NAMESPACE)
+        var result = text.substringAfter(SUBSTRING_BEFORE_DELIMITER)
+        val index = result.indexOf(SUBSTRING_TOP_LEVEL_JQA)
         if (index != -1) {
             result = result.substring(index)
         }
-        return result.substringBefore("[INFO]")
+        return result.substringBefore(SUBSTRING_AFTER_DELIMITER)
     }
 
-    fun refresh() {
+    fun fullRefresh() {
         refreshConfigContent()
     }
 }

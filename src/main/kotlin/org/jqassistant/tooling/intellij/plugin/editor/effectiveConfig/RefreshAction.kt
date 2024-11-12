@@ -6,6 +6,6 @@ import com.intellij.openapi.project.DumbAwareAction
 
 class RefreshAction(private val toolWindow: EffectiveConfigurationToolWindow) : DumbAwareAction("Refresh","Refresh effective config", AllIcons.General.InlineRefresh ) {
     override fun actionPerformed(p0: AnActionEvent) {
-        toolWindow.refresh()
+        toolWindow.fullRefresh()
     }
 }
