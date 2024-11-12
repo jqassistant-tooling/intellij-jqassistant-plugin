@@ -53,7 +53,7 @@ open class ReportToolWindowContent(
         return treeList
     }
 
-    fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): ArrayList<ReportNode> {
+    private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): ArrayList<ReportNode> {
         val nodeList: ArrayList<ReportNode> = ArrayList()
         for (group in currentReport) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)

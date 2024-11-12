@@ -34,18 +34,16 @@ class ReportProviderService(private val project: Project) {
     // Constructs the default path to the report xml file from a given base directory
     // This does not work with custom target directories
     private fun getXmlReportPath(dir: VirtualFile): File? {
-        // !TODO: Try to use dir.findFileByRelativePath()
+        // !TODO: Try to use virtual file system
         // !TODO: Use maven to get correct build directory
         // https://github.com/jQAssistant/jqassistant/blob/2e7405df54a63f74d039c95b71b5a0a7431f8be2/maven/src/main/java/com/buschmais/jqassistant/scm/maven/ReportMojo.java
         val selectedXmlReportFile =
             File("${dir.path}/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}");
 
-        val vFile = dir.findFileByRelativePath("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
-        val vFile2 = dir.findFileByRelativePath("/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
-        val vFile3 = dir.findFileByRelativePath("./target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+        // This does not work for some reason
+        // val vFile = dir.findFileByRelativePath("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
 
-
-        if (!selectedXmlReportFile.exists() || !selectedXmlReportFile.isFile) return null
+        if (!selectedXmlReportFile.exists() || selectedXmlReportFile.isDirectory) return null
 
         return selectedXmlReportFile
     }
