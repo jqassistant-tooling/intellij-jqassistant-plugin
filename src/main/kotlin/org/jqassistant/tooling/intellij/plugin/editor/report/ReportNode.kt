@@ -7,7 +7,7 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.schema.report.v2.RowType
 import java.util.*
 import javax.swing.tree.TreeNode
-import kotlin.collections.ArrayList
+import kotlin.collections.MutableList
 
 
 /**
@@ -31,7 +31,7 @@ fun <T> List<T>.toEnumeration(): Enumeration<T> {
 }
 
 open class ReportNode(private val parent: ReportNode?) : TreeNode {
-    private val children: ArrayList<ReportNode> = ArrayList()
+    private val children = mutableListOf<ReportNode>();
 
     fun addChild(child: ReportNode) {
         children.add(child)

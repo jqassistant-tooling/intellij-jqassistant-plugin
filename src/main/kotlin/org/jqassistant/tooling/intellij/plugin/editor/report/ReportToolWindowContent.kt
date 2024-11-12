@@ -10,7 +10,6 @@ import com.intellij.openapi.vfs.findFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import org.jqassistant.schema.report.v2.*
-import java.util.*
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 
@@ -40,7 +39,7 @@ open class ReportToolWindowContent(
         val nodeList = buildRuleTree(null, report.groupOrConceptOrConstraint)
         val cellRenderer = ReportCellRenderer()
 
-        val treeList: ArrayList<Tree> = ArrayList()
+        val treeList= mutableListOf<Tree>();
         for (rootNode in nodeList) {
             val treePanel = Tree(rootNode)
             treePanel.cellRenderer = cellRenderer
@@ -53,8 +52,11 @@ open class ReportToolWindowContent(
         return treeList
     }
 
-    private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): ArrayList<ReportNode> {
-        val nodeList: ArrayList<ReportNode> = ArrayList()
+    private fun buildRuleTree(
+        currentRoot: ReportNode?,
+        currentReport: List<ReferencableRuleType>
+    ): List<ReportNode> {
+        val nodeList= mutableListOf<ReportNode>();
         for (group in currentReport) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
@@ -88,8 +90,8 @@ open class ReportToolWindowContent(
     private fun buildResultTree(
         currentRoot: ReferencableRuleTypeNode,
         currentResult: List<RowType>
-    ): ArrayList<ReportNode> {
-        val nodeList: ArrayList<ReportNode> = ArrayList()
+    ): List<ReportNode> {
+        val nodeList = mutableListOf<ReportNode>();
         for (resultRow in currentResult) {
             val newNode = ConstraintResultRowNode(resultRow, currentRoot)
             nodeList.add(newNode)
