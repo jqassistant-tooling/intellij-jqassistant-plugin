@@ -2,6 +2,8 @@
 # libraries
 junit = "4.13.2"
 
+jqa-core-schemata = "2.5.0"
+
 # plugins
 changelog = "2.2.1"
 intelliJPlatform = "2.1.0"
@@ -9,6 +11,7 @@ kotlin = "1.9.25"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata", version.ref = "jqa-core-schemata" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
