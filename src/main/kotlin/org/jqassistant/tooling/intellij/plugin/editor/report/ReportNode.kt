@@ -7,28 +7,6 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.schema.report.v2.RowType
 import java.util.*
 import javax.swing.tree.TreeNode
-import kotlin.collections.MutableList
-
-
-/**
- * Extension function for converting a {@link List} to an {@link Enumeration}
- */
-fun <T> List<T>.toEnumeration(): Enumeration<T> {
-    return object : Enumeration<T> {
-        var count = 0
-
-        override fun hasMoreElements(): Boolean {
-            return this.count < size
-        }
-
-        override fun nextElement(): T {
-            if (this.count < size) {
-                return get(this.count++)
-            }
-            throw NoSuchElementException("List enumeration asked for more elements than present")
-        }
-    }
-}
 
 open class ReportNode(private val parent: ReportNode?) : TreeNode {
     private val children = mutableListOf<ReportNode>();
@@ -66,7 +44,7 @@ open class ReportNode(private val parent: ReportNode?) : TreeNode {
     }
 
     override fun children(): Enumeration<out TreeNode> {
-        return children.toEnumeration()
+        return Collections.enumeration(children)
     }
 
 }
