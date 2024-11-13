@@ -39,8 +39,6 @@ open class ReportToolWindowContent(
         val nodeList = buildRuleTree(null, report.groupOrConceptOrConstraint)
         val cellRenderer = ReportCellRenderer()
 
-        val treeList= mutableListOf<Tree>();
-
         return nodeList.map { rootNode ->
             val treePanel = Tree(rootNode)
             treePanel.cellRenderer = cellRenderer
@@ -54,7 +52,7 @@ open class ReportToolWindowContent(
         currentRoot: ReportNode?,
         currentReport: List<ReferencableRuleType>
     ): List<ReportNode> {
-        val nodeList= mutableListOf<ReportNode>();
+        val nodeList = mutableListOf<ReportNode>();
         for (group in currentReport) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
