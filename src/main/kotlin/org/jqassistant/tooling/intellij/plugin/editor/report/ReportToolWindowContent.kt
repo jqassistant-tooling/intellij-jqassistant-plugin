@@ -40,16 +40,14 @@ open class ReportToolWindowContent(
         val cellRenderer = ReportCellRenderer()
 
         val treeList= mutableListOf<Tree>();
-        for (rootNode in nodeList) {
+
+        return nodeList.map { rootNode ->
             val treePanel = Tree(rootNode)
             treePanel.cellRenderer = cellRenderer
 
             treePanel.addTreeSelectionListener { event -> treeClickListener(event) }
-
-            treeList.add(treePanel)
+            treePanel
         }
-
-        return treeList
     }
 
     private fun buildRuleTree(
