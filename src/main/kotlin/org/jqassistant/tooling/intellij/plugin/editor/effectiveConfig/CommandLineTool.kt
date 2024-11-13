@@ -4,6 +4,8 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
+// TODO - the ProcessBuilder running the maven goal will be replaced by jqa api. This will NOT be the permanent solution and file location
+
 class CommandLineTool {
     companion object {
         fun runMavenGoal(goal: String, directory: File): String {
