@@ -19,8 +19,8 @@ open class ReportNode(private val parent: ReportNode?) : TreeNode {
         return "child of: $parent"
     }
 
-    override fun getChildAt(p0: Int): TreeNode {
-        return children.get(p0)
+    override fun getChildAt(index: Int): TreeNode {
+        return children[index]
     }
 
     override fun getChildCount(): Int {
