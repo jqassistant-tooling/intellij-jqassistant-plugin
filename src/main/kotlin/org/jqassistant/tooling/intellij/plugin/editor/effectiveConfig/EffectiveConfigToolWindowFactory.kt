@@ -16,7 +16,7 @@ class EffectiveConfigToolWindowFactory : ToolWindowFactory {
 
         val contentManager = toolWindow.contentManager
         val contentFactory = ContentFactory.getInstance()
-        val panel = EffectiveConfigurationToolWindow(project)
+        val panel = EffectiveConfigToolWindow(project)
         val content = contentFactory.createContent(panel, "Config", false)
         contentManager.addContent(content)
     }

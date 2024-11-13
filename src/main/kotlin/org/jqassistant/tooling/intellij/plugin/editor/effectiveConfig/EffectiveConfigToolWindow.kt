@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import java.io.File
 
-class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToolWindowPanel(false) {
+class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false) {
 
     companion object {
         private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
@@ -19,8 +19,8 @@ class EffectiveConfigurationToolWindow(private val project: Project) : SimpleToo
         private const val SUBSTRING_AFTER_DELIMITER = "[INFO]"
     }
 
-    private var myToolBar : EffectiveConfigurationToolBar = EffectiveConfigurationToolBar(this)
-    private var contentArea : EffectiveConfigurationScrollPane = EffectiveConfigurationScrollPane()
+    private var myToolBar : EffectiveConfigToolBar = EffectiveConfigToolBar(this)
+    private var contentArea : EffectiveConfigScrollPane = EffectiveConfigScrollPane()
 
     init {
 

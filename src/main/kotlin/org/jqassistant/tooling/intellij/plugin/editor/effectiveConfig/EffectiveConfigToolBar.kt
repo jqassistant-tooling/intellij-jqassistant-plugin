@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import javax.swing.JComponent
 
-class EffectiveConfigurationToolBar(private val toolWindow: EffectiveConfigurationToolWindow)  {
+class EffectiveConfigToolBar(private val toolWindow: EffectiveConfigToolWindow)  {
     fun createToolbar() : JComponent {
         val actionGroup = DefaultActionGroup().apply {
             add(RefreshAction(toolWindow))
