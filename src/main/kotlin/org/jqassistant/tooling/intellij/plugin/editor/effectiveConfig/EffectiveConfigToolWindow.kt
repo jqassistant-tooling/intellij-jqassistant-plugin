@@ -33,11 +33,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
             override fun run(indicator: ProgressIndicator) {
                 var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
-
-                if(config == "") {
-                    config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
-                }
-
+                if(config == "") config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
                 contentArea.setText(config)
             }
         })
