@@ -20,12 +20,12 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     }
 
     private var myToolBar : EffectiveConfigToolBar = EffectiveConfigToolBar(this)
-    private var contentArea : EffectiveConfigScrollPane = EffectiveConfigScrollPane()
+    private var textPane : TextScrollPane = TextScrollPane()
 
     init {
 
         this.toolbar = myToolBar.createToolbar()
-        this.setContent(contentArea)
+        this.setContent(textPane)
         this.fullRefresh()
     }
 
@@ -34,7 +34,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
             override fun run(indicator: ProgressIndicator) {
                 var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
                 if(config == "") config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
-                contentArea.setText(config)
+                textPane.setText(config)
             }
         })
     }
