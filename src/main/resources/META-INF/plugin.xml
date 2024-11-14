@@ -12,6 +12,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <spellchecker.bundledDictionaryProvider
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
+        <xml.schemaProvider
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
