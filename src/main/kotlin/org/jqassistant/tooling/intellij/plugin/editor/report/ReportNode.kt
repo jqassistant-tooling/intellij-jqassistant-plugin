@@ -49,10 +49,7 @@ open class ReportNode(private val parent: ReportNode?) : TreeNode {
 
 }
 
-open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, parent: ReportNode?) : ReportNode(parent) {
-    constructor(ref: ReferencableRuleType) : this(ref, null) {
-    }
-
+open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, parent: ReportNode? = null) : ReportNode(parent) {
     override fun toString(): String {
         return when (ref) {
             is GroupType -> {
