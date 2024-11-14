@@ -12,12 +12,15 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff" anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
+        <spellchecker.bundledDictionaryProvider
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
-        <ProviderFactory implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory" />
+        <ProviderFactory
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory"/>
     </extensions>
 
     <applicationListeners>
