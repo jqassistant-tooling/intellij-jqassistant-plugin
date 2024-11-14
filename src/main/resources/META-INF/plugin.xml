@@ -5,12 +5,19 @@
     <vendor>BUSCHMAIS</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff" anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
+        <xml.schemaProvider
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory" />
     </extensions>
 
     <applicationListeners>
