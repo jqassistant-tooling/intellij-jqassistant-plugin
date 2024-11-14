@@ -29,8 +29,9 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    implementation(libs.jqa.core.report)
-    implementation(libs.neo4j.community.it.test.support)
+    implementation(libs.jqa.core.report) {
+        exclude(group = "org.neo4j.community")
+    }
 
     testImplementation(libs.junit)
 
