@@ -9,6 +9,12 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <extensionPoints>
+        <extensionPoint name="jqaRuleIndexingStrategy"
+                        dynamic="true"
+                        interface="org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategyFactory"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff" anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
@@ -16,11 +22,24 @@
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
+        <psi.referenceContributor
+                implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleReferenceContributor"
+                language="XML"/>
+        <dom.fileMetaData
+                implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
+                rootTagName="jqassistant-rules"
+                stubVersion="1"/>
+        <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="jqassistant">
+        <jqaRuleIndexingStrategy
+                implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
     </extensions>
 
     <applicationListeners>
