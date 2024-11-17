@@ -16,7 +16,8 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff" anchor="right"
+        <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
+                    anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
         <spellchecker.bundledDictionaryProvider
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
@@ -40,6 +41,11 @@
     <extensions defaultExtensionNs="jqassistant">
         <jqaRuleIndexingStrategy
                 implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow factoryClass="org.jqassistant.tooling.intellij.plugin.editor.TestWindow" id="adfhsdfh"
+                    icon="AllIcons.Idea_logo_welcome" secondary="true" anchor="right"/>
     </extensions>
 
     <applicationListeners>
