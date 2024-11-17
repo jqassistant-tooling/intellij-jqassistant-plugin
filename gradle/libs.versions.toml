@@ -13,7 +13,7 @@ kotlin = "1.9.25"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-jqa-core-report = { group = "com.buschmais.jqassistant.core", name = "report", version.ref = "jqa-core-report"}
+jqa-core-report = { group = "com.buschmais.jqassistant.core", name = "report", version.ref = "jqa-core-report" }
 jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata", version.ref = "jqa-core-schemata" }
 
 [plugins]
