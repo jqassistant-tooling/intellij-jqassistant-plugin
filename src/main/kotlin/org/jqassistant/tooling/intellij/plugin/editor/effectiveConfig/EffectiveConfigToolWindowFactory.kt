@@ -20,6 +20,4 @@ class EffectiveConfigToolWindowFactory : ToolWindowFactory {
         val content = contentFactory.createContent(panel, "Config", false)
         contentManager.addContent(content)
     }
-
-
 }

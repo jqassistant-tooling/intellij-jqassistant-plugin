@@ -14,5 +14,4 @@ class EffectiveConfigToolBar(private val toolWindow: EffectiveConfigToolWindow) 
         val toolBar = actionManager.createActionToolbar("EffectiveConfigToolBar", actionGroup, true)
         return toolBar.component
     }
-
 }
