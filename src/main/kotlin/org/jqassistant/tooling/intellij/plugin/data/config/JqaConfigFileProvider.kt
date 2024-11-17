@@ -21,6 +21,7 @@ class JqaConfigFileProvider(private val project: Project) {
     private val listenerTemplates: MutableList<Pair<KClass<FileChangedListener>, (VFileEvent) -> Unit>> =
         mutableListOf()
     private val messageBusConnection: MessageBusConnection = project.messageBus.connect()
+    private val configFileListener = ConfigFileListener()
 
     init {
         configFiles.addAll(fetchFiles())
