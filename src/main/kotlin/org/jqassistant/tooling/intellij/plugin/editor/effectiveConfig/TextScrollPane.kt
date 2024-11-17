@@ -9,7 +9,8 @@ class TextScrollPane() : JBScrollPane() {
     init {
         this.setViewportView(textPane)
     }
-    fun setText(config : String) {
-        this.textPane.text = config
+
+    fun setText(text: String) {
+        this.textPane.text = text
     }
 }
