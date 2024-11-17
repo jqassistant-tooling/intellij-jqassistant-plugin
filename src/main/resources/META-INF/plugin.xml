@@ -11,6 +11,21 @@
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
 
+    <actions>
+        <action id="AddJqassistantYamlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddJqassistantYamlAction"
+                text="Add .jqassistant.yaml"
+                description="Fügt die .jqassistant.yaml-Datei hinzu, wenn sie noch nicht existiert">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+        <action id="AddCustomRulesXmlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddCustomRulesXmlAction"
+                text="Custom Rules File (my_rules.xml)"
+                description="Fügt eine benutzerdefinierte Regeldatei hinzu, mit einem benutzerdefinierten Namen">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+    </actions>
+
     <applicationListeners>
     </applicationListeners>
 </idea-plugin>
