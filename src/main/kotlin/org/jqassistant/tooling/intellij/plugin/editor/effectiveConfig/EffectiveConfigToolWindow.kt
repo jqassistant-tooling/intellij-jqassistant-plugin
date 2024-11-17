@@ -15,7 +15,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         private const val GOAL_UNSUCCESSFUL = "Couldn't retrieve data from specified goal"
         private const val PROCESS_TITLE = "Command line tool: Effective Configuration"
         private const val SUBSTRING_TOP_LEVEL_JQA = "jqassistant"
-        private const val SUBSTRING_BEFORE_DELIMITER = "\"[INFO] Effective configuration for\""
+        private const val SUBSTRING_BEFORE_DELIMITER = "[INFO] Effective configuration for"
         private const val SUBSTRING_AFTER_DELIMITER = "[INFO]"
     }
 
