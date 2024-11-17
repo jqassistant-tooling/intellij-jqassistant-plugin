@@ -30,6 +30,7 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     implementation(libs.jqa.core.report) {
+        // jqa.core has runtime dependency on neo4j integration tests, the intellij plugin wont't need those integration tests
         exclude(group = "org.neo4j.community")
     }
     implementation(libs.jqa.core.schemata)
