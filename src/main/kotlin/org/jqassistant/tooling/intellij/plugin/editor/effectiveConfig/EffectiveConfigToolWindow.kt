@@ -24,9 +24,9 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
 
     init {
 
-        this.toolbar = myToolBar.createToolbar()
-        this.setContent(textPane)
-        this.fullRefresh()
+        toolbar = myToolBar.createToolbar()
+        setContent(textPane)
+        fullRefresh()
     }
 
     private fun refreshConfigContent(){
