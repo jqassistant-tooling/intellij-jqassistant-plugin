@@ -19,14 +19,14 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         private const val SUBSTRING_AFTER_DELIMITER = "[INFO]"
     }
 
-    private var myToolBar : EffectiveConfigToolBar = EffectiveConfigToolBar(this)
-    private var textPane : TextScrollPane = TextScrollPane()
+    private val myToolBar = EffectiveConfigToolBar(this)
+    private val textPane = TextScrollPane()
 
     init {
 
-        this.toolbar = myToolBar.createToolbar()
-        this.setContent(textPane)
-        this.fullRefresh()
+        toolbar = myToolBar.createToolbar()
+        setContent(textPane)
+        fullRefresh()
     }
 
     private fun refreshConfigContent(){
