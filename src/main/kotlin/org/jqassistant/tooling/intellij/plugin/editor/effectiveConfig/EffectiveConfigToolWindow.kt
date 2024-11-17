@@ -23,24 +23,23 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     private val textPane = TextScrollPane()
 
     init {
-
-        toolbar = myToolBar.createToolbar()
+        this.toolbar = myToolBar.createToolbar()
         setContent(textPane)
         fullRefresh()
     }
 
-    private fun refreshConfigContent(){
+    private fun refreshConfigContent() {
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
             override fun run(indicator: ProgressIndicator) {
                 var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
-                if(config == "") config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                if (config == "") config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
                 textPane.setText(config)
             }
         })
     }
 
 
-    private fun fetchConfig(project: Project, goal: String) : String {
+    private fun fetchConfig(project: Project, goal: String): String {
         var output = ""
         try {
             val path = project.getBaseDirectories().first().path
@@ -51,7 +50,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         return stripConfig(output)
     }
 
-    private fun stripConfig(text: String) : String {
+    private fun stripConfig(text: String): String {
         var result = text.substringAfter(SUBSTRING_BEFORE_DELIMITER)
         val index = result.indexOf(SUBSTRING_TOP_LEVEL_JQA)
         if (index != -1) {
