@@ -54,7 +54,7 @@ class AddJqassistantYamlAction : AnAction("Add .jqassistant.yaml") {
         }
     }
     fun openFileAutomatic(project : Project, newFile : File) {
-        val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByIoFile(java.io.File(newFile.path))
+        val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByIoFile(File(newFile.path))
         if (virtualFile != null) {
             FileEditorManager.getInstance(project).openFile(virtualFile, true)
         } else {
@@ -143,6 +143,7 @@ class AddCustomRulesXmlAction : AnAction("Create Custom Rules File") {
     }
 
     fun isNameValid(name: String) : Boolean{
+        //TODO considering better options for validation
         //All supported Characters of a file name
         val validNameRegex = Regex("^[a-zA-Z0-9._-]+$")
         // Additional check: No control characters or invalid Unicode characters
@@ -150,7 +151,7 @@ class AddCustomRulesXmlAction : AnAction("Create Custom Rules File") {
     }
 
     fun openFileAutomatic(project : Project, newFile : File) {
-        val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByIoFile(java.io.File(newFile.path))
+        val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByIoFile(File(newFile.path))
         if (virtualFile != null) {
             FileEditorManager.getInstance(project).openFile(virtualFile, true)
         } else {
@@ -161,4 +162,6 @@ class AddCustomRulesXmlAction : AnAction("Create Custom Rules File") {
             )
         }
     }
+
+    //Duplication is noted, will be refactored in final product anyway
 }
