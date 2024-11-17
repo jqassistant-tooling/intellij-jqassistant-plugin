@@ -2,12 +2,10 @@ package org.jqassistant.tooling.intellij.plugin.data
 
 import com.buschmais.jqassistant.core.report.api.ReportReader
 import com.buschmais.jqassistant.core.report.impl.XmlReportPlugin
-import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jqassistant.schema.report.v2.JqassistantReport
 import java.io.File
@@ -20,21 +18,10 @@ class ReportProviderService(private val project: Project) {
     /**
      * Returns all found jqassistant reports in the current project
      * A single project can contain multiple baseDirectories and therefore also multiple report xml files
-    */
+     */
     fun readReports(): List<FoundReport> {
-        val buildBranchNumber = ApplicationInfo.getInstance().build.components[0]
-        val directoryList = if (buildBranchNumber < 230) {
-            project.getBaseDirectories()
-        } else {
-            if (project.basePath == null) {
-                emptySet()
-            } else {
-                val vFile = LocalFileSystem.getInstance().findFileByPath(project.basePath!!)
-                if (vFile == null) emptySet()
-                else setOf(vFile)
-            }
-        }
-
+        val directoryList = project.getBaseDirectories()
+        
         return directoryList.mapNotNull { baseDir ->
             // https://plugins.jetbrains.com/docs/intellij/plugin-class-loaders.html
             val pluginClassLoader = javaClass.classLoader
@@ -56,7 +43,7 @@ class ReportProviderService(private val project: Project) {
     /**
      * Constructs the default path to the report xml file from a given base directory
      * This does not work with custom target directories
-    */
+     */
     private fun getXmlReportPath(dir: VirtualFile): File? {
         // !TODO: Try to use virtual file system
         // !TODO: Use maven to get correct build directory

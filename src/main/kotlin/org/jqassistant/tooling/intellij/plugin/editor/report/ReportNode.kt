@@ -4,6 +4,7 @@ package org.jqassistant.tooling.intellij.plugin.editor.report
 import org.jqassistant.schema.report.v2.ConstraintType
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.ReferencableRuleType
+import org.jqassistant.schema.report.v2.ResultType
 import org.jqassistant.schema.report.v2.RowType
 import java.util.*
 import javax.swing.tree.TreeNode
@@ -64,17 +65,5 @@ open class ReferencableRuleTypeNode(val ref: ReferencableRuleType, parent: Repor
                 ref.id
             }
         }
-    }
-}
-
-open class ConstraintResultRowNode(val ref: RowType, parent: ReportNode?) : ReportNode(parent) {
-    constructor(ref: RowType) : this(ref, null) {
-    }
-
-    override fun toString(): String {
-        var str = ""
-        for (col in ref.column) str += col.toString()
-
-        return str
     }
 }

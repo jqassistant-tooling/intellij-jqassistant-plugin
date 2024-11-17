@@ -10,17 +10,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
 import com.intellij.pom.Navigatable
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.table.JBTable
 import com.intellij.ui.treeStructure.Tree
-import org.jqassistant.schema.report.v2.ConceptType
-import org.jqassistant.schema.report.v2.ConstraintType
-import org.jqassistant.schema.report.v2.GroupType
-import org.jqassistant.schema.report.v2.JqassistantReport
-import org.jqassistant.schema.report.v2.ReferencableRuleType
-import org.jqassistant.schema.report.v2.RowType
+import org.jqassistant.schema.report.v2.*
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
+import javax.swing.table.AbstractTableModel
 
 
 open class ReportToolWindowContent(
@@ -28,20 +26,27 @@ open class ReportToolWindowContent(
     private val baseDir: VirtualFile,
     private val report: JqassistantReport
 ) {
-    val contentPanel: JBScrollPane
+    val contentPanel: JBSplitter
 
-    init {
+    init {;
         val projectTrees = treePanel()
 
         val firstTree = projectTrees.first()
-        if (projectTrees.size == 1) {
-            contentPanel = JBScrollPane(firstTree)
+        val scrollableTree = if (projectTrees.size == 1) {
+            val scrollableTree = JBScrollPane(firstTree)
+
+            scrollableTree
         } else {
             val subPanel = JPanel()
             for (tree in projectTrees) subPanel.add(tree)
 
-            contentPanel = JBScrollPane(subPanel)
+            val scrollableTree = JBScrollPane(subPanel)
+            scrollableTree
         }
+
+
+        contentPanel = JBSplitter(true)
+        contentPanel.firstComponent = scrollableTree
     }
 
     private fun treePanel(): List<Tree> {
@@ -77,7 +82,7 @@ open class ReportToolWindowContent(
                 is ConceptType -> {
                     val result = group.result
                     if (result != null) {
-                        buildResultTree(newNode, group.result.rows.row)
+                        // buildResultTree(newNode, group.result)
                     }
                 }
 
@@ -92,24 +97,38 @@ open class ReportToolWindowContent(
         return nodeList
     }
 
-    private fun buildResultTree(
-        currentRoot: ReferencableRuleTypeNode,
-        currentResult: List<RowType>
-    ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
-        for (resultRow in currentResult) {
-            val newNode = ConstraintResultRowNode(resultRow, currentRoot)
-            nodeList.add(newNode)
-
-            currentRoot.addChild(newNode)
-        }
-
-        return nodeList
-    }
-
     private fun treeClickListener(event: TreeSelectionEvent) {
-        when (val reportNode = event.path.lastPathComponent as ReportNode) {
-            is ConstraintResultRowNode -> {
+        val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
+
+        when (reportNode.ref) {
+            is ConceptType -> {
+                val tableContent = reportNode.ref.result ?: return
+                val columnNames = tableContent.columns.column
+                val rowData = tableContent.rows.row.map { row ->
+                    row.column.map { col ->
+                        col.value
+                    }.toTypedArray()
+                }
+
+
+                val t = JBTable(
+                    object : AbstractTableModel() {
+                        override fun getColumnName(column: Int): String = columnNames[column].toString()
+                        override fun getRowCount(): Int = rowData.size
+                        override fun getColumnCount(): Int = columnNames.size
+                        override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
+                        override fun isCellEditable(row: Int, column: Int): Boolean = true
+
+                        override fun setValueAt(value: Any, row: Int, col: Int) {
+                            rowData[row][col] = value.toString()
+                            this.fireTableCellUpdated(row, col)
+                        }
+                    }
+                )
+
+                contentPanel.secondComponent = JBScrollPane(t)
+
+                /*
                 val currentRow = reportNode.ref
                 val col = currentRow.column.find { c -> c.source != null }
 
@@ -118,14 +137,15 @@ open class ReportToolWindowContent(
 
                 val path = "biojava-core/src/test/java${source.fileName}"
                 openRelativeFileAt(path, source.startLine - 1, 0)
+                 */
             }
 
-            is ReferencableRuleTypeNode -> {
+            is GroupType -> {
                 val rule = reportNode.ref
                 val ruleId = rule.id
 
                 val ruleIndexingService = project.service<JqaRuleIndexingService>()
-                
+
                 getApplication().executeOnPooledThread {
                     val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
                         val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
