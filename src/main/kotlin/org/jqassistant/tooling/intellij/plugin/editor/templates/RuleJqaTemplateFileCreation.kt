@@ -163,5 +163,5 @@ class AddCustomRulesXmlAction : AnAction("Create Custom Rules File") {
         }
     }
 
-    //Duplication is noted, will be refactored in final product anyway
+    //Duplication of functions is noted, will be refactored in final product anyway
 }
