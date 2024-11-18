@@ -9,6 +9,9 @@ import com.intellij.openapi.project.Project
 /**
  * Service to retrieve jQA rules of the current project.
  *
+ * Accessing this service should be treated like accessing other indexes, and as such must not happen from the EDT.
+ * Consider using [com.intellij.openapi.application.Application.executeOnPooledThread].
+ *
  * Under the hood this service manages a list of [JqaRuleIndexingStrategy] and delegates to them. New strategies can be
  * added through their factory and the [JqaRuleIndexingStrategyFactory.Util.EXTENSION_POINT] extension point.
  */
