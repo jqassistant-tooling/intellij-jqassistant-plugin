@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 class FileChangedListener(private val file: VirtualFile, private val onEvent: (VFileEvent) -> Unit) :
     BulkFileListener {
 
-    override fun after(events: MutableList<out VFileEvent>) {
+    override fun before(events: MutableList<out VFileEvent>) {
         events.forEach { event ->
             if (event.file == file) {
                 onEvent(event)
