@@ -53,10 +53,12 @@ class JqaConfigFileProvider(private val project: Project) {
     /** Adds a new file to the list of config files and updates its listeners
      * */
     private fun addFile(newFile: VirtualFile) {
+        if (configFiles.contains(newFile)) return
+
+        // make sure to have no doubled listener
         messageBusConnection.disconnect()
         listeners.clear()
 
-        // create new Listeners
         configFiles.add(newFile)
         listenerTemplates.forEach { pair ->
             applyListenerTemplate(pair.first, pair.second)
@@ -76,12 +78,10 @@ class JqaConfigFileProvider(private val project: Project) {
 
     // Listens for new config files
     inner class ConfigFileListener : BulkFileListener {
+        private val messageBusConnection: MessageBusConnection = project.messageBus.connect()
 
         init {
-            val modules = ModuleManager.getInstance(project).modules
-            modules.forEach { module ->
-                module.project.messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, this)
-            }
+            messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, this)
         }
 
         override fun after(events: MutableList<out VFileEvent>) {
