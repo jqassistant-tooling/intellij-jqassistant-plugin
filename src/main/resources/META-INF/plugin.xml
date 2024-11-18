@@ -42,6 +42,21 @@
                 implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
     </extensions>
 
+    <actions>
+        <action id="AddJqassistantYamlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddJqassistantYamlAction"
+                text="Add .jqassistant.yaml"
+                description="Adds the .jqassistant.yaml file if it does not already exist">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+        <action id="AddCustomRulesXmlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddCustomRulesXmlAction"
+                text="Custom Rules File (my_rules.xml)"
+                description="Adds a custom rules file with a custom name">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+    </actions>
+
     <applicationListeners>
     </applicationListeners>
 </idea-plugin>
