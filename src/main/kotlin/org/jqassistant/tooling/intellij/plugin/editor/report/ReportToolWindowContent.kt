@@ -2,14 +2,23 @@ package org.jqassistant.tooling.intellij.plugin.editor.report
 
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
+import com.intellij.pom.Navigatable
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
-import org.jqassistant.schema.report.v2.*
+import org.jqassistant.schema.report.v2.ConceptType
+import org.jqassistant.schema.report.v2.ConstraintType
+import org.jqassistant.schema.report.v2.GroupType
+import org.jqassistant.schema.report.v2.JqassistantReport
+import org.jqassistant.schema.report.v2.ReferencableRuleType
+import org.jqassistant.schema.report.v2.RowType
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 
@@ -110,6 +119,29 @@ open class ReportToolWindowContent(
                 val path = "biojava-core/src/test/java${source.fileName}"
                 openRelativeFileAt(path, source.startLine - 1, 0)
             }
+
+            is ReferencableRuleTypeNode -> {
+                val rule = reportNode.ref
+                val ruleId = rule.id
+
+                val ruleIndexingService = project.service<JqaRuleIndexingService>()
+                
+                getApplication().executeOnPooledThread {
+                    val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
+                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+
+                        val source = definition.computeSource() ?: return@compute null
+
+                        source.navigationElement as? Navigatable
+                    }
+
+                    getApplication().invokeLater {
+                        if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+
+                        navigationElement.navigate(true)
+                    }
+                }
+            }
         }
     }
 
@@ -126,3 +158,4 @@ open class ReportToolWindowContent(
         }
     }
 }
+
