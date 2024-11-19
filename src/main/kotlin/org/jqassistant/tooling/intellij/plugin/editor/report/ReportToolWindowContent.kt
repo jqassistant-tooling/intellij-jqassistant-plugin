@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
 import com.intellij.pom.Navigatable
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import com.intellij.ui.treeStructure.Tree
@@ -29,7 +30,7 @@ open class ReportToolWindowContent(
     val contentPanel: JBSplitter
 
     init {;
-        val projectTrees = treePanel()
+        val projectTrees = buildTreePanels()
 
         val firstTree = projectTrees.first()
         val scrollableTree = if (projectTrees.size == 1) {
@@ -47,14 +48,22 @@ open class ReportToolWindowContent(
 
         contentPanel = JBSplitter(true)
         contentPanel.firstComponent = scrollableTree
+
+        // JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollableTree, JBTable())
+
+        // Bottom panel
+        // contentPanel.add(tablePanel)
     }
 
-    private fun treePanel(): List<Tree> {
+    private fun buildTreePanels(): List<Tree> {
         val nodeList = buildRuleTree(null, report.groupOrConceptOrConstraint)
         val cellRenderer = ReportCellRenderer()
 
         return nodeList.map { rootNode ->
             val treePanel = Tree(rootNode)
+            TreeUIHelper.getInstance().installTreeSpeedSearch(treePanel)
+            TreeUIHelper.getInstance().installSelectionSaver(treePanel)
+            TreeUIHelper.getInstance().installSmartExpander(treePanel)
             treePanel.cellRenderer = cellRenderer
 
             treePanel.addTreeSelectionListener { event -> treeClickListener(event) }
