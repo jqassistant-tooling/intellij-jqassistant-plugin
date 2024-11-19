@@ -16,7 +16,7 @@ import org.jqassistant.tooling.intellij.plugin.common.toMutableMap
 class NameIndex : FileBasedIndexExtension<String, Int>() {
     object Util {
         val NAME = ID.create<String, Int>("jqassistant.rules.xml.NameIndex")
-        const val VERSION = 1
+        const val VERSION = 2
     }
 
     override fun getName(): ID<String, Int> = Util.NAME
@@ -32,7 +32,7 @@ class NameIndex : FileBasedIndexExtension<String, Int>() {
             return listOf(root.concepts, root.constraints, root.groups).flatMap { ruleSet ->
                 ruleSet.mapNotNull {
                     val name = it.id.value ?: return@mapNotNull null
-                    val offset = it.xmlTag?.textOffset ?: return@mapNotNull null
+                    val offset = it.id.xmlAttributeValue?.textOffset ?: return@mapNotNull null
                     name to offset
                 }
             }.toMutableMap()
