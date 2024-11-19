@@ -17,7 +17,6 @@ class JqaConfigurationService(private val project: Project) {
             // TODO only update after some time with no further changes, as there might be a lot of incoming events at once
             // TODO give user the option to load the effective config manually after we registered a change
             jqaEffectiveConfigProvider.updateConfig()
-            println("Updated effective config")
         }
     }
 
