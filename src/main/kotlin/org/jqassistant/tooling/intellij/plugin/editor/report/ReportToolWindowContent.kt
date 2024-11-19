@@ -100,34 +100,12 @@ open class ReportToolWindowContent(
     private fun treeClickListener(event: TreeSelectionEvent) {
         val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
 
-        when (reportNode.ref) {
+        val result = when (val rule = reportNode.ref) {
+            is ConstraintType -> {
+                rule.result
+            }
+
             is ConceptType -> {
-                val tableContent = reportNode.ref.result ?: return
-                val columnNames = tableContent.columns.column
-                val rowData = tableContent.rows.row.map { row ->
-                    row.column.map { col ->
-                        col.value
-                    }.toTypedArray()
-                }
-
-
-                val t = JBTable(
-                    object : AbstractTableModel() {
-                        override fun getColumnName(column: Int): String = columnNames[column].toString()
-                        override fun getRowCount(): Int = rowData.size
-                        override fun getColumnCount(): Int = columnNames.size
-                        override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
-                        override fun isCellEditable(row: Int, column: Int): Boolean = true
-
-                        override fun setValueAt(value: Any, row: Int, col: Int) {
-                            rowData[row][col] = value.toString()
-                            this.fireTableCellUpdated(row, col)
-                        }
-                    }
-                )
-
-                contentPanel.secondComponent = JBScrollPane(t)
-
                 /*
                 val currentRow = reportNode.ref
                 val col = currentRow.column.find { c -> c.source != null }
@@ -138,12 +116,12 @@ open class ReportToolWindowContent(
                 val path = "biojava-core/src/test/java${source.fileName}"
                 openRelativeFileAt(path, source.startLine - 1, 0)
                  */
+
+                rule.result
             }
 
             is GroupType -> {
-                val rule = reportNode.ref
                 val ruleId = rule.id
-
                 val ruleIndexingService = project.service<JqaRuleIndexingService>()
 
                 getApplication().executeOnPooledThread {
@@ -161,8 +139,39 @@ open class ReportToolWindowContent(
                         navigationElement.navigate(true)
                     }
                 }
+
+                null
+            }
+
+            else -> {
+                null
             }
         }
+
+        val tableContent = result ?: return
+        val columnNames = tableContent.columns.column
+        val rowData = tableContent.rows.row.map { row ->
+            row.column.map { col ->
+                col.value
+            }.toTypedArray()
+        }
+
+        val table = JBTable(
+            object : AbstractTableModel() {
+                override fun getColumnName(column: Int): String = columnNames[column].toString()
+                override fun getRowCount(): Int = rowData.size
+                override fun getColumnCount(): Int = columnNames.size
+                override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
+                override fun isCellEditable(row: Int, column: Int): Boolean = true
+
+                override fun setValueAt(value: Any, row: Int, col: Int) {
+                    rowData[row][col] = value.toString()
+                    this.fireTableCellUpdated(row, col)
+                }
+            }
+        )
+
+        contentPanel.secondComponent = JBScrollPane(table)
     }
 
     private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {

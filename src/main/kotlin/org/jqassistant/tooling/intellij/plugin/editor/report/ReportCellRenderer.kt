@@ -2,9 +2,8 @@ package org.jqassistant.tooling.intellij.plugin.editor.report
 
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.ui.ColoredTreeCellRenderer
-import com.intellij.ui.JBColor
+import com.intellij.ui.SimpleTextAttributes
 import org.jqassistant.schema.report.v2.ConceptType
 import org.jqassistant.schema.report.v2.ConstraintType
 import org.jqassistant.schema.report.v2.GroupType
@@ -30,10 +29,9 @@ class ReportCellRenderer() : ColoredTreeCellRenderer() {
 
         when (reportNode) {
             is ReferencableRuleTypeNode -> {
-                val rule = reportNode.ref
-                when (rule) {
+                when (val rule = reportNode.ref) {
                     is GroupType -> {
-                        icon = AllIcons.General.InspectionsOKEmpty
+                        icon = AllIcons.Nodes.Folder
                         append(rule.id)
                     }
 
@@ -44,7 +42,14 @@ class ReportCellRenderer() : ColoredTreeCellRenderer() {
                             StatusEnumType.SKIPPED -> AllIcons.RunConfigurations.TestSkipped
                             StatusEnumType.WARNING -> AllIcons.RunConfigurations.TestCustom
                         }
-                        append(rule.id)
+
+                        val text = rule.id
+                        when (rule.severity.value) {
+                            "major" -> append(text, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                            else -> append(text)
+                        }
+
+                        toolTipText = rule.description
                     }
 
                     is ConceptType -> {
@@ -54,7 +59,15 @@ class ReportCellRenderer() : ColoredTreeCellRenderer() {
                             StatusEnumType.SKIPPED -> AllIcons.RunConfigurations.TestSkipped
                             StatusEnumType.WARNING -> AllIcons.RunConfigurations.TestCustom
                         }
-                        append("C: ${rule.id}")
+
+
+                        val text = "C: ${rule.id}"
+                        when (rule.severity.value) {
+                            "major" -> append(text, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                            else -> append(text)
+                        }
+
+                        toolTipText = rule.description
                     }
 
                     else -> {
