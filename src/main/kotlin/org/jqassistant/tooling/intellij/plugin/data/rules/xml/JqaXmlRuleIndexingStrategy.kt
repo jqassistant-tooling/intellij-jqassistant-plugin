@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.xml.XmlTag
+import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.AstLoadingFilter
 import com.intellij.util.indexing.FileBasedIndex
 import org.jqassistant.tooling.intellij.plugin.data.rules.*
@@ -40,7 +40,11 @@ class JqaXmlRuleIndexingStrategy(
                     val psiFile = psiManager.findFile(file)
                     val psiElement = AstLoadingFilter.forceAllowTreeLoading<PsiElement?, Throwable>(psiFile) {
                         val token = psiFile?.findElementAt(value)
-                        return@forceAllowTreeLoading PsiTreeUtil.getParentOfType(token, XmlTag::class.java, false)
+                        return@forceAllowTreeLoading PsiTreeUtil.getParentOfType(
+                            token,
+                            XmlAttributeValue::class.java,
+                            false
+                        )
                     }
 
                     if (psiElement == null) return@processValues true
