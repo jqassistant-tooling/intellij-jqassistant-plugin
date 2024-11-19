@@ -1,0 +1,34 @@
+name: Style Checks
+on:
+  # Trigger the workflow on any pull request
+  pull_request:
+
+jobs:
+  ktlint:
+    name: ktlint
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Check out the current repository
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+
+      # Validate wrapper
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v3
+
+      # Set up Java environment for the next steps
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
+      # Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Check style
+      - name: ktlint Check
+        run: ./gradlew ktlintCheck

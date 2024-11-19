@@ -17,8 +17,9 @@ import com.intellij.openapi.project.Project
  */
 @Service(Service.Level.PROJECT)
 class JqaRuleIndexingService(
-    private val project: Project
-) : Disposable, ExtensionPointListener<JqaRuleIndexingStrategyFactory> {
+    private val project: Project,
+) : Disposable,
+    ExtensionPointListener<JqaRuleIndexingStrategyFactory> {
     private val indexes: MutableList<JqaRuleIndexingStrategy> = mutableListOf()
 
     init {
@@ -44,6 +45,8 @@ class JqaRuleIndexingService(
     }
 
     fun getAll(type: JqaRuleType): List<JqaRuleDefinition> = indexes.flatMap { it.getAll(type) }
+
     fun resolve(name: String): JqaRuleDefinition? = indexes.firstNotNullOfOrNull { it.resolve(name) }
+
     fun has(name: String): Boolean = indexes.any { it.has(name) }
 }
