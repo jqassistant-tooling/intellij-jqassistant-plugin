@@ -1,12 +1,16 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
 import com.intellij.pom.Navigatable
@@ -15,7 +19,11 @@ import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import com.intellij.ui.treeStructure.Tree
-import org.jqassistant.schema.report.v2.*
+import org.jqassistant.schema.report.v2.ConceptType
+import org.jqassistant.schema.report.v2.ConstraintType
+import org.jqassistant.schema.report.v2.GroupType
+import org.jqassistant.schema.report.v2.JqassistantReport
+import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
@@ -27,9 +35,10 @@ open class ReportToolWindowContent(
     private val baseDir: VirtualFile,
     private val report: JqassistantReport
 ) {
-    val contentPanel: JBSplitter
+    val contentPanel: JPanel
+    private val splitter: JBSplitter
 
-    init {;
+    init {
         val projectTrees = buildTreePanels()
 
         val firstTree = projectTrees.first()
@@ -46,9 +55,26 @@ open class ReportToolWindowContent(
         }
 
 
-        contentPanel = JBSplitter(true)
-        contentPanel.firstComponent = scrollableTree
+        val toolWindow = SimpleToolWindowPanel(true)
 
+        splitter = JBSplitter(false)
+        splitter.firstComponent = scrollableTree
+
+        val actionManager = ActionManager.getInstance()
+
+
+        val actionGroup =
+            actionManager.getAction("org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup") as DefaultActionGroup
+        // actionGroup.add(AboutAction())
+
+        val actionToolbar =
+            actionManager.createActionToolbar("jQAssistant Report Toolbar", actionGroup, true)
+        actionToolbar.targetComponent = toolWindow
+        toolWindow.toolbar = actionToolbar.component
+
+        toolWindow.setContent(splitter)
+
+        contentPanel = toolWindow
         // JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollableTree, JBTable())
 
         // Bottom panel
@@ -134,18 +160,22 @@ open class ReportToolWindowContent(
                 val ruleIndexingService = project.service<JqaRuleIndexingService>()
 
                 getApplication().executeOnPooledThread {
-                    val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+                    try {
+                        val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
+                            val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
 
-                        val source = definition.computeSource() ?: return@compute null
+                            val source = definition.computeSource() ?: return@compute null
 
-                        source.navigationElement as? Navigatable
-                    }
+                            source.navigationElement as? Navigatable
+                        }
 
-                    getApplication().invokeLater {
-                        if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+                        getApplication().invokeLater {
+                            if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
 
-                        navigationElement.navigate(true)
+                            navigationElement.navigate(true)
+                        }
+                    } catch (e: Throwable) {
+                        thisLogger().error("Maus", e)
                     }
                 }
 
@@ -180,7 +210,7 @@ open class ReportToolWindowContent(
             }
         )
 
-        contentPanel.secondComponent = JBScrollPane(table)
+        splitter.secondComponent = JBScrollPane(table)
     }
 
     private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {
