@@ -43,6 +43,11 @@
                 implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow factoryClass="org.jqassistant.tooling.intellij.plugin.editor.TestWindow" id="adfhsdfh"
+                    icon="AllIcons.Idea_logo_welcome" secondary="true" anchor="right"/>
+    </extensions>
+
     <applicationListeners>
     </applicationListeners>
 </idea-plugin>
