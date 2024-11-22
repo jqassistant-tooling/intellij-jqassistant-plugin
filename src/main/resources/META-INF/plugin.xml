@@ -2,7 +2,7 @@
 <idea-plugin>
     <id>jqassistant</id>
     <name>jQAssistant Support</name>
-    <vendor>BUSCHMAIS</vendor>
+    <vendor>BUSCHMAIS GbR</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
