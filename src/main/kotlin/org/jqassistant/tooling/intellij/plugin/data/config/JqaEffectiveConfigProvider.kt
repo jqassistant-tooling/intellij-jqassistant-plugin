@@ -3,36 +3,49 @@ package org.jqassistant.tooling.intellij.plugin.data.config
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.*
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
-// Will fetch and hold the current effective config and shall be called whenever config files are updated
-// Shall be used by EffectiveConfigurationToolWindow
+/** This provides the effective Configuration
+To avoid background usage, it will not automatically fetch the current effective config
+Instead, it will check if the config file has been updated by receiving calls from listeners and set the isValid flag accordingly
+Shall be used by EffectiveConfigurationToolWindow */
+
+data class Config(val config: String, val timestamp: Date, var isValid: Boolean = true)
 
 class JqaEffectiveConfigProvider(private val project: Project) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var job: Job? = null
     private val delayTime = 10000L
-    private var configString = "test"
+    private var config = Config("", Date())
 
     init {
-        updateConfig()
+        onFileUpdate()
     }
 
-    fun updateConfig() {
+    fun onFileUpdate() {
         job?.cancel()
         job = coroutineScope.launch {
             delay(delayTime)
-            fetchConfig()
+            setLastChanged()
         }
     }
 
-    fun getConfig(): String {
-        return this.configString
+    fun getStoredConfig(): Config {
+        return this.config
     }
 
-    private fun fetchConfig() {
-        //configString = CommandLineTool.fetchConfig(project, "jqassistant:effective-configuration")
-        println("Updated effective config")
-
+    fun fetchCurrentConfig() {
+        //val configString = CommandLineTool.fetchConfig(project, "jqassistant:effective-configuration")
+        //val config.isValid = false
+        //val timestamp = Date()
+        //config = Config(configString, timestamp)
     }
+
+    private fun setLastChanged() {
+        val lastChanged = Date()
+        if (lastChanged.time != config.timestamp.time) {
+            config.isValid = false
+        }
+    }
+
+
 }

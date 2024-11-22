@@ -16,12 +16,12 @@ class JqaConfigurationService(private val project: Project) {
         jqaConfigFileProvider.addFileChangeListener(FileChangedListener::class) {
             // TODO only update after some time with no further changes, as there might be a lot of incoming events at once
             // TODO give user the option to load the effective config manually after we registered a change
-            jqaEffectiveConfigProvider.updateConfig()
+            jqaEffectiveConfigProvider.onFileUpdate()
         }
     }
 
-    fun getEffectiveConfig(): String {
-        return jqaEffectiveConfigProvider.getConfig()
+    fun getEffectiveConfig(): Config {
+        return jqaEffectiveConfigProvider.getStoredConfig()
     }
 
     fun getAllConfigurationFiles(): List<VirtualFile> {
