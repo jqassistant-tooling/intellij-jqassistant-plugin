@@ -30,14 +30,15 @@ class JqaEffectiveConfigProvider(private val project: Project) {
     }
 
     fun getStoredConfig(): Config {
-        return this.config
+        return config
     }
 
-    fun fetchCurrentConfig() {
+    fun fetchCurrentConfig(): Config {
         //val configString = CommandLineTool.fetchConfig(project, "jqassistant:effective-configuration")
         //val config.isValid = false
         //val timestamp = Date()
         //config = Config(configString, timestamp)
+        return config
     }
 
     private fun setLastChanged() {
