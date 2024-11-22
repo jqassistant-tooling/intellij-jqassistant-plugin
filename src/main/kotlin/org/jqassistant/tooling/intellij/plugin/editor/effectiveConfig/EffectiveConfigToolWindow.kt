@@ -6,7 +6,10 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import java.awt.BorderLayout
 import java.io.File
+import java.util.*
+import javax.swing.JPanel
 
 class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false) {
 
@@ -21,10 +24,14 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
 
     private val myToolBar = EffectiveConfigToolBar(this)
     private val textPane = TextScrollPane()
+    private val bannerPanel = OutdatedConfigBannerPanel(project, RefreshAction(this))
 
     init {
         this.toolbar = myToolBar.createToolbar()
-        setContent(textPane)
+        val container = JPanel(BorderLayout())
+        container.add(bannerPanel, BorderLayout.NORTH)
+        container.add(textPane, BorderLayout.CENTER)
+        setContent(container)
         fullRefresh()
     }
 
@@ -33,7 +40,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
             override fun run(indicator: ProgressIndicator) {
                 var config = fetchConfig(project, JQA_EFFECTIVE_CONFIG_GOAL)
                 if (config == "") config = "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
-                textPane.setText(config)
+                textPane.setText(Date().toString() + config)
             }
         })
     }
