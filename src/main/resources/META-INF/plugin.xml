@@ -21,8 +21,8 @@
                 id="EffectiveConfigToolWindow"
                 anchor="bottom"
                 icon="/icons/jqaShortIcon_mono.svg"/>
-
-        <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff" anchor="right"
+        <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
+                    anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
         <spellchecker.bundledDictionaryProvider
                 implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
@@ -48,4 +48,6 @@
                 implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
     </extensions>
 
+    <applicationListeners>
+    </applicationListeners>
 </idea-plugin>
