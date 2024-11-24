@@ -40,6 +40,7 @@ class JqaConfigFileProvider(private val project: Project) {
 
     }
 
+    /** applies the ListenerTemplate to all config files */
     private fun applyListenerTemplate(listenerKClass: KClass<FileChangedListener>, onEvent: (VFileEvent) -> Unit) {
         this.getFiles().forEach { file ->
             val listener = listenerKClass.constructors.first().call(file, onEvent)
@@ -68,6 +69,8 @@ class JqaConfigFileProvider(private val project: Project) {
         println("Updated config files: $configFiles")
     }
 
+    /** Fetches all jQA yaml config files in the project
+     * */
     private fun fetchFiles(): List<VirtualFile> {
         val yamlFiles = FileTypeIndex.getFiles(YAMLFileType.YML, GlobalSearchScope.projectScope(project))
         val configFiles = yamlFiles.filter { file ->
