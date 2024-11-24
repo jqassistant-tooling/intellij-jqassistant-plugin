@@ -7,6 +7,7 @@ class TextScrollPane() : JBScrollPane() {
     private val textPane = JTextPane()
 
     init {
+        textPane.isEditable = false
         this.setViewportView(textPane)
     }
 

@@ -5,7 +5,7 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 
 // Listens for changes on a specific file
-class FileChangedListener(private val file: VirtualFile, private val onEvent: (VFileEvent) -> Unit) :
+class ConfigBulkFileListener(private val file: VirtualFile, private val onEvent: (VFileEvent) -> Unit) :
     BulkFileListener {
 
     override fun before(events: MutableList<out VFileEvent>) {
