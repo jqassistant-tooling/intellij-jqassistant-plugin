@@ -24,7 +24,6 @@ class JqaConfigFileProvider(private val project: Project) {
 
     init {
         configFiles.addAll(fetchFiles())
-        println("Initial config files: $configFiles")
     }
 
     fun getFiles(): List<VirtualFile> {
@@ -49,7 +48,6 @@ class JqaConfigFileProvider(private val project: Project) {
             this.listeners.add(listener)
             messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, listener)
         }
-        println("Updated listeners addFileChangeListener: $listeners")
 
     }
 
@@ -67,9 +65,6 @@ class JqaConfigFileProvider(private val project: Project) {
         listenerTemplates.forEach { pair ->
             applyListenerTemplate(pair.first, pair.second)
         }
-
-        println("new config file: $newFile")
-        println("Updated config files: $configFiles")
     }
 
     /** Fetches all jQA yaml config files in the project

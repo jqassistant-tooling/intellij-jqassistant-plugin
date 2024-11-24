@@ -13,7 +13,6 @@ class JqaConfigurationService(project: Project) {
 
 
     init {
-        println("Service initialized")
         jqaConfigFileProvider.addFileChangeListener(ConfigBulkFileListener::class) {
             jqaEffectiveConfigProvider.onFileUpdate()
             fileEventListeners.forEach { it.onFileChangeEvent() }
