@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig
+package org.jqassistant.tooling.intellij.plugin.data.config
 
 import java.io.BufferedReader
 import java.io.File
