@@ -36,7 +36,13 @@
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
             rootTagName="jqassistant-rules"
             stubVersion="1"/>
+        <dom.fileMetaData
+            implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.xml.JqaXmlPluginDescription"
+            rootTagName="jqassistant-plugin"
+            stubVersion="1"/>
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
+        <additionalLibraryRootsProvider
+            implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.JqaPluginRootsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
@@ -62,6 +68,8 @@
                 description="Adds a custom rules file with a custom name">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
+        <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
+                class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"></action>
     </actions>
 
     <applicationListeners>
