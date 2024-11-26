@@ -17,9 +17,8 @@ import com.intellij.openapi.project.Project
  */
 @Service(Service.Level.PROJECT)
 class JqaRuleIndexingService(
-    private val project: Project,
-) : Disposable,
-    ExtensionPointListener<JqaRuleIndexingStrategyFactory> {
+    private val project: Project
+) : ExtensionPointListener<JqaRuleIndexingStrategyFactory> {
     private val indexes: MutableList<JqaRuleIndexingStrategy> = mutableListOf()
 
     init {
@@ -29,15 +28,17 @@ class JqaRuleIndexingService(
         }
     }
 
-    override fun dispose() {
-        JqaRuleIndexingStrategyFactory.Util.EXTENSION_POINT.removeExtensionPointListener(this)
-    }
-
-    override fun extensionAdded(extension: JqaRuleIndexingStrategyFactory, pluginDescriptor: PluginDescriptor) {
+    override fun extensionAdded(
+        extension: JqaRuleIndexingStrategyFactory,
+        pluginDescriptor: PluginDescriptor,
+    ) {
         indexes.add(extension.create(project))
     }
 
-    override fun extensionRemoved(extension: JqaRuleIndexingStrategyFactory, pluginDescriptor: PluginDescriptor) {
+    override fun extensionRemoved(
+        extension: JqaRuleIndexingStrategyFactory,
+        pluginDescriptor: PluginDescriptor,
+    ) {
         indexes.clear()
         for (factory in JqaRuleIndexingStrategyFactory.Util.EXTENSION_POINT.extensions) {
             indexes.add(factory.create(project))
