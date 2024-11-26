@@ -7,11 +7,11 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import org.jqassistant.tooling.intellij.plugin.data.config.Config
-import org.jqassistant.tooling.intellij.plugin.data.config.FileListener
+import org.jqassistant.tooling.intellij.plugin.data.config.EventListener
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.awt.BorderLayout
 
-class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false), FileListener {
+class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false), EventListener {
 
     companion object {
         private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
@@ -58,8 +58,8 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         refreshConfigContent().also { bannerPanel.isVisible = false }
     }
 
-    // listen to events from listener set in EffectiveConfigToolWindowFactory
-    override fun onFileChangeEvent() {
+    // Be notified when the config file changes
+    override fun onEvent() {
         bannerPanel.isVisible = true
         revalidate()
         repaint()
