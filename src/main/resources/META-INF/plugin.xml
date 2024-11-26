@@ -55,6 +55,12 @@
                 description="Adds a custom rules file with a custom name">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
+        <action id="JqaYamlConfigReader"
+                class="org.jqassistant.tooling.intellij.plugin.editor.config.JqaYamlConfigReader"
+                text="Extract YAML"
+                description="Extract Jqa yaml config from pom.xml">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
     </actions>
 
     <applicationListeners>
