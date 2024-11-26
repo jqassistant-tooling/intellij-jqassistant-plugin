@@ -187,9 +187,15 @@ open class ReportToolWindowContent(
             }
         }
 
-        val tableContent = result ?: return
-        val columnNames = tableContent.columns.column
-        val rowData = tableContent.rows.row.map { row ->
+
+
+        if (result == null) {
+            splitter.secondComponent = null
+            return
+        }
+
+        val columnNames = result.columns.column
+        val rowData = result.rows.row.map { row ->
             row.column.map { col ->
                 col.value
             }.toTypedArray()
