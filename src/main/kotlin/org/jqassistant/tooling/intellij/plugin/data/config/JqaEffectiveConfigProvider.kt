@@ -1,7 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.intellij.openapi.project.Project
-import org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig.CommandLineTool
 import java.io.File
 
 /** This provides the effective Configuration
