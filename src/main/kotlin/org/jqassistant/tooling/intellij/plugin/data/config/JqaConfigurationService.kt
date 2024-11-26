@@ -2,10 +2,9 @@ package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
-class JqaConfigurationService(project: Project) {
+class JqaConfigurationService(project: Project) :  FileListener{
 
     private val jqaEffectiveConfigProvider = JqaEffectiveConfigProvider(project)
     private val jqaConfigFileProvider = JqaConfigFileProvider(project)
@@ -13,12 +12,8 @@ class JqaConfigurationService(project: Project) {
 
 
     init {
-        jqaConfigFileProvider.addFileChangeListener(ConfigBulkFileListener::class) {
-            jqaEffectiveConfigProvider.onFileUpdate()
-            fileEventListeners.forEach { it.onFileChangeEvent() }
-        }
+        jqaConfigFileProvider.addFileListener(this)
     }
-
 
     fun getConfigProvider(): JqaEffectiveConfigProvider {
         return jqaEffectiveConfigProvider
@@ -26,5 +21,9 @@ class JqaConfigurationService(project: Project) {
 
     fun addFileEventListener(listener: FileListener) {
         fileEventListeners.add(listener)
+    }
+
+    override fun onFileChangeEvent() {
+        fileEventListeners.forEach { it.onFileChangeEvent() }
     }
 }
