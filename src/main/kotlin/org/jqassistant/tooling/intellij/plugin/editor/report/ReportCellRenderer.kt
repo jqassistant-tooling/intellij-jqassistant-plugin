@@ -61,7 +61,7 @@ class ReportCellRenderer() : ColoredTreeCellRenderer() {
                         }
 
 
-                        val text = "C: ${rule.id}"
+                        val text = rule.id
                         when (rule.severity.value) {
                             "major" -> append(text, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
                             else -> append(text)
@@ -75,6 +75,10 @@ class ReportCellRenderer() : ColoredTreeCellRenderer() {
                         append(rule.id)
                     }
                 }
+            }
+
+            else -> {
+                append("Concepts:")
             }
         }
     }

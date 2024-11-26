@@ -102,30 +102,33 @@ open class ReportToolWindowContent(
         currentReport: List<ReferencableRuleType>
     ): List<ReportNode> {
         val nodeList = mutableListOf<ReportNode>();
-        for (group in currentReport) {
+
+        val groups = currentReport.filterIsInstance<GroupType>()
+        val constraints = currentReport.filterIsInstance<ConstraintType>()
+        val concepts = currentReport.filterIsInstance<ConceptType>()
+
+        for (group in groups) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
+            buildRuleTree(newNode, group.groupOrConceptOrConstraint)
+            currentRoot?.addChild(newNode)
+        }
 
-            when (group) {
-                is GroupType -> {
-                    buildRuleTree(newNode, group.groupOrConceptOrConstraint)
-                }
+        for (constraint in constraints) {
+            val newNode = ReferencableRuleTypeNode(constraint, currentRoot)
+            nodeList.add(newNode)
+            currentRoot?.addChild(newNode)
+        }
 
-                is ConstraintType -> {
-                }
+        if (concepts.isNotEmpty()) {
+            val dividerNode = DividerNode(currentRoot)
+            nodeList.add(dividerNode)
+            currentRoot?.addChild(dividerNode)
+        }
 
-                is ConceptType -> {
-                    val result = group.result
-                    if (result != null) {
-                        // buildResultTree(newNode, group.result)
-                    }
-                }
-
-                else -> {
-
-                }
-            }
-
+        for (concept in concepts) {
+            val newNode = ReferencableRuleTypeNode(concept, currentRoot)
+            nodeList.add(newNode)
             currentRoot?.addChild(newNode)
         }
 
@@ -134,6 +137,7 @@ open class ReportToolWindowContent(
 
     private fun treeClickListener(event: TreeSelectionEvent) {
         val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
+
 
         val result = when (val rule = reportNode.ref) {
             is ConstraintType -> {
