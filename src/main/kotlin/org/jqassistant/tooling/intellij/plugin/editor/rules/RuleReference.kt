@@ -13,6 +13,7 @@ class RuleReference(element: PsiElement, private val name: String) : PsiReferenc
         return definition?.computeSource()
     }
 
+    @OptIn(kotlin.ExperimentalStdlibApi::class)
     override fun getVariants(): Array<Any> {
         return JqaRuleType.entries.flatMap { element.project.service<JqaRuleIndexingService>().getAll(it) }
             .map2Array { it.name }
