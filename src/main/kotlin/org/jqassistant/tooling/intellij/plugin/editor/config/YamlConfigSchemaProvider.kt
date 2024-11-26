@@ -7,13 +7,10 @@ import com.jetbrains.jsonSchema.extension.JsonSchemaProviderFactory
 import com.jetbrains.jsonSchema.extension.SchemaType
 import com.jetbrains.jsonSchema.impl.JsonSchemaVersion
 
-
 class YamlConfigSchemaProviderFactory : JsonSchemaProviderFactory {
-    override fun getProviders(project: Project): MutableList<JsonSchemaFileProvider> {
-        return mutableListOf(YamlConfigSchemaProvider())
-    }
+    override fun getProviders(project: Project): MutableList<JsonSchemaFileProvider> =
+        mutableListOf(YamlConfigSchemaProvider())
 }
-
 
 class YamlConfigSchemaProvider : JsonSchemaFileProvider {
     companion object {
@@ -24,8 +21,13 @@ class YamlConfigSchemaProvider : JsonSchemaFileProvider {
 
     // TODO: Use resource bundle.
     override fun getName() = "jQAssistant config"
+
     override fun isAvailable(file: VirtualFile) = ConfigFileUtils.isJqaConfigFile(file)
+
     override fun getSchemaVersion() = SCHEMA_VERSION
+
     override fun getSchemaType() = SchemaType.schema
-    override fun getSchemaFile() = JsonSchemaProviderFactory.getResourceFile(YamlConfigSchemaProvider::class.java, SCHEMA_PATH)
+
+    override fun getSchemaFile() =
+        JsonSchemaProviderFactory.getResourceFile(YamlConfigSchemaProvider::class.java, SCHEMA_PATH)
 }
