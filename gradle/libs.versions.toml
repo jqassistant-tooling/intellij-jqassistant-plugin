@@ -8,7 +8,7 @@ jqa-core-schemata = "2.5.0"
 # plugins
 changelog = "2.2.1"
 intelliJPlatform = "2.1.0"
-kotlin = "1.9.25"
+kotlin = "2.1.0"
 ktlint = "12.1.1"
 
 [libraries]
