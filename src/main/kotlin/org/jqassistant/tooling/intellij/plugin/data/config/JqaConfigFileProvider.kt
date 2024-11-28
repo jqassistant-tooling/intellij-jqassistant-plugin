@@ -21,8 +21,8 @@ class JqaConfigFileProvider(private val project: Project) {
     private val messageBusConnection: MessageBusConnection = application.messageBus.connect()
 
     init {
-        fetchDocuments().forEach {
-            document -> addDocument(document)
+        fetchDocuments().forEach { document ->
+            addDocument(document)
         }
     }
 
@@ -48,13 +48,13 @@ class JqaConfigFileProvider(private val project: Project) {
     private fun addDocument(document: Document) {
         if (configFiles.contains(document)) return
 
-        // make sure to have no doubled listener
-            document.addDocumentListener(object : DocumentListener {
-                override fun beforeDocumentChange(event: DocumentEvent) {
-                    super.beforeDocumentChange(event)
-                    notifyListeners(event)
+        document.addDocumentListener(object : DocumentListener {
+            override fun beforeDocumentChange(event: DocumentEvent) {
+                super.beforeDocumentChange(event)
+                notifyListeners(event)
 
-                }})
+            }
+        })
 
         configFiles.add(document)
     }
@@ -65,9 +65,9 @@ class JqaConfigFileProvider(private val project: Project) {
         val documents = mutableListOf<Document>()
         ApplicationManager.getApplication().runReadAction {
             val yamlFiles = FileTypeIndex.getFiles(YAMLFileType.YML, GlobalSearchScope.projectScope(project))
-             yamlFiles.filter { file ->
+            yamlFiles.filter { file ->
                 ConfigFileUtils.isJqaConfigFile(file)
-            }.mapNotNull {file -> FileDocumentManager.getInstance().getDocument(file) }.forEach { document ->
+            }.mapNotNull { file -> FileDocumentManager.getInstance().getDocument(file) }.forEach { document ->
                 documents.add(document)
             }
         }
