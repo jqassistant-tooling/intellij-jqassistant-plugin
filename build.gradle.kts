@@ -34,6 +34,7 @@ dependencies {
         exclude(group = "org.neo4j.community")
     }
     implementation(libs.jqa.core.schemata)
+    implementation(libs.jqa.cli)
 
     testImplementation(libs.junit)
 

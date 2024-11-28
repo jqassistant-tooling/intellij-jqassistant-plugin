@@ -8,21 +8,20 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.util.application
-import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.yaml.YAMLFileType
 import org.jqassistant.tooling.intellij.plugin.editor.config.ConfigFileUtils
 
 
-// Holds references and listeners to all jQA config files
+/** Holds all jQA config files
+ * Notifies listeners when a config file changes
+ */
 class JqaConfigFileProvider(private val project: Project) {
     private val configFiles: MutableList<Document> = mutableListOf()
-    private val listeners: MutableList<FileListener> = mutableListOf()
-    private val messageBusConnection: MessageBusConnection = application.messageBus.connect()
+    private val listeners: MutableList<EventListener> = mutableListOf()
 
     init {
-        fetchDocuments().forEach { document ->
-            addDocument(document)
+        fetchDocuments().forEach {
+            document -> addDocument(document)
         }
     }
 
@@ -30,15 +29,17 @@ class JqaConfigFileProvider(private val project: Project) {
         return configFiles.toList()
     }
 
-    /** Adds a new listener template to the config files
+    /** Adds a listener that is notified when a config files changes
      * */
-    fun addFileListener(listener: FileListener) {
+    fun addFileEventListener(listener: EventListener) {
         this.listeners.add(listener)
     }
 
+    /** Notifies all listeners that a config file has changed
+     * */
     private fun notifyListeners(event: DocumentEvent?) {
         listeners.forEach { listener ->
-            listener.onFileChangeEvent()
+            listener.onEvent()
         }
     }
 
@@ -52,10 +53,8 @@ class JqaConfigFileProvider(private val project: Project) {
             override fun beforeDocumentChange(event: DocumentEvent) {
                 super.beforeDocumentChange(event)
                 notifyListeners(event)
-
             }
         })
-
         configFiles.add(document)
     }
 
@@ -65,9 +64,9 @@ class JqaConfigFileProvider(private val project: Project) {
         val documents = mutableListOf<Document>()
         ApplicationManager.getApplication().runReadAction {
             val yamlFiles = FileTypeIndex.getFiles(YAMLFileType.YML, GlobalSearchScope.projectScope(project))
-            yamlFiles.filter { file ->
+             yamlFiles.filter { file ->
                 ConfigFileUtils.isJqaConfigFile(file)
-            }.mapNotNull { file -> FileDocumentManager.getInstance().getDocument(file) }.forEach { document ->
+            }.mapNotNull {file -> FileDocumentManager.getInstance().getDocument(file) }.forEach { document ->
                 documents.add(document)
             }
         }

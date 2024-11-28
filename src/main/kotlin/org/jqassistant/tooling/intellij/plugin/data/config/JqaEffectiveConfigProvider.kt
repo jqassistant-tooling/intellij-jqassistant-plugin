@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import java.io.File
 
 /** This provides the effective Configuration
-To avoid background usage, it will not automatically fetch the current effective config
+To avoid background usage, it is lazy and will NOT automatically fetch the current effective config
 Instead, it will check if the config file has been updated by receiving calls from listeners and set the isValid flag accordingly
 Shall be used by EffectiveConfigurationToolWindow */
 
@@ -27,9 +27,10 @@ class JqaEffectiveConfigProvider(private val project: Project) {
 
     fun onFileUpdate() {
         config.isValid = false
-
     }
 
+    /** Returns the stored configuration, might not valid anymore.
+     * */
     fun getStoredConfig(): Config {
         return config
     }
