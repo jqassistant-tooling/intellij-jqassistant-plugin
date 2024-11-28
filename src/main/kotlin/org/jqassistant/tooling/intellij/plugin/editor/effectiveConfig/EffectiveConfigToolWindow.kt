@@ -34,9 +34,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     /** Refreshes the content of the tool window */
     private fun refreshConfigContent() {
         setContent(loadingPanel)
-        if(progressIndicator != null) {
-            progressIndicator?.cancel()
-        }
+        progressIndicator?.cancel()
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
             override fun run(indicator: ProgressIndicator) {
                 progressIndicator = indicator
