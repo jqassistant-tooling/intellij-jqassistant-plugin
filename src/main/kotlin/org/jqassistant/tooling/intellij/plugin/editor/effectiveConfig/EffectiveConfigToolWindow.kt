@@ -32,7 +32,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     }
 
     /** Refreshes the content of the tool window */
-    private fun setConfigContent(forceRefresh: Boolean = false) {
+    private fun updateConfigContent(forceRefresh: Boolean = false) {
         setContent(loadingPanel)
         val configService = project.service<JqaConfigurationService>()
         val config = configService.configProvider.getStoredConfig()
@@ -60,7 +60,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     }
 
     fun forceRefresh() {
-        setConfigContent(true).also { bannerPanel.isVisible = false }
+        updateConfigContent(true).also { bannerPanel.isVisible = false }
     }
 
     /** Be notified when the config file changes
