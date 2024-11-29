@@ -14,16 +14,22 @@ import java.io.File
 *   The class handles user input, validates file names, and generates files based on templates.
 **/
 abstract class RuleJqaTemplateFileCreator(
-    private val fileName: String, // Default file name or prompt title.
-    private val templatePath: String, // Path to the template resource file.
-    private val promptMessage: String? = null, // Optional user prompt message for custom file names.
-    private val placeholder: String? = null, // Optional placeholder in the template to replace.
+    // Default file name or prompt title.
+    private val fileName: String,
+    // Path to the template resource file.
+    private val templatePath: String,
+    // Optional user prompt message for custom file names.
+    private val promptMessage: String? = null,
+    // Optional placeholder in the template to replace.
+    private val placeholder: String? = null,
 ) : AnAction(fileName) {
     // Entry point for the action when triggered.
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return // Ensure the project context is available.
+        // Ensure the project context is available.
+        val project = e.project ?: return
         val virtualFile = e.getData(com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE) ?: return
-        val directoryPath = virtualFile.path // Get the path of the selected directory.
+        // Get the path of the selected directory.
+        val directoryPath = virtualFile.path
 
         // Get the target file name, either from user input or default.
         val targetName =
@@ -52,15 +58,14 @@ abstract class RuleJqaTemplateFileCreator(
     }
 
     // Creates a file from the template, replacing placeholders if necessary.
-    private fun createFileFromTemplate(
-        project: Project,
-        targetFile: File,
-        targetName: String,
-    ) {
+    private fun createFileFromTemplate(project: Project, targetFile: File, targetName: String) {
         val resourceStream = javaClass.getResourceAsStream(templatePath)
         if (resourceStream != null) {
             val content = resourceStream.bufferedReader().use { it.readText() } // Read the template content.
-            val modifiedContent = placeholder?.let { content.replace(it, targetName) } ?: content // Replace placeholder if provided.
+            val modifiedContent =
+                placeholder?.let {
+                    content.replace(it, targetName)
+                } ?: content // Replace placeholder if provided.
             targetFile.writeText(modifiedContent) // Write the modified content to the new file.
 
             // Show success message and refresh the project to reflect the new file.
@@ -74,20 +79,15 @@ abstract class RuleJqaTemplateFileCreator(
     }
 
     // Opens the newly created file in the editor.
-    private fun openFile(
-        project: Project,
-        file: File,
-    ) {
+    private fun openFile(project: Project, file: File) {
         LocalFileSystem.getInstance().findFileByIoFile(file)?.let {
             FileEditorManager.getInstance(project).openFile(it, true)
         } ?: Messages.showErrorDialog(project, "File created but could not be opened.", "Error")
     }
 
     // Prompts the user for input using a dialog box and returns the input.
-    private fun getUserInput(
-        project: Project,
-        message: String,
-    ): String? = Messages.showInputDialog(project, message, "Input", Messages.getQuestionIcon())?.trim()
+    private fun getUserInput(project: Project, message: String): String? =
+        Messages.showInputDialog(project, message, "Input", Messages.getQuestionIcon())?.trim()
 
     // Validates the file name to ensure it contains only allowed characters and no control characters.
     private fun isNameValid(name: String): Boolean {
@@ -121,5 +121,6 @@ class AddCustomRulesXmlAction :
         fileName = "Custom Rules File",
         templatePath = "/templates/my_rules.xml",
         promptMessage = "Enter the name for the Rule XML file (without .xml):",
-        placeholder = "{{CUSTOM_NAME}}", // Placeholder to replace in the template.
+        // Placeholder to replace in the template.
+        placeholder = "{{CUSTOM_NAME}}",
     )

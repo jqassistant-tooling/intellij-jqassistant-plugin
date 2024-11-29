@@ -22,11 +22,10 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 
-
 open class ReportToolWindowContent(
     private val project: Project,
     private val baseDir: VirtualFile,
-    private val report: JqassistantReport
+    private val report: JqassistantReport,
 ) {
     val contentPanel: JBScrollPane
 
@@ -57,11 +56,8 @@ open class ReportToolWindowContent(
         }
     }
 
-    private fun buildRuleTree(
-        currentRoot: ReportNode?,
-        currentReport: List<ReferencableRuleType>
-    ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
+    private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): List<ReportNode> {
+        val nodeList = mutableListOf<ReportNode>()
         for (group in currentReport) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
@@ -82,7 +78,6 @@ open class ReportToolWindowContent(
                 }
 
                 else -> {
-
                 }
             }
 
@@ -92,11 +87,8 @@ open class ReportToolWindowContent(
         return nodeList
     }
 
-    private fun buildResultTree(
-        currentRoot: ReferencableRuleTypeNode,
-        currentResult: List<RowType>
-    ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
+    private fun buildResultTree(currentRoot: ReferencableRuleTypeNode, currentResult: List<RowType>): List<ReportNode> {
+        val nodeList = mutableListOf<ReportNode>()
         for (resultRow in currentResult) {
             val newNode = ConstraintResultRowNode(resultRow, currentRoot)
             nodeList.add(newNode)
@@ -125,15 +117,16 @@ open class ReportToolWindowContent(
                 val ruleId = rule.id
 
                 val ruleIndexingService = project.service<JqaRuleIndexingService>()
-                
+
                 getApplication().executeOnPooledThread {
-                    val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+                    val navigationElement =
+                        ReadAction.compute<Navigatable?, Throwable> {
+                            val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
 
-                        val source = definition.computeSource() ?: return@compute null
+                            val source = definition.computeSource() ?: return@compute null
 
-                        source.navigationElement as? Navigatable
-                    }
+                            source.navigationElement as? Navigatable
+                        }
 
                     getApplication().invokeLater {
                         if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
@@ -158,4 +151,3 @@ open class ReportToolWindowContent(
         }
     }
 }
-
