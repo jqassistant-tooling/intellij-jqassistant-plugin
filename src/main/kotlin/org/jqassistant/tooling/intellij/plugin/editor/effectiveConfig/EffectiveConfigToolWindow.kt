@@ -22,30 +22,36 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     private val textPane = TextScrollPane()
     private val bannerPanel = OutdatedConfigBannerPanel(project, RefreshAction(this))
     private val loadingPanel = LoadingPanel()
-    private var progressIndicator: ProgressIndicator? = null
+    private var currentProgressIndicator: ProgressIndicator? = null
 
     init {
         this.toolbar = myToolBar.createToolbar()
         bannerPanel.isVisible = false
         add(bannerPanel, BorderLayout.NORTH)
-        fullRefresh()
+        forceRefresh()
     }
 
     /** Refreshes the content of the tool window */
-    private fun refreshConfigContent() {
+    private fun setConfigContent(forceRefresh: Boolean = false) {
         setContent(loadingPanel)
-        progressIndicator?.cancel()
+        val configService = project.service<JqaConfigurationService>()
+        val config = configService.configProvider.getStoredConfig()
+
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
             override fun run(indicator: ProgressIndicator) {
-                progressIndicator = indicator
-                val configService = project.service<JqaConfigurationService>()
-                val config = configService.getConfigProvider().fetchCurrentConfig()
-                var configString = config.configString
-                if (configString.isEmpty()) {
-                    configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                currentProgressIndicator?.cancel()
+                var configString = if (config.isValid && !forceRefresh) {
+                    config.configString
+                } else {
+                    currentProgressIndicator = indicator
+                    val newConfig = configService.configProvider.getCurrentConfig()
+                    newConfig.configString
                 }
 
-                if (!indicator.isCanceled) {
+                if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
+                    if (configString.isEmpty()) {
+                        configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                    }
                     textPane.setText(configString)
                     setContent(textPane)
                 }
@@ -53,11 +59,12 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         })
     }
 
-    fun fullRefresh() {
-        refreshConfigContent().also { bannerPanel.isVisible = false }
+    fun forceRefresh() {
+        setConfigContent(true).also { bannerPanel.isVisible = false }
     }
 
-    // Be notified when the config file changes
+    /** Be notified when the config file changes
+    */
     override fun onEvent() {
         bannerPanel.isVisible = true
         revalidate()

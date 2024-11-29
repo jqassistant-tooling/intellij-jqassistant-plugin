@@ -10,7 +10,7 @@ Shall be used by EffectiveConfigurationToolWindow */
 
 data class Config(val configString: String, var isValid: Boolean = true)
 
-class JqaEffectiveConfigProvider(private val project: Project) {
+class JqaEffectiveConfigProvider(private val project: Project, private val configFileProvider: JqaConfigFileProvider) : EventListener {
 
     companion object {
         private const val SUBSTRING_TOP_LEVEL_JQA = "jqassistant"
@@ -21,15 +21,14 @@ class JqaEffectiveConfigProvider(private val project: Project) {
     private val commandLineTool = CommandLineTool()
     private var config = Config("", false)
 
-    init {
-        onFileUpdate()
-    }
 
-    fun onFileUpdate() {
+    /** Notifies the provider that the config file has changed
+     * */
+    override fun onEvent() {
         config.isValid = false
     }
 
-    /** Returns the stored configuration, might not valid anymore.
+    /** Returns the stored configuration, might not be valid at the time of retrieval
      * */
     fun getStoredConfig(): Config {
         return config
@@ -37,10 +36,11 @@ class JqaEffectiveConfigProvider(private val project: Project) {
 
     /** Fetches the current effective configuration from the project, this can take a few seconds, make sure to only call from background thread
      * */
-    fun fetchCurrentConfig(): Config {
+    fun getCurrentConfig(): Config {
+        config.isValid = false
+        configFileProvider.saveDocuments()
         val configString =
             commandLineTool.runMavenGoal("jqassistant:effective-configuration", File(project.basePath.toString()))
-        config.isValid = false
         config = Config(stripConfig(configString))
         return config
     }
