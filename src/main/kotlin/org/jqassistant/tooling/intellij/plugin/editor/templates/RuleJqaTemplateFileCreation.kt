@@ -9,9 +9,10 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import java.io.File
 
-
-// Abstract base class for creating files from templates in a specified directory.
-// The class handles user input, validates file names, and generates files based on templates.
+/**
+*   Abstract base class for creating files from templates in a specified directory.
+*   The class handles user input, validates file names, and generates files based on templates.
+**/
 abstract class RuleJqaTemplateFileCreator(
     private val fileName: String,        // Default file name or prompt title.
     private val templatePath: String,    // Path to the template resource file.
@@ -96,13 +97,17 @@ abstract class RuleJqaTemplateFileCreator(
         }
 }
 
-// Action to create a `.jqassistant.yaml` file using a predefined template.
+/**
+ * Action to create a `.jqassistant.yaml` file using a predefined template.
+ * **/
 class AddJqassistantYamlAction : RuleJqaTemplateFileCreator(
     fileName = ".jqassistant.yaml",
     templatePath = "/templates/.jqassistant.yaml"
 )
 
-// Action to create a custom XML rules file, prompting the user for a name.
+/**
+ * Action to create a custom XML rules file, prompting the user for a name.
+ * **/
 class AddCustomRulesXmlAction : RuleJqaTemplateFileCreator(
     fileName = "Custom Rules File",
     templatePath = "/templates/my_rules.xml",
