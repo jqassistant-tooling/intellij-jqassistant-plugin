@@ -57,7 +57,8 @@ class JqaXmlRuleIndexingStrategy(
                     res.set(
                         ValueBasedJqaRuleDefinition(
                             name,
-                            JqaRuleType.CONCEPT, // TODO: Extract correct type
+                            // TODO: Extract correct type
+                            JqaRuleType.CONCEPT,
                             psiElement,
                         ),
                     )
