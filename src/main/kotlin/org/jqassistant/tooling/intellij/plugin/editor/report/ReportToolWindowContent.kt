@@ -6,9 +6,9 @@ import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFile
@@ -65,7 +65,6 @@ open class ReportToolWindowContent(
             actionManager.getAction(
                 "org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup",
             ) as DefaultActionGroup
-        // actionGroup.add(AboutAction())
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistant Report Toolbar", actionGroup, true)
@@ -75,10 +74,6 @@ open class ReportToolWindowContent(
         toolWindow.setContent(splitter)
 
         contentPanel = toolWindow
-        // JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollableTree, JBTable())
-
-        // Bottom panel
-        // contentPanel.add(tablePanel)
     }
 
     private fun buildTreePanels(): List<Tree> {
@@ -97,10 +92,7 @@ open class ReportToolWindowContent(
         }
     }
 
-    private fun buildRuleTree(
-        currentRoot: ReportNode?,
-        currentReport: List<ReferencableRuleType>,
-    ): List<ReportNode> {
+    private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): List<ReportNode> {
         val nodeList = mutableListOf<ReportNode>()
 
         val groups = currentReport.filterIsInstance<GroupType>()
@@ -138,64 +130,39 @@ open class ReportToolWindowContent(
     private fun treeClickListener(event: TreeSelectionEvent) {
         val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
 
-        val result =
-            when (val rule = reportNode.ref) {
-                is ConstraintType -> {
-                    rule.result
-                }
+        if (reportNode.ref is GroupType) {
+            if (DumbService.isDumb(project)) return
 
-                is ConceptType -> {
-                /*
-                val currentRow = reportNode.ref
-                val col = currentRow.column.find { c -> c.source != null }
+            val ruleId = reportNode.ref.id
+            val ruleIndexingService = project.service<JqaRuleIndexingService>()
 
-                if (col == null) return
-                val source = col.source
+            getApplication().executeOnPooledThread {
+                val navigationElement =
+                    ReadAction.compute<Navigatable?, Throwable> {
+                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
 
-                val path = "biojava-core/src/test/java${source.fileName}"
-                openRelativeFileAt(path, source.startLine - 1, 0)
-                 */
+                        val source = definition.computeSource() ?: return@compute null
 
-                    rule.result
-                }
-
-                is GroupType -> {
-                    val ruleId = rule.id
-                    val ruleIndexingService = project.service<JqaRuleIndexingService>()
-
-                    getApplication().executeOnPooledThread {
-                        try {
-                            val navigationElement =
-                                ReadAction.compute<Navigatable?, Throwable> {
-                                    val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
-
-                                    val source = definition.computeSource() ?: return@compute null
-
-                                    source.navigationElement as? Navigatable
-                                }
-
-                            getApplication().invokeLater {
-                                if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
-
-                                navigationElement.navigate(true)
-                            }
-                        } catch (e: Throwable) {
-                            thisLogger().error("Maus", e)
-                        }
+                        source.navigationElement as? Navigatable
                     }
 
-                    null
-                }
+                getApplication().invokeLater {
+                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
 
-                else -> {
-                    null
+                    navigationElement.navigate(true)
                 }
             }
-
-        if (result == null) {
-            splitter.secondComponent = null
-            return
         }
+
+        val result =
+            when (val rule = reportNode.ref) {
+                is ConstraintType -> rule.result
+                is ConceptType -> rule.result
+                else -> {
+                    splitter.secondComponent = null
+                    return
+                }
+            }
 
         val columnNames = result.columns.column
         val rowData =
@@ -215,21 +182,11 @@ open class ReportToolWindowContent(
 
                     override fun getColumnCount(): Int = columnNames.size
 
-                    override fun getValueAt(
-                        row: Int,
-                        col: Int,
-                    ): Any = rowData[row][col]
+                    override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
 
-                    override fun isCellEditable(
-                        row: Int,
-                        column: Int,
-                    ): Boolean = true
+                    override fun isCellEditable(row: Int, column: Int): Boolean = true
 
-                    override fun setValueAt(
-                        value: Any,
-                        row: Int,
-                        col: Int,
-                    ) {
+                    override fun setValueAt(value: Any, row: Int, col: Int) {
                         rowData[row][col] = value.toString()
                         this.fireTableCellUpdated(row, col)
                     }
@@ -239,11 +196,7 @@ open class ReportToolWindowContent(
         splitter.secondComponent = JBScrollPane(table)
     }
 
-    private fun openRelativeFileAt(
-        relativePath: String,
-        line: Int,
-        column: Int,
-    ) {
+    private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {
         val file = baseDir.findFile(relativePath)
 
         if (file != null) {

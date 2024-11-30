@@ -11,10 +11,7 @@ import org.jqassistant.tooling.intellij.plugin.data.ReportProviderService
 internal class ReportToolWindowFactory :
     ToolWindowFactory,
     DumbAware {
-    override fun createToolWindowContent(
-        project: Project,
-        toolWindow: ToolWindow,
-    ) {
+    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val reportProviderService = project.service<ReportProviderService>()
 
         for ((baseDir, report) in reportProviderService.readReports()) {
