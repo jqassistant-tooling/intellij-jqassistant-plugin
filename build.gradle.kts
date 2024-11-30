@@ -111,6 +111,10 @@ tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }
+
+    // TODO: Enable automatic ktlint integration once all code is properly formated (also remove additional workflow).
+    ktlintMainSourceSetCheck { onlyIf { gradle.startParameter.taskNames.any { it == "ktlintCheck" } } }
+    ktlintTestSourceSetCheck { onlyIf { gradle.startParameter.taskNames.any { it == "ktlintCheck" } } }
 }
 
 intellijPlatformTesting {

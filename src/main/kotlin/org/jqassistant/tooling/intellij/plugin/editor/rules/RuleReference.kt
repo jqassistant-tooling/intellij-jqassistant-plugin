@@ -16,6 +16,8 @@ class RuleReference(
         return definition?.computeSource()
     }
 
+    // FIXME: Remove @OptIn if IntelliJ 2023.1 support is dropped.
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getVariants(): Array<Any> =
         JqaRuleType.entries
             .flatMap { element.project.service<JqaRuleIndexingService>().getAll(it) }
