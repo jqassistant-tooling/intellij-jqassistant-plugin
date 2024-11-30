@@ -29,11 +29,10 @@ import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
 
-
 open class ReportToolWindowContent(
     private val project: Project,
     private val baseDir: VirtualFile,
-    private val report: JqassistantReport
+    private val report: JqassistantReport,
 ) {
     val contentPanel: JPanel
     private val splitter: JBSplitter
@@ -42,18 +41,18 @@ open class ReportToolWindowContent(
         val projectTrees = buildTreePanels()
 
         val firstTree = projectTrees.first()
-        val scrollableTree = if (projectTrees.size == 1) {
-            val scrollableTree = JBScrollPane(firstTree)
+        val scrollableTree =
+            if (projectTrees.size == 1) {
+                val scrollableTree = JBScrollPane(firstTree)
 
-            scrollableTree
-        } else {
-            val subPanel = JPanel()
-            for (tree in projectTrees) subPanel.add(tree)
+                scrollableTree
+            } else {
+                val subPanel = JPanel()
+                for (tree in projectTrees) subPanel.add(tree)
 
-            val scrollableTree = JBScrollPane(subPanel)
-            scrollableTree
-        }
-
+                val scrollableTree = JBScrollPane(subPanel)
+                scrollableTree
+            }
 
         val toolWindow = SimpleToolWindowPanel(true)
 
@@ -62,9 +61,10 @@ open class ReportToolWindowContent(
 
         val actionManager = ActionManager.getInstance()
 
-
         val actionGroup =
-            actionManager.getAction("org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup") as DefaultActionGroup
+            actionManager.getAction(
+                "org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup",
+            ) as DefaultActionGroup
         // actionGroup.add(AboutAction())
 
         val actionToolbar =
@@ -99,9 +99,9 @@ open class ReportToolWindowContent(
 
     private fun buildRuleTree(
         currentRoot: ReportNode?,
-        currentReport: List<ReferencableRuleType>
+        currentReport: List<ReferencableRuleType>,
     ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
+        val nodeList = mutableListOf<ReportNode>()
 
         val groups = currentReport.filterIsInstance<GroupType>()
         val constraints = currentReport.filterIsInstance<ConstraintType>()
@@ -138,13 +138,13 @@ open class ReportToolWindowContent(
     private fun treeClickListener(event: TreeSelectionEvent) {
         val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
 
+        val result =
+            when (val rule = reportNode.ref) {
+                is ConstraintType -> {
+                    rule.result
+                }
 
-        val result = when (val rule = reportNode.ref) {
-            is ConstraintType -> {
-                rule.result
-            }
-
-            is ConceptType -> {
+                is ConceptType -> {
                 /*
                 val currentRow = reportNode.ref
                 val col = currentRow.column.find { c -> c.source != null }
@@ -156,42 +156,41 @@ open class ReportToolWindowContent(
                 openRelativeFileAt(path, source.startLine - 1, 0)
                  */
 
-                rule.result
-            }
-
-            is GroupType -> {
-                val ruleId = rule.id
-                val ruleIndexingService = project.service<JqaRuleIndexingService>()
-
-                getApplication().executeOnPooledThread {
-                    try {
-                        val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
-                            val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
-
-                            val source = definition.computeSource() ?: return@compute null
-
-                            source.navigationElement as? Navigatable
-                        }
-
-                        getApplication().invokeLater {
-                            if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
-
-                            navigationElement.navigate(true)
-                        }
-                    } catch (e: Throwable) {
-                        thisLogger().error("Maus", e)
-                    }
+                    rule.result
                 }
 
-                null
+                is GroupType -> {
+                    val ruleId = rule.id
+                    val ruleIndexingService = project.service<JqaRuleIndexingService>()
+
+                    getApplication().executeOnPooledThread {
+                        try {
+                            val navigationElement =
+                                ReadAction.compute<Navigatable?, Throwable> {
+                                    val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+
+                                    val source = definition.computeSource() ?: return@compute null
+
+                                    source.navigationElement as? Navigatable
+                                }
+
+                            getApplication().invokeLater {
+                                if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+
+                                navigationElement.navigate(true)
+                            }
+                        } catch (e: Throwable) {
+                            thisLogger().error("Maus", e)
+                        }
+                    }
+
+                    null
+                }
+
+                else -> {
+                    null
+                }
             }
-
-            else -> {
-                null
-            }
-        }
-
-
 
         if (result == null) {
             splitter.secondComponent = null
@@ -199,31 +198,52 @@ open class ReportToolWindowContent(
         }
 
         val columnNames = result.columns.column
-        val rowData = result.rows.row.map { row ->
-            row.column.map { col ->
-                col.value
-            }.toTypedArray()
-        }
-
-        val table = JBTable(
-            object : AbstractTableModel() {
-                override fun getColumnName(column: Int): String = columnNames[column].toString()
-                override fun getRowCount(): Int = rowData.size
-                override fun getColumnCount(): Int = columnNames.size
-                override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
-                override fun isCellEditable(row: Int, column: Int): Boolean = true
-
-                override fun setValueAt(value: Any, row: Int, col: Int) {
-                    rowData[row][col] = value.toString()
-                    this.fireTableCellUpdated(row, col)
-                }
+        val rowData =
+            result.rows.row.map { row ->
+                row.column
+                    .map { col ->
+                        col.value
+                    }.toTypedArray()
             }
-        )
+
+        val table =
+            JBTable(
+                object : AbstractTableModel() {
+                    override fun getColumnName(column: Int): String = columnNames[column].toString()
+
+                    override fun getRowCount(): Int = rowData.size
+
+                    override fun getColumnCount(): Int = columnNames.size
+
+                    override fun getValueAt(
+                        row: Int,
+                        col: Int,
+                    ): Any = rowData[row][col]
+
+                    override fun isCellEditable(
+                        row: Int,
+                        column: Int,
+                    ): Boolean = true
+
+                    override fun setValueAt(
+                        value: Any,
+                        row: Int,
+                        col: Int,
+                    ) {
+                        rowData[row][col] = value.toString()
+                        this.fireTableCellUpdated(row, col)
+                    }
+                },
+            )
 
         splitter.secondComponent = JBScrollPane(table)
     }
 
-    private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {
+    private fun openRelativeFileAt(
+        relativePath: String,
+        line: Int,
+        column: Int,
+    ) {
         val file = baseDir.findFile(relativePath)
 
         if (file != null) {
@@ -236,4 +256,3 @@ open class ReportToolWindowContent(
         }
     }
 }
-

@@ -11,17 +11,22 @@ import org.jqassistant.schema.report.v2.JqassistantReport
 import java.io.File
 
 /** Represents an individual report found in the baseDirectory */
-data class FoundReport(val baseDirectory: VirtualFile, val report: JqassistantReport)
+data class FoundReport(
+    val baseDirectory: VirtualFile,
+    val report: JqassistantReport,
+)
 
 @Service(Service.Level.PROJECT)
-class ReportProviderService(private val project: Project) {
+class ReportProviderService(
+    private val project: Project,
+) {
     /**
      * Returns all found jqassistant reports in the current project
      * A single project can contain multiple baseDirectories and therefore also multiple report xml files
      */
     fun readReports(): List<FoundReport> {
         val directoryList = project.getBaseDirectories()
-        
+
         return directoryList.mapNotNull { baseDir ->
             // https://plugins.jetbrains.com/docs/intellij/plugin-class-loaders.html
             val pluginClassLoader = javaClass.classLoader
@@ -49,7 +54,7 @@ class ReportProviderService(private val project: Project) {
         // !TODO: Use maven to get correct build directory
         // https://github.com/jQAssistant/jqassistant/blob/2e7405df54a63f74d039c95b71b5a0a7431f8be2/maven/src/main/java/com/buschmais/jqassistant/scm/maven/ReportMojo.java
         val selectedXmlReportFile =
-            File("${dir.path}/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}");
+            File("${dir.path}/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
 
         // This does not work for some reason
         // val vFile = dir.findFileByRelativePath("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")

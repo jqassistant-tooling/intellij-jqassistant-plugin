@@ -20,10 +20,11 @@ class LayoutSwitchAction : AnAction() {
         splitter.orientation = !splitter.orientation
 
         // Switch icon
-        source.icon = if (splitter.orientation) {
-            AllIcons.Actions.SplitVertically
-        } else {
-            AllIcons.Actions.SplitHorizontally
-        }
+        source.icon =
+            if (splitter.orientation) {
+                AllIcons.Actions.SplitVertically
+            } else {
+                AllIcons.Actions.SplitHorizontally
+            }
     }
 }
