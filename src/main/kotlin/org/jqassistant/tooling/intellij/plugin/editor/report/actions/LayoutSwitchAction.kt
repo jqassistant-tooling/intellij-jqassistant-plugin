@@ -1,6 +1,5 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report.actions
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.impl.ActionButton
@@ -19,12 +18,14 @@ class LayoutSwitchAction : AnAction() {
         val splitter = toolWindowPanel.content as JBSplitter
         splitter.orientation = !splitter.orientation
 
-        // Switch icon
+        /*
+        // After version 2023.1 this is possible
         source.icon =
             if (splitter.orientation) {
                 AllIcons.Actions.SplitVertically
             } else {
                 AllIcons.Actions.SplitHorizontally
             }
+         */
     }
 }
