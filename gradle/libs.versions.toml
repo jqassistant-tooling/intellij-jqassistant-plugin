@@ -5,6 +5,7 @@ junit = "4.13.2"
 jqa-core-report = "2.5.0"
 jqa-core-schemata = "2.5.0"
 
+
 # plugins
 changelog = "2.2.1"
 intelliJPlatform = "2.1.0"

@@ -17,6 +17,11 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+            factoryClass="org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow.EffectiveConfigToolWindowFactory"
+            id="Effective Configuration"
+            anchor="bottom"
+            icon="/icons/jqaShortIcon_mono.svg"/>
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
                     anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
