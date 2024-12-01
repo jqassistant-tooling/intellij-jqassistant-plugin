@@ -43,6 +43,16 @@
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
         <additionalLibraryRootsProvider
             implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.JqaPluginRootsProvider"/>
+
+        <!-- Inlay hints for Report results -->
+        <codeInsight.declarativeInlayProvider language="XML"
+                                              implementationClass="org.jqassistant.tooling.intellij.plugin.editor.report.inlay.ReportSingularRuleResultDeclarativeInlayHintsProvider"
+                                              isEnabledByDefault="true"
+                                              group="OTHER_GROUP"
+                                              bundle="messages.MyBundle"
+                                              nameKey="org.jqassistant.tooling.intellij.inlay.name"
+                                              descriptionKey="org.jqassistant.tooling.intellij.inlay.description"
+                                              providerId="xml.org.jqassistant.tooling.intellij.plugin.editor.report.inlay.ReportSingularRuleResultDeclarativeInlayHintsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">

@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import org.jqassistant.tooling.intellij.plugin.data.ReportProviderService
+import org.jqassistant.tooling.intellij.plugin.data.report.ReportProviderService
 
 internal class ReportToolWindowFactory :
     ToolWindowFactory,
@@ -14,7 +14,7 @@ internal class ReportToolWindowFactory :
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val reportProviderService = project.service<ReportProviderService>()
 
-        for ((baseDir, report) in reportProviderService.readReports()) {
+        for ((baseDir, report) in reportProviderService.getReports()) {
             val toolWindowContent = ReportToolWindowContent(project, toolWindow, report)
 
             // Add individual tabs for every base directory in the current project that contains a report xml file
