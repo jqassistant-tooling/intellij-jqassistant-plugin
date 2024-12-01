@@ -2,7 +2,12 @@ package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 
 import com.intellij.ide.highlighter.XmlFileType
 import com.intellij.psi.xml.XmlFile
-import com.intellij.util.indexing.*
+import com.intellij.util.indexing.DataIndexer
+import com.intellij.util.indexing.DefaultFileTypeSpecificInputFilter
+import com.intellij.util.indexing.FileBasedIndex
+import com.intellij.util.indexing.FileBasedIndexExtension
+import com.intellij.util.indexing.FileContent
+import com.intellij.util.indexing.ID
 import com.intellij.util.io.DataExternalizer
 import com.intellij.util.io.EnumeratorIntegerDescriptor
 import com.intellij.util.io.EnumeratorStringDescriptor
@@ -16,28 +21,30 @@ import org.jqassistant.tooling.intellij.plugin.common.toMutableMap
 class NameIndex : FileBasedIndexExtension<String, Int>() {
     object Util {
         val NAME = ID.create<String, Int>("jqassistant.rules.xml.NameIndex")
-        const val VERSION = 1
+        const val VERSION = 2
     }
 
     override fun getName(): ID<String, Int> = Util.NAME
 
-    override fun getIndexer(): DataIndexer<String, Int, FileContent> = object : DataIndexer<String, Int, FileContent> {
-        override fun map(content: FileContent): MutableMap<String, Int> {
-            // TODO: Reject files based on the effective configuration.
-            val psiFile = content.psiFile as? XmlFile ?: return mutableMapOf()
-            val domManager = DomManager.getDomManager(psiFile.project)
-            val dom = domManager.getFileElement(psiFile, JqassistantRules::class.java) ?: return mutableMapOf()
-            val root = dom.rootElement
+    override fun getIndexer(): DataIndexer<String, Int, FileContent> =
+        object : DataIndexer<String, Int, FileContent> {
+            override fun map(content: FileContent): MutableMap<String, Int> {
+                // TODO: Reject files based on the effective configuration.
+                val psiFile = content.psiFile as? XmlFile ?: return mutableMapOf()
+                val domManager = DomManager.getDomManager(psiFile.project)
+                val dom = domManager.getFileElement(psiFile, JqassistantRules::class.java) ?: return mutableMapOf()
+                val root = dom.rootElement
 
-            return listOf(root.concepts, root.constraints, root.groups).flatMap { ruleSet ->
-                ruleSet.mapNotNull {
-                    val name = it.id.value ?: return@mapNotNull null
-                    val offset = it.xmlTag?.textOffset ?: return@mapNotNull null
-                    name to offset
-                }
-            }.toMutableMap()
+                return listOf(root.concepts, root.constraints, root.groups)
+                    .flatMap { ruleSet ->
+                        ruleSet.mapNotNull {
+                            val name = it.id.value ?: return@mapNotNull null
+                            val offset = it.id.xmlAttributeValue?.textOffset ?: return@mapNotNull null
+                            name to offset
+                        }
+                    }.toMutableMap()
+            }
         }
-    }
 
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
 

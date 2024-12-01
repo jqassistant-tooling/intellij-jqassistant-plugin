@@ -1,0 +1,54 @@
+<jqassistant-rules xmlns="http://schema.jqassistant.org/rule/v2.2"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://schema.jqassistant.org/rule/v2.2 https://jqassistant.github.io/jqassistant/current/schema/jqassistant-rule-v2.2.xsd">
+
+    <group id="{{CUSTOM_NAME}}">
+        <includeConstraint refId="{{CUSTOM_NAME}}:MyConstraint"/>
+    </group>
+
+    <concept id="{{CUSTOM_NAME}}:MyConcept">
+        <description>A human readable description of the concept.</description>
+        <cypher><![CDATA[
+            MATCH
+              ...
+            WHERE
+              ...
+            MERGE
+              ...
+            SET
+              ...
+            RETURN
+              ...
+        ]]></cypher>
+    </concept>
+
+    <concept id="{{CUSTOM_NAME}}:MyProvidingConcept">
+        <providesConcept refId="java:GeneratedType"/>
+        <description>A human readable description of the concept.</description>
+        <cypher><![CDATA[
+            MATCH
+              ...
+            WHERE
+              ...
+            SET
+              type:Generated
+            RETURN
+              ...
+        ]]></cypher>
+    </concept>
+
+    <constraint id="{{CUSTOM_NAME}}:MyConstraint" severity="blocker">
+        <requiresConcept refId="{{CUSTOM_NAME}}:MyConcept" />
+        <requiresConcept refId="java:GeneratedType" />
+        <description>A human readable description of the constraint.</description>
+        <cypher><![CDATA[
+            MATCH
+                ...
+            WHERE
+                ...
+            RETURN
+                ...
+        ]]></cypher>
+    </constraint>
+
+</jqassistant-rules>

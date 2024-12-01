@@ -1,0 +1,29 @@
+jqassistant:
+  # The list of jQAssistant plugins to load and activate.
+  plugins:
+    - group-id: org.jqassistant.plugin
+      artifact-id: jqassistant-spring-plugin
+      version: 2.2.0
+  scan:
+    # Specifies if a scan shall be continued if an error is encountered.
+    continue-on-error: false
+
+    # The items to include for scanning.
+    include:
+      # A list of files to include.
+      files:
+      # - src/folder
+  analyze:
+    report:
+      # Determines the severity level for reporting a warning.
+      warn-on-severity: MINOR
+
+      # Determines the severity level for reporting a failure.
+      fail-on-severity: MAJOR
+
+      # Determines if jQAssistant shall continue the build if failures have been detected.
+      continue-on-failure: false
+
+    # The groups to be executed.
+    groups:
+      - spring-boot:Default

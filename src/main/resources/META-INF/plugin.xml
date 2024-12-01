@@ -2,9 +2,10 @@
 <idea-plugin>
     <id>jqassistant</id>
     <name>jQAssistant Support</name>
-    <vendor>BUSCHMAIS</vendor>
+    <vendor>BUSCHMAIS GbR</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.json</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
@@ -25,28 +26,43 @@
                     anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
         <spellchecker.bundledDictionaryProvider
-                implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
-                implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
         <psi.referenceContributor
-                implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleReferenceContributor"
-                language="XML"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleReferenceContributor"
+            language="XML"/>
         <dom.fileMetaData
-                implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
-                rootTagName="jqassistant-rules"
-                stubVersion="1"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
+            rootTagName="jqassistant-rules"
+            stubVersion="1"/>
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory
-                implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigSchemaProviderFactory"/>
     </extensions>
 
     <extensions defaultExtensionNs="jqassistant">
         <jqaRuleIndexingStrategy
-                implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
+            implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
     </extensions>
+
+    <actions>
+        <action id="AddJqassistantYamlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddJqassistantYamlAction"
+                text="Add .jqassistant.yaml"
+                description="Adds the .jqassistant.yaml file if it does not already exist">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+        <action id="AddCustomRulesXmlAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddCustomRulesXmlAction"
+                text="Custom Rules File (my_rules.xml)"
+                description="Adds a custom rules file with a custom name">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+    </actions>
 
     <applicationListeners>
     </applicationListeners>

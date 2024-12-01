@@ -6,7 +6,7 @@
     "jqassistant": {
       "type": "object",
       "properties": {
-        "repositories":{
+        "repositories": {
           "type": "object"
         }
       },

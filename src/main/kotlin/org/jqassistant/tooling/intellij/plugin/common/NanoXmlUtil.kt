@@ -4,10 +4,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.xml.NanoXmlUtil
 import com.intellij.util.xml.NanoXmlUtil.ParserStoppedXmlException
 import com.jetbrains.rd.util.error
+import com.jetbrains.rd.util.getLogger
 import net.n3.nanoxml.IXMLBuilder
 import java.io.IOException
 import java.io.Reader
-import com.jetbrains.rd.util.getLogger
 
 /**
  * NanoXML Builder to extract the target namespace from the root element of a xml file.
@@ -28,17 +28,14 @@ private class TargetNamespaceInfoBuilder : IXMLBuilder {
         }
     }
 
-    override fun elementAttributesProcessed(name: String?, nsPrefix: String?, nsURI: String?) {
+    override fun elementAttributesProcessed(name: String?, nsPrefix: String?, nsURI: String?): Unit =
         throw ParserStoppedXmlException.INSTANCE
-    }
 
     override fun endElement(name: String?, nsPrefix: String?, nsURI: String?) {}
 
     override fun addPCData(reader: Reader?, systemID: String?, lineNr: Int) {}
 
-    override fun getResult(): String? {
-        return targetNamespace
-    }
+    override fun getResult(): String? = targetNamespace
 }
 
 /**
@@ -46,12 +43,13 @@ private class TargetNamespaceInfoBuilder : IXMLBuilder {
  */
 fun parseXsdTargetNamespace(file: VirtualFile): String? {
     val builder = TargetNamespaceInfoBuilder()
-    val inputStream = try {
-        file.inputStream
-    } catch (e: IOException) {
-        getLogger<TargetNamespaceInfoBuilder>().error(e)
-        return null
-    }
+    val inputStream =
+        try {
+            file.inputStream
+        } catch (e: IOException) {
+            getLogger<TargetNamespaceInfoBuilder>().error(e)
+            return null
+        }
     NanoXmlUtil.parse(inputStream, builder)
     return builder.targetNamespace
 }

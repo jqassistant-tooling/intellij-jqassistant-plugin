@@ -25,13 +25,19 @@ interface RuleBase : DomElement {
 }
 
 @Stubbed
-interface Group : RuleBase, DomElement {}
+interface Group :
+    RuleBase,
+    DomElement
 
 @Stubbed
-interface Concept : RuleBase, DomElement {}
+interface Concept :
+    RuleBase,
+    DomElement
 
 @Stubbed
-interface Constraint : RuleBase, DomElement {}
+interface Constraint :
+    RuleBase,
+    DomElement
 
 class JqaXmlRuleDescription :
     DomFileDescription<JqassistantRules>(JqassistantRules::class.java, "jqassistant-rules")
