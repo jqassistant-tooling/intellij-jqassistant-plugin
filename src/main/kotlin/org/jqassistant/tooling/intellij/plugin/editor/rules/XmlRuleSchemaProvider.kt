@@ -6,10 +6,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.xml.XmlFile
-import org.jqassistant.tooling.intellij.plugin.common.parseXsdTargetNamespace
 import com.intellij.xml.XmlSchemaProvider
-import com.jetbrains.rd.util.*
-
+import com.jetbrains.rd.util.debug
+import com.jetbrains.rd.util.getLogger
+import org.jqassistant.tooling.intellij.plugin.common.parseXsdTargetNamespace
 
 // We can't place those members in the companion object due to some IntelliJ Platform restrictions.
 
@@ -24,18 +24,19 @@ private fun loadSchemas(): Map<String, VirtualFile> {
     val uri = classLoader.getResource(XmlRuleSchemaProvider.SCHEMA_PATH) ?: return emptyMap()
     val dir = VfsUtil.findFileByURL(uri) ?: return emptyMap()
 
-    val schemas = dir.children.mapNotNull { file ->
-        if (file == null) return@mapNotNull null
-        if (file.extension != "xsd") return@mapNotNull null
-        val targetNamespace = parseXsdTargetNamespace(file) ?: return@mapNotNull null
-        targetNamespace to file
-    }.toMap()
+    val schemas =
+        dir.children
+            .mapNotNull { file ->
+                if (file == null) return@mapNotNull null
+                if (file.extension != "xsd") return@mapNotNull null
+                val targetNamespace = parseXsdTargetNamespace(file) ?: return@mapNotNull null
+                targetNamespace to file
+            }.toMap()
 
     getLogger<XmlRuleSchemaProvider>().debug { "Loaded ${schemas.size} xls schemas." }
 
     return schemas
 }
-
 
 /**
  * Provides xml schemas, which IntelliJ uses for validation and completion.
@@ -50,14 +51,11 @@ class XmlRuleSchemaProvider : XmlSchemaProvider() {
         const val SCHEMA_PATH = "META-INF/schema"
     }
 
-    override fun getSchema(url: String, module: Module?, baseFile: PsiFile): XmlFile? {
-        return schemas[url]?.let { virtualFile ->
+    override fun getSchema(url: String, module: Module?, baseFile: PsiFile): XmlFile? =
+        schemas[url]?.let { virtualFile ->
             val psiFile = PsiManager.getInstance(baseFile.project).findFile(virtualFile)
             psiFile as? XmlFile
         }
-    }
 
-    override fun isAvailable(file: XmlFile): Boolean {
-        return true
-    }
+    override fun isAvailable(file: XmlFile): Boolean = true
 }
