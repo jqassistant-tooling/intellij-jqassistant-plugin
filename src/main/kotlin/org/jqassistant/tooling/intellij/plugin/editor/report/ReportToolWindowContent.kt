@@ -44,15 +44,12 @@ class ReportToolWindowContent(
         val firstTree = projectTrees.first()
         val scrollableTree =
             if (projectTrees.size == 1) {
-                val scrollableTree = JBScrollPane(firstTree)
-
-                scrollableTree
+                JBScrollPane(firstTree)
             } else {
                 val subPanel = JPanel()
                 for (tree in projectTrees) subPanel.add(tree)
 
-                val scrollableTree = JBScrollPane(subPanel)
-                scrollableTree
+                JBScrollPane(subPanel)
             }
 
         val toolWindow = SimpleToolWindowPanel(true)
@@ -156,11 +153,13 @@ class ReportToolWindowContent(
             when (val rule = reportNode.ref) {
                 is ConstraintType -> rule.result
                 is ConceptType -> rule.result
-                else -> {
-                    splitter.secondComponent = null
-                    return
-                }
+                else -> null
             }
+
+        if (result == null) {
+            splitter.secondComponent = null
+            return
+        }
 
         val columnNames = result.columns.column
         val rowData =
