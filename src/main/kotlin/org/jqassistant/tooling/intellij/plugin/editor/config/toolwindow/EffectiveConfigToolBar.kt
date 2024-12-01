@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig
+package org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup

@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig
+package org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -9,16 +9,13 @@ import com.intellij.ui.content.ContentFactory
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 
 class EffectiveConfigToolWindowFactory : ToolWindowFactory {
-    override fun createToolWindowContent(
-        project: Project,
-        toolWindow: ToolWindow,
-    ) {
+    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         toolWindow.setAnchor(ToolWindowAnchor.BOTTOM) {}
 
         val contentManager = toolWindow.contentManager
         val contentFactory = ContentFactory.getInstance()
         val panel = EffectiveConfigToolWindow(project)
-        val content = contentFactory.createContent(panel, "Config", false)
+        val content = contentFactory.createContent(panel, "Configuration", false)
         contentManager.addContent(content)
 
         // Be notified when the configuration files change

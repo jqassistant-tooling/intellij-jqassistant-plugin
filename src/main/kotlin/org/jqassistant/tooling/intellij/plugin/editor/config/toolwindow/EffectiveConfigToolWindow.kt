@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig
+package org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator

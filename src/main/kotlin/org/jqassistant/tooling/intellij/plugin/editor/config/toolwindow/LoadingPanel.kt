@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.effectiveConfig
+package org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow
 
 import java.awt.BorderLayout
 import javax.swing.ImageIcon
