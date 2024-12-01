@@ -1,5 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.editor.rules.actions.delete
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.safeDelete.NonCodeUsageSearchInfo
@@ -7,6 +8,13 @@ import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegate
 import com.intellij.usageView.UsageInfo
 
 class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
+    private val logger = Logger.getInstance(RuleSafeDeleteProcessorDelegate::class.java)
+
+    init {
+        println("RuleSafeDeleteProcessorDelegate")
+        logger.info("RuleSafeDeleteProcessorDelegate instantiated")
+    }
+
     override fun findUsages(
         p0: PsiElement,
         p1: Array<out PsiElement>,
@@ -60,6 +68,8 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     }
 
     override fun handlesElement(p0: PsiElement?): Boolean {
-        TODO("Not yet implemented")
+        println("handlesElement")
+        return true
+        // TODO("Not yet implemented")
     }
 }
