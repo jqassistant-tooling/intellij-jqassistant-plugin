@@ -8,10 +8,14 @@ To avoid background usage, it is lazy and will NOT automatically fetch the curre
 Instead, it will check if the config file has been updated by receiving calls from listeners and set the isValid flag accordingly
 Shall be used by EffectiveConfigurationToolWindow */
 
-data class Config(val configString: String, var isValid: Boolean = true)
+data class Config(
+    val configString: String,
+    var isValid: Boolean = true,
+)
 
-class JqaEffectiveConfigProvider(private val project: Project) {
-
+class JqaEffectiveConfigProvider(
+    private val project: Project,
+) {
     companion object {
         private const val SUBSTRING_TOP_LEVEL_JQA = "jqassistant"
         private const val SUBSTRING_BEFORE_DELIMITER = "[INFO] Effective configuration for"
@@ -25,15 +29,13 @@ class JqaEffectiveConfigProvider(private val project: Project) {
         onFileUpdate()
     }
 
-    fun onFileUpdate() {
+    private fun onFileUpdate() {
         config.isValid = false
     }
 
     /** Returns the stored configuration, might not valid anymore.
      * */
-    fun getStoredConfig(): Config {
-        return config
-    }
+    fun getStoredConfig(): Config = config
 
     /** Fetches the current effective configuration from the project, this can take a few seconds, make sure to only call from background thread
      * */
@@ -42,6 +44,7 @@ class JqaEffectiveConfigProvider(private val project: Project) {
             commandLineTool.runMavenGoal("jqassistant:effective-configuration", File(project.basePath.toString()))
         config.isValid = false
         config = Config(stripConfig(configString))
+        JqaCliRunner()
         return config
     }
 
@@ -53,6 +56,4 @@ class JqaEffectiveConfigProvider(private val project: Project) {
         }
         return result.substringBefore(SUBSTRING_AFTER_DELIMITER)
     }
-
-
 }
