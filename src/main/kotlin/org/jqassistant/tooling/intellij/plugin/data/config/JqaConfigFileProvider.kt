@@ -29,6 +29,20 @@ class JqaConfigFileProvider(private val project: Project) {
         return configFiles.toList()
     }
 
+    /** Saves all config files.
+     * Temporary document changes might not have been saved at the time of modification notification.
+     * Thus call this function before running any operations on the config files
+     * */
+    fun saveDocuments() {
+        configFiles.forEach { document ->
+            ApplicationManager.getApplication().invokeAndWait {
+                ApplicationManager.getApplication().runWriteAction {
+                    FileDocumentManager.getInstance().saveDocument(document)
+                }
+            }
+        }
+    }
+
     /** Adds a listener that is notified when a config files changes
      * */
     fun addFileEventListener(listener: EventListener) {

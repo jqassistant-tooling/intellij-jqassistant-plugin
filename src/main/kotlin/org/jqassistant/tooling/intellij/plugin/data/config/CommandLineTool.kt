@@ -9,17 +9,13 @@ import java.io.InputStreamReader
 class CommandLineTool {
     fun runMavenGoal(goal: String, directory: File): String {
         var result = ""
-        val mvn = getMavenCmdPath()?.path ?: ""
+        val mvn = getMavenCmdPath()?.path ?: return ""
         val processBuilder = ProcessBuilder(listOf(mvn, goal))
         processBuilder.redirectErrorStream(true)
         processBuilder.directory(directory)
         try {
             val process = processBuilder.start()
-            process.inputStream.bufferedReader().use { reader ->
-                reader.lines().forEach { line ->
-                    result += line + "\n"
-                }
-            }
+            result = process.inputStream.bufferedReader().use { reader -> reader.readText() }
             process.waitFor()
         } catch (e: Exception) {
             e.printStackTrace()
