@@ -1,31 +1,18 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report.actions
 
-import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.impl.ActionButton
-import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
-import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.JBSplitter
+import com.intellij.openapi.project.DumbAwareAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowContent
 
-class LayoutSwitchAction : AnAction() {
+class LayoutSwitchAction(
+    private val toolWindow: ReportToolWindowContent,
+) : DumbAwareAction(
+        "Switch Layout",
+        "Switch layout between horizontal and vertical splitter",
+        AllIcons.Actions.SplitVertically,
+    ) {
     override fun actionPerformed(e: AnActionEvent) {
-        val event = e.inputEvent ?: return
-        val source = event.source as ActionButton
-        val parent = source.parent as ActionToolbarImpl
-
-        val toolWindowPanel = parent.parent as SimpleToolWindowPanel
-
-        val splitter = toolWindowPanel.content as JBSplitter
-        splitter.orientation = !splitter.orientation
-
-        /*
-        // After version 2023.1 this is possible
-        source.icon =
-            if (splitter.orientation) {
-                AllIcons.Actions.SplitVertically
-            } else {
-                AllIcons.Actions.SplitHorizontally
-            }
-         */
+        toolWindow.splitter.orientation = !toolWindow.splitter.orientation
     }
 }

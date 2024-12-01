@@ -62,17 +62,6 @@
                 description="Adds a custom rules file with a custom name">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
-
-        <group id="org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup"
-               description="Action Group for the jQAssistant Report toolwindow toolbar"
-               popup="false">
-            <action id="org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction"
-                    class="org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction"
-                    text="LayoutSwitchAction"
-                    icon="AllIcons.Actions.SplitHorizontally"
-                    description="Switches the Report UI layout between horizontal to vertical"/>
-        </group>
-
     </actions>
 
     <applicationListeners>

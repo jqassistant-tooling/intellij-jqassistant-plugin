@@ -25,17 +25,18 @@ import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
 
-open class ReportToolWindowContent(
+class ReportToolWindowContent(
     private val project: Project,
     private val baseDir: VirtualFile,
     private val report: JqassistantReport,
 ) {
     val contentPanel: JPanel
-    private val splitter: JBSplitter
+    val splitter: JBSplitter
 
     init {
         val projectTrees = buildTreePanels()
@@ -61,13 +62,10 @@ open class ReportToolWindowContent(
 
         val actionManager = ActionManager.getInstance()
 
-        val actionGroup =
-            actionManager.getAction(
-                "org.jqassistant.tooling.intellij.plugin.editor.report.actions.ReportToolbarGroup",
-            ) as DefaultActionGroup
+        val actionGroup = DefaultActionGroup(LayoutSwitchAction(this))
 
         val actionToolbar =
-            actionManager.createActionToolbar("jQAssistant Report Toolbar", actionGroup, true)
+            actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
         actionToolbar.targetComponent = toolWindow
         toolWindow.toolbar = actionToolbar.component
 
