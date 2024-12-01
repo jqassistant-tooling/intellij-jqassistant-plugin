@@ -102,22 +102,30 @@ class ReportToolWindowContent(
             currentRoot?.addChild(newNode)
         }
 
-        for (constraint in constraints) {
-            val newNode = ReferencableRuleTypeNode(constraint, currentRoot)
-            nodeList.add(newNode)
-            currentRoot?.addChild(newNode)
+        if (constraints.isNotEmpty()) {
+            val groupingNode = GroupingNode("Constraints", currentRoot)
+            nodeList.add(groupingNode)
+
+            for (constraint in constraints) {
+                val newNode = ReferencableRuleTypeNode(constraint, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
+
+            currentRoot?.addChild(groupingNode)
         }
 
         if (concepts.isNotEmpty()) {
-            val dividerNode = DividerNode(currentRoot)
-            nodeList.add(dividerNode)
-            currentRoot?.addChild(dividerNode)
-        }
+            val groupingNode = GroupingNode("Concepts", currentRoot)
+            nodeList.add(groupingNode)
 
-        for (concept in concepts) {
-            val newNode = ReferencableRuleTypeNode(concept, currentRoot)
-            nodeList.add(newNode)
-            currentRoot?.addChild(newNode)
+            for (concept in concepts) {
+                val newNode = ReferencableRuleTypeNode(concept, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
+
+            currentRoot?.addChild(groupingNode)
         }
 
         return nodeList
