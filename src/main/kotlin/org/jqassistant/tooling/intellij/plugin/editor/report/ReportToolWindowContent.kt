@@ -11,6 +11,8 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.pom.Navigatable
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.TableSpeedSearch
 import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
@@ -23,6 +25,7 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SearchAction
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
@@ -51,12 +54,13 @@ class ReportToolWindowContent(
 
         val toolWindowPanel = SimpleToolWindowPanel(true)
 
-        splitter = JBSplitter(false)
+        splitter = OnePixelSplitter(true)
         splitter.firstComponent = scrollableTree
 
         val actionManager = ActionManager.getInstance()
 
-        val actionGroup = DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow))
+        val actionGroup =
+            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow), SearchAction())
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
@@ -178,7 +182,7 @@ class ReportToolWindowContent(
 
                     override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
 
-                    override fun isCellEditable(row: Int, column: Int): Boolean = true
+                    override fun isCellEditable(row: Int, column: Int): Boolean = false
 
                     override fun setValueAt(value: Any, row: Int, col: Int) {
                         rowData[row][col] = value.toString()
@@ -187,6 +191,8 @@ class ReportToolWindowContent(
                 },
             )
 
-        splitter.secondComponent = JBScrollPane(table)
+        val tableSpeedSearch = TableSpeedSearch(table)
+
+        splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
     }
 }
