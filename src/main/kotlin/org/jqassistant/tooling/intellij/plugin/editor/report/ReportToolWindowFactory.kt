@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.report;
+package org.jqassistant.tooling.intellij.plugin.editor.report
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
@@ -8,8 +8,9 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import org.jqassistant.tooling.intellij.plugin.data.ReportProviderService
 
-
-internal class ReportToolWindowFactory : ToolWindowFactory, DumbAware {
+internal class ReportToolWindowFactory :
+    ToolWindowFactory,
+    DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val reportProviderService = project.service<ReportProviderService>()
 
