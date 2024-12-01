@@ -11,9 +11,7 @@ class JqaCliRunner {
     private val task = EffectiveConfigurationTask()
 
     init {
-
         val config = runEffectiveConfigurationTask()
-        println(config)
     }
 
     private fun runEffectiveConfigurationTask(): String {
