@@ -4,7 +4,6 @@ junit = "4.13.2"
 
 jqa-core-report = "2.5.0"
 jqa-core-schemata = "2.5.0"
-jqa-commandline = "2.5.0"
 
 
 # plugins
@@ -18,7 +17,6 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 jqa-core-report = { group = "com.buschmais.jqassistant.core", name = "report", version.ref = "jqa-core-report" }
 jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata", version.ref = "jqa-core-schemata" }
-jqa-cli = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa-commandline" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
