@@ -6,13 +6,13 @@ import com.intellij.openapi.project.DumbAwareAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowContent
 
 class LayoutSwitchAction(
-    private val toolWindow: ReportToolWindowContent,
+    private val toolWindowContent: ReportToolWindowContent,
 ) : DumbAwareAction(
         "Switch Layout",
         "Switch layout between horizontal and vertical splitter",
         AllIcons.Actions.SplitVertically,
     ) {
     override fun actionPerformed(e: AnActionEvent) {
-        toolWindow.splitter.orientation = !toolWindow.splitter.orientation
+        toolWindowContent.splitter.orientation = !toolWindowContent.splitter.orientation
     }
 }

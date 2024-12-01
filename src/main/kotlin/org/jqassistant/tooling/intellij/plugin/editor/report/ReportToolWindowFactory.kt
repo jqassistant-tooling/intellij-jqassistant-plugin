@@ -15,12 +15,18 @@ internal class ReportToolWindowFactory :
         val reportProviderService = project.service<ReportProviderService>()
 
         for ((baseDir, report) in reportProviderService.readReports()) {
-            val toolWindowContent = ReportToolWindowContent(project, baseDir, report)
+            val toolWindowContent = ReportToolWindowContent(project, toolWindow, report)
 
             // Add individual tabs for every base directory in the current project that contains a report xml file
             val content =
                 ContentFactory.getInstance().createContent(toolWindowContent.contentPanel, baseDir.name, false)
             toolWindow.contentManager.addContent(content)
         }
+    }
+
+    fun reloadToolWindow(project: Project, toolWindow: ToolWindow) {
+        toolWindow.contentManager.removeAllContents(true)
+
+        createToolWindowContent(project, toolWindow)
     }
 }
