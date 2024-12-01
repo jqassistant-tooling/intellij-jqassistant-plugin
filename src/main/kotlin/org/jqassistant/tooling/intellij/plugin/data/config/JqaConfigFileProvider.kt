@@ -11,22 +11,23 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.yaml.YAMLFileType
 import org.jqassistant.tooling.intellij.plugin.editor.config.ConfigFileUtils
 
+
 /** Holds all jQA config files
  * Notifies listeners when a config file changes
  */
-class JqaConfigFileProvider(
-    private val project: Project,
-) {
+class JqaConfigFileProvider(private val project: Project) {
     private val configFiles: MutableList<Document> = mutableListOf()
     private val listeners: MutableList<EventListener> = mutableListOf()
 
     init {
-        fetchDocuments().forEach { document ->
-            addDocument(document)
+        fetchDocuments().forEach {
+            document -> addDocument(document)
         }
     }
 
-    fun getDocuments(): List<Document> = configFiles.toList()
+    fun getDocuments(): List<Document> {
+        return configFiles.toList()
+    }
 
     /** Adds a listener that is notified when a config files changes
      * */
@@ -48,14 +49,12 @@ class JqaConfigFileProvider(
     private fun addDocument(document: Document) {
         if (configFiles.contains(document)) return
 
-        document.addDocumentListener(
-            object : DocumentListener {
-                override fun beforeDocumentChange(event: DocumentEvent) {
-                    super.beforeDocumentChange(event)
-                    notifyListeners(event)
-                }
-            },
-        )
+        document.addDocumentListener(object : DocumentListener {
+            override fun beforeDocumentChange(event: DocumentEvent) {
+                super.beforeDocumentChange(event)
+                notifyListeners(event)
+            }
+        })
         configFiles.add(document)
     }
 
@@ -65,13 +64,11 @@ class JqaConfigFileProvider(
         val documents = mutableListOf<Document>()
         ApplicationManager.getApplication().runReadAction {
             val yamlFiles = FileTypeIndex.getFiles(YAMLFileType.YML, GlobalSearchScope.projectScope(project))
-            yamlFiles
-                .filter { file ->
-                    ConfigFileUtils.isJqaConfigFile(file)
-                }.mapNotNull { file -> FileDocumentManager.getInstance().getDocument(file) }
-                .forEach { document ->
-                    documents.add(document)
-                }
+             yamlFiles.filter { file ->
+                ConfigFileUtils.isJqaConfigFile(file)
+            }.mapNotNull {file -> FileDocumentManager.getInstance().getDocument(file) }.forEach { document ->
+                documents.add(document)
+            }
         }
 
         return documents

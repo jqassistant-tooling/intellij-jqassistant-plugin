@@ -4,14 +4,11 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import javax.swing.JComponent
 
-class EffectiveConfigToolBar(
-    private val toolWindow: EffectiveConfigToolWindow,
-) {
+class EffectiveConfigToolBar(private val toolWindow: EffectiveConfigToolWindow) {
     fun createToolbar(): JComponent {
-        val actionGroup =
-            DefaultActionGroup().apply {
-                this.add(RefreshAction(toolWindow))
-            }
+        val actionGroup = DefaultActionGroup().apply {
+            add(RefreshAction(toolWindow))
+        }
 
         val actionManager = ActionManager.getInstance()
         val toolBar = actionManager.createActionToolbar("EffectiveConfigToolBar", actionGroup, true)

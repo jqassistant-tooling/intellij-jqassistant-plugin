@@ -10,10 +10,8 @@ import org.jqassistant.tooling.intellij.plugin.data.config.EventListener
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.awt.BorderLayout
 
-class EffectiveConfigToolWindow(
-    private val project: Project,
-) : SimpleToolWindowPanel(false),
-    EventListener {
+class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false), EventListener {
+
     companion object {
         private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
         private const val GOAL_UNSUCCESSFUL = "Couldn't retrieve data from specified goal"
@@ -37,24 +35,22 @@ class EffectiveConfigToolWindow(
     private fun refreshConfigContent() {
         setContent(loadingPanel)
         progressIndicator?.cancel()
-        ProgressManager.getInstance().run(
-            object : Task.Backgroundable(project, PROCESS_TITLE) {
-                override fun run(indicator: ProgressIndicator) {
-                    progressIndicator = indicator
-                    val configService = project.service<JqaConfigurationService>()
-                    val config = configService.getConfigProvider().fetchCurrentConfig()
-                    var configString = config.configString
-                    if (configString.isEmpty()) {
-                        configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
-                    }
-
-                    if (!indicator.isCanceled) {
-                        textPane.setText(configString)
-                        setContent(textPane)
-                    }
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
+            override fun run(indicator: ProgressIndicator) {
+                progressIndicator = indicator
+                val configService = project.service<JqaConfigurationService>()
+                val config = configService.getConfigProvider().fetchCurrentConfig()
+                var configString = config.configString
+                if (configString.isEmpty()) {
+                    configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
                 }
-            },
-        )
+
+                if (!indicator.isCanceled) {
+                    textPane.setText(configString)
+                    setContent(textPane)
+                }
+            }
+        })
     }
 
     fun fullRefresh() {
