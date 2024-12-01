@@ -6,11 +6,9 @@ import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 
 class JqaCliRunner {
-
     private val jqa = "jqassistant:effective-configuration"
     private val jqaCLI = Main()
     private val task = EffectiveConfigurationTask()
-
 
     init {
 
@@ -33,7 +31,7 @@ class JqaCliRunner {
         try {
             System.setOut(printStream)
             jqaCLI.run(arrayOf("effective-configuration"))
-            //task.run(configuration, options)
+            // task.run(configuration, options)
         } finally {
             System.setOut(originalOut)
         }

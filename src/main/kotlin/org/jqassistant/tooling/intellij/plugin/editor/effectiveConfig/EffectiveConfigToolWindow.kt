@@ -10,8 +10,10 @@ import org.jqassistant.tooling.intellij.plugin.data.config.EventListener
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.awt.BorderLayout
 
-class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindowPanel(false), EventListener {
-
+class EffectiveConfigToolWindow(
+    private val project: Project,
+) : SimpleToolWindowPanel(false),
+    EventListener {
     companion object {
         private const val JQA_EFFECTIVE_CONFIG_GOAL = "jqassistant:effective-configuration"
         private const val GOAL_UNSUCCESSFUL = "Couldn't retrieve data from specified goal"
@@ -37,26 +39,29 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
         val configService = project.service<JqaConfigurationService>()
         val config = configService.configProvider.getStoredConfig()
 
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, PROCESS_TITLE) {
-            override fun run(indicator: ProgressIndicator) {
-                currentProgressIndicator?.cancel()
-                var configString = if (config.isValid && !forceRefresh) {
-                    config.configString
-                } else {
-                    currentProgressIndicator = indicator
-                    val newConfig = configService.configProvider.getCurrentConfig()
-                    newConfig.configString
-                }
+        ProgressManager.getInstance().run(
+            object : Task.Backgroundable(project, PROCESS_TITLE) {
+                override fun run(indicator: ProgressIndicator) {
+                    currentProgressIndicator?.cancel()
+                    var configString =
+                        if (config.isValid && !forceRefresh) {
+                            config.configString
+                        } else {
+                            currentProgressIndicator = indicator
+                            val newConfig = configService.configProvider.getCurrentConfig()
+                            newConfig.configString
+                        }
 
-                if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
-                    if (configString.isEmpty()) {
-                        configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                    if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
+                        if (configString.isEmpty()) {
+                            configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                        }
+                        textPane.setText(configString)
+                        setContent(textPane)
                     }
-                    textPane.setText(configString)
-                    setContent(textPane)
                 }
-            }
-        })
+            },
+        )
     }
 
     fun forceRefresh() {
@@ -64,7 +69,7 @@ class EffectiveConfigToolWindow(private val project: Project) : SimpleToolWindow
     }
 
     /** Be notified when the config file changes
-    */
+     */
     override fun onEvent() {
         bannerPanel.isVisible = true
         revalidate()
