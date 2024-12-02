@@ -82,7 +82,7 @@ class ReportCellRenderer : ColoredTreeCellRenderer() {
             }
 
             else -> {
-                append("Concepts:")
+                append(value.toString())
             }
         }
     }

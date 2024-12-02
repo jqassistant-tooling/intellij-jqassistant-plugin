@@ -3,18 +3,16 @@ package org.jqassistant.tooling.intellij.plugin.editor.report
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager.getApplication
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.wm.ToolWindow
 import com.intellij.pom.Navigatable
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.TableSpeedSearch
 import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
@@ -26,13 +24,15 @@ import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SearchAction
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
 
 class ReportToolWindowContent(
     private val project: Project,
-    private val baseDir: VirtualFile,
+    private val toolWindow: ToolWindow,
     private val report: JqassistantReport,
 ) {
     val contentPanel: JPanel
@@ -52,23 +52,24 @@ class ReportToolWindowContent(
                 JBScrollPane(subPanel)
             }
 
-        val toolWindow = SimpleToolWindowPanel(true)
+        val toolWindowPanel = SimpleToolWindowPanel(true)
 
-        splitter = JBSplitter(false)
+        splitter = OnePixelSplitter(true)
         splitter.firstComponent = scrollableTree
 
         val actionManager = ActionManager.getInstance()
 
-        val actionGroup = DefaultActionGroup(LayoutSwitchAction(this))
+        val actionGroup =
+            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow), SearchAction())
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
-        actionToolbar.targetComponent = toolWindow
-        toolWindow.toolbar = actionToolbar.component
+        actionToolbar.targetComponent = toolWindowPanel
+        toolWindowPanel.toolbar = actionToolbar.component
 
-        toolWindow.setContent(splitter)
+        toolWindowPanel.setContent(splitter)
 
-        contentPanel = toolWindow
+        contentPanel = toolWindowPanel
     }
 
     private fun buildTreePanels(): List<Tree> {
@@ -101,22 +102,30 @@ class ReportToolWindowContent(
             currentRoot?.addChild(newNode)
         }
 
-        for (constraint in constraints) {
-            val newNode = ReferencableRuleTypeNode(constraint, currentRoot)
-            nodeList.add(newNode)
-            currentRoot?.addChild(newNode)
+        if (constraints.isNotEmpty()) {
+            val groupingNode = GroupingNode("Constraints", currentRoot)
+            nodeList.add(groupingNode)
+
+            for (constraint in constraints) {
+                val newNode = ReferencableRuleTypeNode(constraint, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
+
+            currentRoot?.addChild(groupingNode)
         }
 
         if (concepts.isNotEmpty()) {
-            val dividerNode = DividerNode(currentRoot)
-            nodeList.add(dividerNode)
-            currentRoot?.addChild(dividerNode)
-        }
+            val groupingNode = GroupingNode("Concepts", currentRoot)
+            nodeList.add(groupingNode)
 
-        for (concept in concepts) {
-            val newNode = ReferencableRuleTypeNode(concept, currentRoot)
-            nodeList.add(newNode)
-            currentRoot?.addChild(newNode)
+            for (concept in concepts) {
+                val newNode = ReferencableRuleTypeNode(concept, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
+
+            currentRoot?.addChild(groupingNode)
         }
 
         return nodeList
@@ -181,7 +190,7 @@ class ReportToolWindowContent(
 
                     override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
 
-                    override fun isCellEditable(row: Int, column: Int): Boolean = true
+                    override fun isCellEditable(row: Int, column: Int): Boolean = false
 
                     override fun setValueAt(value: Any, row: Int, col: Int) {
                         rowData[row][col] = value.toString()
@@ -190,19 +199,8 @@ class ReportToolWindowContent(
                 },
             )
 
-        splitter.secondComponent = JBScrollPane(table)
-    }
+        val tableSpeedSearch = TableSpeedSearch(table)
 
-    private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {
-        val file = baseDir.findFile(relativePath)
-
-        if (file != null) {
-            val manager = FileEditorManager.getInstance(project)
-            val descriptor = OpenFileDescriptor(project, file, line, column)
-
-            getApplication().invokeLater({
-                manager.openTextEditor(descriptor, true)
-            }, ModalityState.defaultModalityState())
-        }
+        splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
     }
 }
