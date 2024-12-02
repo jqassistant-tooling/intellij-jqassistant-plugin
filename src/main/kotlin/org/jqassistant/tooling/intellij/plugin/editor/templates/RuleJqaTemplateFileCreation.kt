@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.isFile
 import java.io.File
 
 /**
@@ -29,7 +30,12 @@ abstract class RuleJqaTemplateFileCreator(
         val project = e.project ?: return
         val virtualFile = e.getData(com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE) ?: return
         // Get the path of the selected directory.
-        val directoryPath = virtualFile.path
+        var directoryPath = virtualFile.path
+
+        // Check if selected directory is a File
+        if (virtualFile.isFile) {
+            directoryPath = virtualFile.parent.path // Set directoryPath to path of selected File
+        }
 
         // Get the target file name, either from user input or default.
         val targetName =
