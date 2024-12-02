@@ -151,7 +151,7 @@ class ReportToolWindowContent(
             getApplication().executeOnPooledThread {
                 val navigationElement =
                     ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+                        val definition = ruleIndexingService.resolve(ruleId)[0] ?: return@compute null
 
                         val source = definition.computeSource() ?: return@compute null
 

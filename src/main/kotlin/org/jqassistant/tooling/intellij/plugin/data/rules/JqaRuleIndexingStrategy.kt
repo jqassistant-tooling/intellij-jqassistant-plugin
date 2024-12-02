@@ -27,7 +27,7 @@ interface JqaRuleIndexingStrategyFactory {
 interface JqaRuleIndexingStrategy {
     fun getAll(type: JqaRuleType): List<JqaRuleDefinition>
 
-    fun resolve(name: String): JqaRuleDefinition?
+    fun resolve(identifier: String): List<JqaRuleDefinition>
 
-    fun has(name: String): Boolean = resolve(name) != null
+    fun has(identifier: String): Boolean = resolve(identifier).isNotEmpty()
 }
