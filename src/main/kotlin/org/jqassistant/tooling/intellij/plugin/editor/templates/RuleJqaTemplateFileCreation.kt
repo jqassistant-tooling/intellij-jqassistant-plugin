@@ -91,13 +91,17 @@ abstract class RuleJqaTemplateFileCreator(
 
     // Validates the file name to ensure it contains only allowed characters and no control characters.
     private fun isNameValid(name: String): Boolean {
-        val validChars =
-            (
-                ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('.', '_', '-')
-            ).toSet() // Set of allowed characters.
+        if (name.endsWith(".xml")) {
+            return false
+        } else {
+            val validChars =
+                (
+                    ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('.', '_', '-')
+                ).toSet() // Set of allowed characters.
 
-        // Check if all characters are valid and no control characters are present.
-        return name.all { it in validChars } && name.codePoints().noneMatch { Character.isISOControl(it) }
+            // Check if all characters are valid and no control characters are present.
+            return name.all { it in validChars } && name.codePoints().noneMatch { Character.isISOControl(it) }
+        }
     }
 
     // Determines the appropriate file extension based on the default file name.
