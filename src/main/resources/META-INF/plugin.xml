@@ -69,13 +69,15 @@
         <action id="AddJqassistantYamlAction"
                 class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddJqassistantYamlAction"
                 text="Add .jqassistant.yaml"
-                description="Adds the .jqassistant.yaml file if it does not already exist">
+                description="Adds the .jqassistant.yaml file if it does not already exist"
+                icon="icons/jqaIcon_16x16.svg">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
         <action id="AddCustomRulesXmlAction"
                 class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddCustomRulesXmlAction"
                 text="Custom Rules File (my_rules.xml)"
-                description="Adds a custom rules file with a custom name">
+                description="Adds a custom rules file with a custom name"
+                icon="icons/jqaIcon_16x16.svg">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
