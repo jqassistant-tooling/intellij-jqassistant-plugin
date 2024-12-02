@@ -72,6 +72,9 @@ class ReportToolWindowContent(
         contentPanel = toolWindowPanel
     }
 
+    /**
+     * Builds a tree panel for every root object of the report
+     */
     private fun buildTreePanels(): List<Tree> {
         val nodeList = buildRuleTree(null, report.groupOrConceptOrConstraint)
         val cellRenderer = ReportCellRenderer()
@@ -83,11 +86,16 @@ class ReportToolWindowContent(
             TreeUIHelper.getInstance().installSmartExpander(treePanel)
             treePanel.cellRenderer = cellRenderer
 
-            treePanel.addTreeSelectionListener { event -> treeClickListener(event) }
+            treePanel.addTreeSelectionListener(::treeClickListener)
             treePanel
         }
     }
 
+    /**
+     * This recursively builds a tree of ReportNodes using the currentRoot parameter as the root to append nodes to.
+     * @param currentReport The ReportNode to which all new ReportNodes should be appended to
+     * @param currentReport A list of rule reports that come directly after the currentRoot
+     */
     private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): List<ReportNode> {
         val nodeList = mutableListOf<ReportNode>()
 
