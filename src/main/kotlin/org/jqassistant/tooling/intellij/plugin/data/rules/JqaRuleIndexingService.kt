@@ -1,6 +1,5 @@
 package org.jqassistant.tooling.intellij.plugin.data.rules
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointListener
 import com.intellij.openapi.extensions.PluginDescriptor
@@ -17,7 +16,7 @@ import com.intellij.openapi.project.Project
  */
 @Service(Service.Level.PROJECT)
 class JqaRuleIndexingService(
-    private val project: Project
+    private val project: Project,
 ) : ExtensionPointListener<JqaRuleIndexingStrategyFactory> {
     private val indexes: MutableList<JqaRuleIndexingStrategy> = mutableListOf()
 
@@ -28,17 +27,11 @@ class JqaRuleIndexingService(
         }
     }
 
-    override fun extensionAdded(
-        extension: JqaRuleIndexingStrategyFactory,
-        pluginDescriptor: PluginDescriptor,
-    ) {
+    override fun extensionAdded(extension: JqaRuleIndexingStrategyFactory, pluginDescriptor: PluginDescriptor) {
         indexes.add(extension.create(project))
     }
 
-    override fun extensionRemoved(
-        extension: JqaRuleIndexingStrategyFactory,
-        pluginDescriptor: PluginDescriptor,
-    ) {
+    override fun extensionRemoved(extension: JqaRuleIndexingStrategyFactory, pluginDescriptor: PluginDescriptor) {
         indexes.clear()
         for (factory in JqaRuleIndexingStrategyFactory.Util.EXTENSION_POINT.extensions) {
             indexes.add(factory.create(project))
@@ -47,7 +40,7 @@ class JqaRuleIndexingService(
 
     fun getAll(type: JqaRuleType): List<JqaRuleDefinition> = indexes.flatMap { it.getAll(type) }
 
-    fun resolve(name: String): JqaRuleDefinition? = indexes.firstNotNullOfOrNull { it.resolve(name) }
+    fun resolve(identifier: String): List<JqaRuleDefinition> = indexes.flatMap { it.resolve(identifier) }
 
-    fun has(name: String): Boolean = indexes.any { it.has(name) }
+    fun has(identifier: String): Boolean = indexes.any { it.has(identifier) }
 }
