@@ -8,7 +8,9 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.project.Project
 import com.intellij.ui.EditorNotificationPanel
 
-/** Banner that is shown, when the configuration is outdated */
+/**
+ *  Banner that is shown, when the configuration is outdated
+ *  */
 class OutdatedConfigBannerPanel(
     private val project: Project,
     private val action: RefreshAction,
@@ -20,7 +22,9 @@ class OutdatedConfigBannerPanel(
         }
     }
 
-    /** Calls the refresh action */
+    /**
+     * Refreshes the toolwindow content
+     * */
     private fun callRefreshAction() {
         val dataContext =
             DataContext { key ->

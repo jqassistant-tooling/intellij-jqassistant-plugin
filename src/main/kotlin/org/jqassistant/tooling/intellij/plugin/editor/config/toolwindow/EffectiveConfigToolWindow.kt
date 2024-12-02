@@ -54,7 +54,9 @@ class EffectiveConfigToolWindow(
         forceRefresh()
     }
 
-    /** Refreshes the content of the tool window */
+    /**
+     *  Refreshes the content of the tool window
+     *  */
     private fun updateConfigContent(forceRefresh: Boolean = false) {
         setContent(loadingPanel)
         val configService = project.service<JqaConfigurationService>()
@@ -84,7 +86,7 @@ class EffectiveConfigToolWindow(
         )
     }
 
-    /** 
+    /**
      * Sets the text in the document of the editor
      */
     private fun setEditorContent(content: String) {
