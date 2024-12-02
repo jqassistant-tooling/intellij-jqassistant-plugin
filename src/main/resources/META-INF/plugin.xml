@@ -34,10 +34,12 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <lang.refactoringSupport
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.actions.delete.RuleRefactoringSupportProvider"
+        />
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.actions.delete.RuleSafeDeleteProcessorDelegate"/>
     </extensions>
-
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory
