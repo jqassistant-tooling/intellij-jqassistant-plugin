@@ -8,6 +8,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
+import com.intellij.util.PathUtilRt
 import java.io.File
 
 /**
@@ -100,13 +101,7 @@ abstract class RuleJqaTemplateFileCreator(
         if (name.endsWith(".xml")) {
             return false
         } else {
-            val validChars =
-                (
-                    ('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('.', '_', '-')
-                ).toSet() // Set of allowed characters.
-
-            // Check if all characters are valid and no control characters are present.
-            return name.all { it in validChars } && name.codePoints().noneMatch { Character.isISOControl(it) }
+            return PathUtilRt.isValidFileName(name, true)
         }
     }
 
