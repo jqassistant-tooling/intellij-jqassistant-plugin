@@ -84,7 +84,8 @@ class EffectiveConfigToolWindow(
         )
     }
 
-    /** Sets the text in the document of the editor
+    /** 
+     * Sets the text in the document of the editor
      */
     private fun setEditorContent(content: String) {
         val applicationManager = ApplicationManager.getApplication()
