@@ -73,21 +73,6 @@ class JqaYamlConfigReader : AnAction("Extract Jqa config from pom.xml") {
 }
 
 object PomXmlProcessor {
-    var jqaConfigContent =
-        "jqassistant:\n" +
-            "  plugins:\n" +
-            "    - group-id: {{CUSTOM_GROUPID}}\n" +
-            "      artifact-id: {{CUSTOM_ARTIFACTID}}\n" +
-            "      version: {{CUSTOM_VERSION}}\n" +
-            "  scan:\n" +
-            "\n" +
-            "    include:\n" +
-            "      files:\n" +
-            "  analyze:\n" +
-            "\n" +
-            "    groups:\n" +
-            "      {{CUSTOM_GROUPNAME}}"
-
     fun extractYamlFromPom(pomFile: PsiFile): VirtualFile? {
         val xmlFile = pomFile as? XmlFile ?: return LightVirtualFile("jqassistant-config.yaml", "yamlContent0")
         val rootTag = xmlFile.rootTag ?: return LightVirtualFile("jqassistant-config.yaml", "yamlContent1")
@@ -108,37 +93,16 @@ object PomXmlProcessor {
             if (groupIdTag.value.trimmedText == "com.buschmais.jqassistant" &&
                 artifactIdTag.value.trimmedText == "jqassistant-maven-plugin"
             ) {
-                val versionTag = pluginTag.findFirstSubTag("version") ?: continue
                 val configurationTag = pluginTag.findFirstSubTag("configuration") ?: continue
                 val yamlTag = configurationTag.findFirstSubTag("yaml") ?: continue
 
-                jqaConfigContent =
-                    jqaConfigContent
-                        .replace("{{CUSTOM_GROUPID}}", groupIdTag.value.trimmedText)
-                        .replace("{{CUSTOM_ARTIFACTID}}", artifactIdTag.value.trimmedText)
-                        .replace("{{CUSTOM_VERSION}}", versionTag.value.trimmedText)
-
-                val yamlContent = yamlTag.text?.trim() ?: ""
-                val customGroupName = getCustomGroupName(yamlContent)
-                if (customGroupName != null) {
-                    jqaConfigContent = jqaConfigContent.replace("{{CUSTOM_GROUPNAME}}", customGroupName)
-                }
+                val yamlContent = yamlTag.value.trimmedText
 
                 // Create the LightVirtualFile with the YAML content
-
-                return LightVirtualFile("jqassistant-config.yaml", jqaConfigContent)
+                return LightVirtualFile("jqassistant-config.yaml", yamlContent)
             }
         }
         return null
-    }
-
-    fun getCustomGroupName(input: String): String? {
-        val groupsSection = input.substringAfter("groups:").trim()
-
-        // Schritt 2: Zeilen einzeln betrachten und die Zeile mit dem Bindestrich finden
-        val lines = groupsSection.lines()
-        val desiredLine = lines.firstOrNull { it.trim().startsWith("-") }?.trim()
-        return desiredLine
     }
 
     fun openYamlInEditor(project: Project, yamlContent: String) {
