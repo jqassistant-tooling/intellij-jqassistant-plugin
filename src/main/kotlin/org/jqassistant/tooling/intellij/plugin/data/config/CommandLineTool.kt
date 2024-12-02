@@ -7,10 +7,7 @@ import java.io.InputStreamReader
 // TODO - the ProcessBuilder running the maven goal will be replaced by jqa api. This will NOT be the permanent solution and file location
 
 class CommandLineTool {
-    fun runMavenGoal(
-        goal: String,
-        directory: File,
-    ): String {
+    fun runMavenGoal(goal: String, directory: File): String {
         var result = ""
         val mvn = getMavenCmdPath()?.path ?: return ""
         val processBuilder = ProcessBuilder(listOf(mvn, goal))
