@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.rules.actions.delete
+package org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -39,11 +39,17 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         TODO("Not yet implemented")
     }
 
-    override fun findConflicts(p0: PsiElement, p1: Array<out PsiElement>): MutableCollection<String>? {
+    override fun findConflicts(
+        p0: PsiElement,
+        p1: Array<out PsiElement>,
+    ): MutableCollection<String>? {
         TODO("Not yet implemented")
     }
 
-    override fun preprocessUsages(p0: Project, p1: Array<out UsageInfo>): Array<UsageInfo>? {
+    override fun preprocessUsages(
+        p0: Project,
+        p1: Array<out UsageInfo>,
+    ): Array<UsageInfo>? {
         TODO("Not yet implemented")
     }
 
@@ -55,7 +61,10 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         TODO("Not yet implemented")
     }
 
-    override fun setToSearchInComments(p0: PsiElement?, p1: Boolean) {
+    override fun setToSearchInComments(
+        p0: PsiElement?,
+        p1: Boolean,
+    ) {
         TODO("Not yet implemented")
     }
 
@@ -63,7 +72,10 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         TODO("Not yet implemented")
     }
 
-    override fun setToSearchForTextOccurrences(p0: PsiElement?, p1: Boolean) {
+    override fun setToSearchForTextOccurrences(
+        p0: PsiElement?,
+        p1: Boolean,
+    ) {
         TODO("Not yet implemented")
     }
 
