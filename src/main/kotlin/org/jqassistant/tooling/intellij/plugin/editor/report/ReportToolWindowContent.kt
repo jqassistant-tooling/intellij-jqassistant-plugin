@@ -25,7 +25,6 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
-import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SearchAction
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
@@ -60,7 +59,7 @@ class ReportToolWindowContent(
         val actionManager = ActionManager.getInstance()
 
         val actionGroup =
-            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow), SearchAction())
+            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow))
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
@@ -151,7 +150,7 @@ class ReportToolWindowContent(
             getApplication().executeOnPooledThread {
                 val navigationElement =
                     ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId)[0] ?: return@compute null
+                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
 
                         val source = definition.computeSource() ?: return@compute null
 
