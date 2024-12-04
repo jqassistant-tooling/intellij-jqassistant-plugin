@@ -107,7 +107,7 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
                     (element as XmlTag).getAttributeValue(
                         "id",
                     )
-                }</i> <u>is required</u> by another concept via <i href='#'>${it.name}</i>",
+                }</i> <b>is required</b> by another concept via <i href='#'>${it.name}</i>",
             )
         }
         return messages
