@@ -85,9 +85,8 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         // name
         // indexing service with name
         // is there a rule with this name?
-        println("handlesElement: $p0")
-        val xmlTag = PsiTreeUtil.getParentOfType(p0, XmlTag::class.java)
-        val manager = DomManager.getDomManager(p0?.project)
+        val xmlTag = p0 as XmlTag
+        val manager = DomManager.getDomManager(p0.project)
         val domElement = manager.getDomElement(xmlTag)
         println("handle: $p0, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
         return domElement is RuleBase

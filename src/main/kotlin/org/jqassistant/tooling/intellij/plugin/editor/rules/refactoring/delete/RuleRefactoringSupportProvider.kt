@@ -16,9 +16,9 @@ class RuleRefactoringSupportProvider : RefactoringSupportProvider() {
      * Currently only works on the id attribute of a rule
      */
     override fun isSafeDeleteAvailable(element: PsiElement): Boolean {
-        val xmlTag = PsiTreeUtil.getParentOfType(element, XmlTag::class.java)
+        val tag = element as XmlTag
         val manager = DomManager.getDomManager(element.project)
-        val domElement = manager.getDomElement(xmlTag)
+        val domElement = manager.getDomElement(tag)
 
         /* Clicking the <tag> element will return the parent <tag> element,
          * which gives us no information about the rule type or if it is one
@@ -28,7 +28,7 @@ class RuleRefactoringSupportProvider : RefactoringSupportProvider() {
             element.children.forEach { elements.addIfNotNull(PsiTreeUtil.getParentOfType(it, XmlTag::class.java)) }
             elements.forEach { println(it) }
         }
-        println("available: $element, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
+        println("available: $element, $tag, $manager, $domElement, ${domElement is RuleBase}")
         return domElement is RuleBase
     }
 }
