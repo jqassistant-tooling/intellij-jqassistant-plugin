@@ -15,80 +15,90 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     override fun findUsages(
-        p0: PsiElement,
-        p1: Array<out PsiElement>,
-        p2: MutableList<in UsageInfo>,
+        element: PsiElement,
+        allElementsToDelete: Array<out PsiElement>,
+        result: MutableList<in UsageInfo>,
     ): NonCodeUsageSearchInfo? {
-        val xmlTag = PsiTreeUtil.getParentOfType(p0, com.intellij.psi.xml.XmlTag::class.java)
-        val manager = DomManager.getDomManager(p0.project)
+        val xmlTag = PsiTreeUtil.getParentOfType(element, XmlTag::class.java)
+        val manager = DomManager.getDomManager(element.project)
         val domElement = manager.getDomElement(xmlTag) as? RuleBase ?: return null
         println("called findUsages")
         // Search for all usages of the element with the same ID
-        val project = p0.project
+        val project = element.project
         val id = domElement.id.value
         SafeDeleteProcessor.findGenericElementUsages(
-            p0,
-            p2,
-            p1,
-            GlobalSearchScope.projectScope(p0.getProject()),
+            element,
+            result,
+            allElementsToDelete,
+            GlobalSearchScope.projectScope(element.project),
         )
 
-        return NonCodeUsageSearchInfo(SafeDeleteProcessor.getDefaultInsideDeletedCondition(p1), p0)
+        return NonCodeUsageSearchInfo(
+            SafeDeleteProcessor.getDefaultInsideDeletedCondition(allElementsToDelete),
+            element,
+        )
     }
 
     override fun getElementsToSearch(
-        p0: PsiElement,
-        p1: MutableCollection<out PsiElement>,
-    ): MutableCollection<out PsiElement>? = p1
+        element: PsiElement,
+        allElementsToDelete: MutableCollection<out PsiElement>,
+    ): MutableCollection<out PsiElement>? {
+        val result: MutableCollection<PsiElement> = mutableListOf(element)
+
+        // val project = element.project
+        result.add(element.parent)
+
+        return result
+    }
 
     override fun getAdditionalElementsToDelete(
-        p0: PsiElement,
-        p1: MutableCollection<out PsiElement>,
-        p2: Boolean,
+        element: PsiElement,
+        allElementsToDelete: MutableCollection<out PsiElement>,
+        askUser: Boolean,
     ): MutableCollection<PsiElement>? = null
 
     override fun findConflicts(
-        p0: PsiElement,
-        p1: Array<out PsiElement>,
+        element: PsiElement,
+        allElementsToDelete: Array<out PsiElement>,
     ): MutableCollection<String>? = null
 
     override fun preprocessUsages(
-        p0: Project,
-        p1: Array<out UsageInfo>,
-    ): Array<UsageInfo> = p1.map2Array { it }
+        project: Project,
+        usages: Array<out UsageInfo>,
+    ): Array<UsageInfo> = usages.map2Array { it }
 
-    override fun prepareForDeletion(p0: PsiElement) {
+    override fun prepareForDeletion(element: PsiElement) {
     }
 
-    override fun isToSearchInComments(p0: PsiElement?): Boolean = false
+    override fun isToSearchInComments(element: PsiElement?): Boolean = false
 
     override fun setToSearchInComments(
-        p0: PsiElement?,
-        p1: Boolean,
+        element: PsiElement?,
+        enabled: Boolean,
     ) {
         // do nothing
     }
 
-    override fun isToSearchForTextOccurrences(p0: PsiElement?): Boolean = false
+    override fun isToSearchForTextOccurrences(element: PsiElement?): Boolean = false
 
     override fun setToSearchForTextOccurrences(
-        p0: PsiElement?,
-        p1: Boolean,
+        element: PsiElement?,
+        enabled: Boolean,
     ) {
         // do nothing
     }
 
-    override fun handlesElement(p0: PsiElement?): Boolean {
+    override fun handlesElement(element: PsiElement?): Boolean {
         // DOM - Modell
         // get the xml tag from the psi element
         // dom element
         // name
         // indexing service with name
         // is there a rule with this name?
-        val xmlTag = p0 as XmlTag
-        val manager = DomManager.getDomManager(p0.project)
+        val xmlTag = element as XmlTag
+        val manager = DomManager.getDomManager(element.project)
         val domElement = manager.getDomElement(xmlTag)
-        println("handle: $p0, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
+        println("handle: $element, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
         return domElement is RuleBase
     }
 }
