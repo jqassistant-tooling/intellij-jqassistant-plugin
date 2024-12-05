@@ -96,7 +96,8 @@ abstract class RuleJqaTemplateFileCreator(
                 message,
                 "Input",
                 Messages.getQuestionIcon(),
-                initialValue, // Pre-fills the input field with the previous value.
+                // Pre-fills the input field with the previous value.
+                initialValue,
                 null,
             )?.trim()
 
@@ -143,5 +144,6 @@ class AddCustomRulesXmlAction :
         fileName = "Custom Rules File",
         templatePath = "/templates/my_rules.xml",
         promptMessage = "Enter the name for the Rule XML file (without .xml):",
-        placeholder = "{{CUSTOM_NAME}}", // Placeholder in the template to replace.
+        // Placeholder in the template to replace.
+        placeholder = "{{CUSTOM_NAME}}",
     )
