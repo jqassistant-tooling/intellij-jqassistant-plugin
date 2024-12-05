@@ -1,6 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
@@ -10,7 +12,9 @@ import com.intellij.refactoring.safeDelete.SafeDeleteProcessor
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegate
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.containers.map2Array
+import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.util.xml.DomManager
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
@@ -35,8 +39,6 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         val domElement = manager.getDomElement(xmlTag) as? RuleBase ?: return null
         println("called findUsages")
         // Search for all usages of the element with the same ID
-        val project = element.project
-        val id = domElement.id.value
         SafeDeleteProcessor.findGenericElementUsages(
             element,
             result,
@@ -61,7 +63,7 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     override fun getElementsToSearch(
         element: PsiElement,
         allElementsToDelete: MutableCollection<out PsiElement>,
-    ): MutableCollection<out PsiElement>? {
+    ): MutableCollection<out PsiElement> {
         // Adding elements makes the refactoring not even delete the element it was called on
         val result: MutableCollection<PsiElement> = mutableListOf(element)
         return result
@@ -72,7 +74,6 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * May show UI to ask the user if some additional elements should be deleted along with the
      * specified selected element.
      * This implementation returns all `providesConcept` tags that reference the selected element.
-     *  TODO - also requiresConcept tag?
      *
      * @param element an element selected for deletion.
      * @param allElementsToDelete all elements selected for deletion.
@@ -82,14 +83,21 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         element: PsiElement,
         allElementsToDelete: MutableCollection<out PsiElement>,
         askUser: Boolean,
-    ): MutableCollection<PsiElement>? {
-        val result = findRefIdUsages(element, "providesConcept")
-        val result2 = findRefIdUsages(element, "requiresConcept")
-        return result.toMutableList().also { it.addAll(result2) }
+    ): MutableCollection<PsiElement> {
+        val files = findEligiblePsiFiles(element)
+        val result = mutableListOf<PsiElement>()
+        for (file in files) {
+            result.addAll(findRefIdUsages(element, file, "providesConcept"))
+            result.addAll(findRefIdUsages(element, file, "requiresConcept"))
+            result.addAll(findRefIdUsages(element, file, "includeConcept"))
+            result.addAll(findRefIdUsages(element, file, "includeConstraint"))
+        }
+        return result
     }
 
     /**
      * Detects usages which are not safe to delete.
+     * TODO when looking at the usages after dialog is shown by IntelliJ, IDE throws an error unrelated to this code
      *
      * @param element an element selected for deletion.
      * @param allElementsToDelete all elements selected for deletion.
@@ -98,7 +106,7 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     override fun findConflicts(
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,
-    ): MutableCollection<String>? {
+    ): MutableCollection<String> {
         val conflicts = allElementsToDelete.filter { (it as? XmlTag?)?.name == "requiresConcept" }.map { it as XmlTag }
         val messages = mutableListOf<String>()
         conflicts.forEach {
@@ -107,7 +115,7 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
                     (element as XmlTag).getAttributeValue(
                         "id",
                     )
-                }</i> <b>is required</b> by another concept via <i href='#'>${it.name}</i>",
+                }</i> <b>is required</b> by another concept via <i> <${it.name}> </i> in file <i>${it.containingFile.name}</i>.",
             )
         }
         return messages
@@ -193,10 +201,10 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      */
     private fun findRefIdUsages(
         element: PsiElement,
+        psiFile: PsiElement,
         referenceTag: String,
     ): List<PsiElement> {
         val result = mutableListOf<PsiElement>()
-        val psiFile = element.containingFile
         val psiXmlTags: Array<out PsiElement> =
             PsiTreeUtil.collectElements(psiFile) { (it as? XmlTag?) != null }
         for (tag in psiXmlTags) {
@@ -209,5 +217,26 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
             }
         }
         return result.toList()
+    }
+
+    private fun findEligiblePsiFiles(element: PsiElement): List<PsiElement> {
+        val fileIndex =
+            FileBasedIndex
+                .getInstance()
+
+        val keys = fileIndex.getAllKeys(NameIndex.Util.NAME, element.project)
+        val files = mutableSetOf<VirtualFile>()
+
+        for (key in keys) {
+            val keyFiles =
+                fileIndex
+                    .getContainingFilesIterator(
+                        NameIndex.Util.NAME,
+                        key,
+                        GlobalSearchScope.projectScope(element.project),
+                    )
+            for (file in keyFiles) files.add(file)
+        }
+        return files.mapNotNull { it.findPsiFile(element.project)?.containingFile }
     }
 }
