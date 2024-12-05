@@ -34,10 +34,6 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         allElementsToDelete: Array<out PsiElement>,
         result: MutableList<in UsageInfo>,
     ): NonCodeUsageSearchInfo? {
-        val xmlTag = PsiTreeUtil.getParentOfType(element, XmlTag::class.java)
-        val manager = DomManager.getDomManager(element.project)
-        val domElement = manager.getDomElement(xmlTag) as? RuleBase ?: return null
-        println("called findUsages")
         // Search for all usages of the element with the same ID
         SafeDeleteProcessor.findGenericElementUsages(
             element,
@@ -187,8 +183,8 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         // name
         // indexing service with name
         // is there a rule with this name?
-        val xmlTag = element as XmlTag
-        val manager = DomManager.getDomManager(element.project)
+        val xmlTag = element as? XmlTag?
+        val manager = DomManager.getDomManager(element?.project)
         val domElement = manager.getDomElement(xmlTag)
         println("handle: $element, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
         return domElement is RuleBase
