@@ -35,11 +35,16 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <lang.refactoringSupport
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileRefactoringSupportProvider"/>
+        <lang.refactoringSupport
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleRefactoringSupportProvider"
             language="XML"
         />
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
+        <refactoring.safeDeleteProcessor
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">

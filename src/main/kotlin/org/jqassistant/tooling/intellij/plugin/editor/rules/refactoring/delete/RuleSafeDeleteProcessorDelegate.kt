@@ -17,7 +17,7 @@ import com.intellij.util.xml.DomManager
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
-class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
+open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     /**
      * Find usages of the `element` and fill `result` with them.
      * Is called during `BaseRefactoringProcessor.findUsages()` under modal progress in read action.
@@ -81,7 +81,7 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         askUser: Boolean,
     ): MutableCollection<PsiElement> {
         val files = findEligiblePsiFiles(element)
-        val result = mutableListOf<PsiElement>()
+        val result = mutableSetOf<PsiElement>()
         for (file in files) {
             result.addAll(findRefIdUsages(element, file, "providesConcept"))
             result.addAll(findRefIdUsages(element, file, "requiresConcept"))
@@ -111,7 +111,11 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
                     (element as XmlTag).getAttributeValue(
                         "id",
                     )
-                }</i> <b>is required</b> by another concept via <i> <${it.name}> </i> in file <i>${it.containingFile.name}</i>.",
+                }</i> <b>is required</b> by concept <i>${
+                    (it.parent as XmlTag).getAttributeValue(
+                        "id",
+                    )
+                }</i> via <i>${it.name}</i> in file <i>${it.containingFile.name}</i>.",
             )
         }
         return messages
@@ -192,10 +196,11 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
 
     /**
      * Find refId usages in the project
+     * TODO this operation belongs into a the JqaRuleIndexingService
      * @param element the element that is being deleted
      * @param referenceTag the tag that contains the refId attribute, e.g. providesConcept or requiresConcept
      */
-    private fun findRefIdUsages(
+    protected fun findRefIdUsages(
         element: PsiElement,
         psiFile: PsiElement,
         referenceTag: String,
@@ -215,7 +220,12 @@ class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         return result.toList()
     }
 
-    private fun findEligiblePsiFiles(element: PsiElement): List<PsiElement> {
+    /**
+     * Find all eligible psiFiles in the project (jqa rule files)
+     * TODO this operation belongs into a the JqaRuleIndexingService
+     * @param element the element that is being deleted
+     */
+    protected fun findEligiblePsiFiles(element: PsiElement): List<PsiElement> {
         val fileIndex =
             FileBasedIndex
                 .getInstance()
