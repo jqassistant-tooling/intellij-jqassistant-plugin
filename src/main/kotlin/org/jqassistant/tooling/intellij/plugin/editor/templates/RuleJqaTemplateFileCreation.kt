@@ -12,75 +12,56 @@ import com.intellij.util.PathUtilRt
 import java.io.File
 
 /**
- *   Abstract base class for creating files from templates in a specified directory.
- *   The class handles user input, validates file names, and generates files based on templates.
- **/
+ * Abstract base class for creating files from templates in a specified directory.
+ * Handles user input, validates file names, and generates files based on provided templates.
+ */
 abstract class RuleJqaTemplateFileCreator(
-    // Default file name or prompt title.
+    // Default file name or title to display in the action.
     private val fileName: String,
     // Path to the template resource file.
     private val templatePath: String,
-    // Optional user prompt message for custom file names.
+    // Optional message prompting the user for a custom file name.
     private val promptMessage: String? = null,
-    // Optional placeholder in the template to replace.
+    // Optional placeholder in the template that will be replaced with the file name.
     private val placeholder: String? = null,
 ) : AnAction(fileName) {
-    // Entry point for the action when triggered.
+    // Entry point for the action when triggered by the user.
     override fun actionPerformed(e: AnActionEvent) {
-        // Ensure the project context is available.
+        // Retrieve the project context or exit if not available.
         val project = e.project ?: return
+        // Get the selected virtual file or directory.
         val virtualFile = e.getData(com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE) ?: return
-        // Get the path of the selected directory.
-        var directoryPath = virtualFile.path
+        // Determine the directory path, adjusting if a file is selected.
+        val directoryPath = if (virtualFile.isFile) virtualFile.parent.path else virtualFile.path
 
-        // Check if selected directory is a File
-        if (virtualFile.isFile) {
-            directoryPath = virtualFile.parent.path // Set directoryPath to path of selected File
-        }
-
-        // Get the target file name, either from user input or default.
+        // Get the target file name from user input or use the default.
         val targetName =
             promptMessage?.let {
-                getUserInput(project, it) ?: return // Cancel if input is null or empty.
+                getValidFileName(project, it, "") ?: return // Exit if input is null.
             } ?: fileName
 
-        // Validate the file name and show a warning if invalid.
-        if (targetName.isEmpty() || !isNameValid(targetName)) {
-            Messages.showWarningDialog(project, "Invalid file name.", "Invalid Input")
-            return
-        }
+        // Check if the target file already exists and create it if not.
+        val targetFile = getTargetFile(project, directoryPath, targetName) ?: return
 
-        // Create the target file in the selected directory.
-        val targetFile = File(directoryPath, "$targetName${getFileExtension()}")
-
-        // Check if the file already exists and handle accordingly.
-        if (targetFile.exists()) {
-            Messages.showErrorDialog(project, "File already exists in $directoryPath", "File Exists")
-            openFile(project, targetFile)
-            return
-        }
-
-        // Generate the file from the specified template.
+        // Generate the file from the template and open it.
         createFileFromTemplate(project, targetFile, targetName)
     }
 
-    // Creates a file from the template, replacing placeholders if necessary.
+    // Reads the template file and creates a new file, replacing placeholders if specified.
     private fun createFileFromTemplate(project: Project, targetFile: File, targetName: String) {
         val resourceStream = javaClass.getResourceAsStream(templatePath)
         if (resourceStream != null) {
-            val content = resourceStream.bufferedReader().use { it.readText() } // Read the template content.
-            val modifiedContent =
-                placeholder?.let {
-                    content.replace(it, targetName)
-                } ?: content // Replace placeholder if provided.
-            targetFile.writeText(modifiedContent) // Write the modified content to the new file.
+            // Read the template content and replace the placeholder with the target name.
+            val content = resourceStream.bufferedReader().use { it.readText() }
+            val modifiedContent = placeholder?.let { content.replace(it, targetName) } ?: content
+            targetFile.writeText(modifiedContent) // Write the modified content to the file.
 
-            // Show success message and refresh the project to reflect the new file.
+            // Show success message and refresh the file system to reflect the new file.
             Messages.showInfoMessage(project, "$targetName created in ${targetFile.parent}", "File Created")
             VirtualFileManager.getInstance().syncRefresh()
             openFile(project, targetFile)
         } else {
-            // Show an error message if the template resource is not found.
+            // Display an error if the template file is not found.
             Messages.showErrorDialog(project, "Template file not found in resources.", "Error")
         }
     }
@@ -92,26 +73,62 @@ abstract class RuleJqaTemplateFileCreator(
         } ?: Messages.showErrorDialog(project, "File created but could not be opened.", "Error")
     }
 
-    // Prompts the user for input using a dialog box and returns the input.
-    private fun getUserInput(project: Project, message: String): String? =
-        Messages.showInputDialog(project, message, "Input", Messages.getQuestionIcon())?.trim()
+    // Prompts the user for input and validates the file name recursively.
+    private fun getValidFileName(project: Project, message: String?, initialValue: String?): String? {
+        var input = getUserInput(project, message ?: "Enter file name:", initialValue) ?: return null
 
-    // Validates the file name to ensure it contains only allowed characters and no control characters.
+        if (input.isEmpty()) {
+            Messages.showWarningDialog(project, "File name can't be empty.", "Invalid Input")
+            return null
+        } else if (!isNameValid(input)) {
+            Messages.showWarningDialog(project, "Invalid file name.", "Invalid Input")
+            input = getValidFileName(project, message, input) ?: return null // Recursive call for re-entry.
+        }
+
+        return input
+    }
+
+    // Displays an input dialog and returns the user's input.
+    private fun getUserInput(project: Project, message: String, initialValue: String?): String? =
+        Messages
+            .showInputDialog(
+                project,
+                message,
+                "Input",
+                Messages.getQuestionIcon(),
+                initialValue, // Pre-fills the input field with the previous value.
+                null,
+            )?.trim()
+
+    // Validates the file name to ensure it adheres to naming conventions.
     private fun isNameValid(name: String): Boolean {
         if (name.endsWith(".xml")) {
-            return false
+            return false // Disallow file names ending with ".xml".
         } else {
             return PathUtilRt.isValidFileName(name, true)
         }
     }
 
-    // Determines the appropriate file extension based on the default file name.
+    // Checks if the target file already exists and returns the file object if valid.
+    private fun getTargetFile(project: Project, directoryPath: String, targetName: String): File? {
+        val targetFile = File(directoryPath, "$targetName${getFileExtension()}")
+
+        if (targetFile.exists()) {
+            Messages.showErrorDialog(project, "File already exists in $directoryPath", "File Exists")
+            openFile(project, targetFile)
+            return null
+        } else {
+            return targetFile
+        }
+    }
+
+    // Determines the file extension based on the default file name.
     private fun getFileExtension(): String = if (fileName.endsWith(".yaml")) "" else ".xml"
 }
 
 /**
  * Action to create a `.jqassistant.yaml` file using a predefined template.
- * **/
+ */
 class AddJqassistantYamlAction :
     RuleJqaTemplateFileCreator(
         fileName = ".jqassistant.yaml",
@@ -120,12 +137,11 @@ class AddJqassistantYamlAction :
 
 /**
  * Action to create a custom XML rules file, prompting the user for a name.
- * **/
+ */
 class AddCustomRulesXmlAction :
     RuleJqaTemplateFileCreator(
         fileName = "Custom Rules File",
         templatePath = "/templates/my_rules.xml",
         promptMessage = "Enter the name for the Rule XML file (without .xml):",
-        // Placeholder to replace in the template.
-        placeholder = "{{CUSTOM_NAME}}",
+        placeholder = "{{CUSTOM_NAME}}", // Placeholder in the template to replace.
     )
