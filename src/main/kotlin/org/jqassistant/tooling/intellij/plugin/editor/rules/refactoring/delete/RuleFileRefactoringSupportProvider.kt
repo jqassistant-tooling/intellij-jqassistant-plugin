@@ -9,7 +9,7 @@ import com.intellij.util.indexing.FileBasedIndex
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex
 
 /**
- * Somehow this is never called but intellij still calls the safe delete processor so delete this in final version
+ * Somehow this is never called but intellij still calls the safe delete processor - delete this file in final version
  */
 class RuleFileRefactoringSupportProvider : RefactoringSupportProvider() {
     override fun isAvailable(context: PsiElement): Boolean {

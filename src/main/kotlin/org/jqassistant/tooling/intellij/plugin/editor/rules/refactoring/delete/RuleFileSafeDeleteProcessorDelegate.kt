@@ -21,6 +21,8 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
 
     /**
      * Returns the list of additional elements to be deleted. Called after the refactoring dialog is shown.
+     * In this case contains the PsiElements to references of each
+     * constraint, group and concept in this file and also the constraints, groups and concepts themselves.
      *
      * @param element the element selected for deletion.
      * @param allElementsToDelete all elements selected for deletion.
@@ -34,17 +36,31 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
     ): MutableCollection<PsiElement> {
         val result = mutableSetOf<PsiElement>()
         val domManager = DomManager.getDomManager(element.project)
-        val files = findEligiblePsiFiles(element)
-        for (file in files) {
-            val psiRuleTags =
-                PsiTreeUtil.collectElements(file) { (it as? XmlTag?) != null }
-            for (rule in psiRuleTags) {
-                val domElement = domManager.getDomElement(rule as XmlTag)
-                if (domElement is RuleBase) {
-                    result.addAll(super.getAdditionalElementsToDelete(rule, allElementsToDelete, askUser))
-                }
+        val psiXmlTags =
+            PsiTreeUtil.collectElements(element) { (it as? XmlTag?) != null }
+        for (psiXmlTag in psiXmlTags) {
+            val domElement = domManager.getDomElement(psiXmlTag as XmlTag)
+            if (domElement is RuleBase) {
+                result.add(psiXmlTag)
+                result.addAll(super.getAdditionalElementsToDelete(psiXmlTag, allElementsToDelete, askUser))
             }
         }
         return result
+    }
+
+    /**
+     * Find all conflicts with the deletion of the file
+     * The conflicts for each group, concept and constraint are calculated by the RuleSafeDeleteProcessorDelegate which is called by IntelliJ automatically
+     * @param element the file that is being deleted
+     * @param allElementsToDelete all elements selected for deletion.
+     * @return the list of conflicts as String to be display to the user
+     */
+    override fun findConflicts(
+        element: PsiElement,
+        allElementsToDelete: Array<out PsiElement>,
+    ): MutableCollection<String> {
+        // TODO look for file references? Maybe intellij already handles this automatically (it is quite smart)
+        val messages = mutableListOf<String>()
+        return messages
     }
 }

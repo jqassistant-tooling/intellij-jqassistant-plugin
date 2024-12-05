@@ -103,13 +103,21 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,
     ): MutableCollection<String> {
-        val conflicts = allElementsToDelete.filter { (it as? XmlTag?)?.name == "requiresConcept" }.map { it as XmlTag }
+        /*
+         * Explicitly check for conflicts in the context of the tag, its parent and the $element to be deleted
+         * */
         val messages = mutableListOf<String>()
-        conflicts.forEach {
+        val possibleConflicts =
+            allElementsToDelete.filter { (it as? XmlTag?)?.name == "requiresConcept" }.map { it as XmlTag }
+        val noDeletableParents = possibleConflicts.filter { !allElementsToDelete.contains(it.parent) }
+        val relatedConflicts =
+            noDeletableParents.filter { (element as? XmlTag)?.getAttributeValue("id") == it.getAttributeValue("refId") }
+
+        relatedConflicts.forEach {
             messages.add(
-                "The concept <i>${
-                    (element as XmlTag).getAttributeValue(
-                        "id",
+                "Rule The concept <i>${
+                    (it).getAttributeValue(
+                        "refId",
                     )
                 }</i> <b>is required</b> by concept <i>${
                     (it.parent as XmlTag).getAttributeValue(
