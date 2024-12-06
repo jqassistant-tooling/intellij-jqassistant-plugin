@@ -94,7 +94,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
 
     /**
      * Detects usages which are not safe to delete.
-     * TODO when looking at the usages after dialog is shown by IntelliJ, IDE throws an error unrelated to this code
+     * TODO when looking at the usages after dialog is shown by IntelliJ, IDE (2023.3) throws an error unrelated to this code
      *
      * @param element an element selected for deletion.
      * @param allElementsToDelete all elements selected for deletion.
@@ -116,7 +116,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
 
         relatedConflicts.forEach {
             messages.add(
-                "Rule The concept <i>${
+                "The ${(it.parent as XmlTag).name} <i>${
                     (it).getAttributeValue(
                         "refId",
                     )
@@ -190,17 +190,16 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * @return `true` if delegates can process `element`.
      */
     override fun handlesElement(element: PsiElement?): Boolean {
-        // DOM - Modell
-        // get the xml tag from the psi element
-        // dom element
-        // name
-        // indexing service with name
-        // is there a rule with this name?
-        val xmlTag = element as? XmlTag?
         val manager = DomManager.getDomManager(element?.project)
-        val domElement = manager.getDomElement(xmlTag)
-        println("handle: $element, $xmlTag, $manager, $domElement, ${domElement is RuleBase}")
-        return domElement is RuleBase
+
+        val parentTag = element?.parent?.parent?.parent // attribute -> value -> whitespace -> tag
+        val parentXmlTag = parentTag as? XmlTag?
+        val domParentTag = manager.getDomElement(parentXmlTag)
+
+        val tag = element as? XmlTag?
+        val domElement = manager.getDomElement(tag)
+
+        return domElement is RuleBase || domParentTag is RuleBase
     }
 
     /**

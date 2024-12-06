@@ -14,11 +14,15 @@ class RuleRefactoringSupportProvider : RefactoringSupportProvider() {
      * Placing it on the id="value" gives us the right element, but IntelliJ does not recognize it as able to be refactored.
      */
     override fun isSafeDeleteAvailable(element: PsiElement): Boolean {
-        val tag = element as? XmlTag?
         val manager = DomManager.getDomManager(element.project)
+
+        val parentTag = element.parent.parent.parent // attribute -> value -> whitespace -> tag
+        val parentXmlTag = parentTag as? XmlTag?
+        val domParentTag = manager.getDomElement(parentXmlTag)
+
+        val tag = element as? XmlTag?
         val domElement = manager.getDomElement(tag)
 
-        println("available: $element, $tag, $manager, $domElement, ${domElement is RuleBase}")
-        return domElement is RuleBase
+        return domElement is RuleBase || domParentTag is RuleBase
     }
 }
