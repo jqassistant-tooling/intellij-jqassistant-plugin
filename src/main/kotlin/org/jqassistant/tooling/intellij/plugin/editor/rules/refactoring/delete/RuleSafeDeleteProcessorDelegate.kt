@@ -87,6 +87,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
             result.addAll(findRefIdUsages(element, file, "requiresConcept"))
             result.addAll(findRefIdUsages(element, file, "includeConcept"))
             result.addAll(findRefIdUsages(element, file, "includeConstraint"))
+            result.addAll(findRefIdUsages(element, file, "includeGroup"))
         }
         return result
     }
