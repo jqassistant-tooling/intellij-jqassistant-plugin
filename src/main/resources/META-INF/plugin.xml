@@ -29,9 +29,6 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleSchemaProvider"/>
-        <psi.referenceContributor
-            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleReferenceContributor"
-            language="XML"/>
         <dom.fileMetaData
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
             rootTagName="jqassistant-rules"
