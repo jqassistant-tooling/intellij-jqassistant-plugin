@@ -1,161 +1,213 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager.getApplication
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.wm.ToolWindow
 import com.intellij.pom.Navigatable
+import com.intellij.ui.JBSplitter
+import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.TableSpeedSearch
+import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.table.JBTable
 import com.intellij.ui.treeStructure.Tree
 import org.jqassistant.schema.report.v2.ConceptType
 import org.jqassistant.schema.report.v2.ConstraintType
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
-import org.jqassistant.schema.report.v2.RowType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
+import javax.swing.table.AbstractTableModel
 
-
-open class ReportToolWindowContent(
+class ReportToolWindowContent(
     private val project: Project,
-    private val baseDir: VirtualFile,
-    private val report: JqassistantReport
+    private val toolWindow: ToolWindow,
+    private val report: JqassistantReport,
 ) {
-    val contentPanel: JBScrollPane
+    val contentPanel: JPanel
+    val splitter: JBSplitter
 
     init {
-        val projectTrees = treePanel()
+        val projectTrees = buildTreePanels()
 
         val firstTree = projectTrees.first()
-        if (projectTrees.size == 1) {
-            contentPanel = JBScrollPane(firstTree)
-        } else {
-            val subPanel = JPanel()
-            for (tree in projectTrees) subPanel.add(tree)
+        val scrollableTree =
+            if (projectTrees.size == 1) {
+                JBScrollPane(firstTree)
+            } else {
+                val subPanel = JPanel()
+                for (tree in projectTrees) subPanel.add(tree)
 
-            contentPanel = JBScrollPane(subPanel)
-        }
+                JBScrollPane(subPanel)
+            }
+
+        val toolWindowPanel = SimpleToolWindowPanel(true)
+
+        splitter = OnePixelSplitter(true)
+        splitter.firstComponent = scrollableTree
+
+        val actionManager = ActionManager.getInstance()
+
+        val actionGroup =
+            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow))
+
+        val actionToolbar =
+            actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
+        actionToolbar.targetComponent = toolWindowPanel
+        toolWindowPanel.toolbar = actionToolbar.component
+
+        toolWindowPanel.setContent(splitter)
+
+        contentPanel = toolWindowPanel
     }
 
-    private fun treePanel(): List<Tree> {
+    /**
+     * Builds a tree panel for every root object of the report
+     */
+    private fun buildTreePanels(): List<Tree> {
         val nodeList = buildRuleTree(null, report.groupOrConceptOrConstraint)
         val cellRenderer = ReportCellRenderer()
 
         return nodeList.map { rootNode ->
             val treePanel = Tree(rootNode)
+            TreeUIHelper.getInstance().installTreeSpeedSearch(treePanel)
+            TreeUIHelper.getInstance().installSelectionSaver(treePanel)
+            TreeUIHelper.getInstance().installSmartExpander(treePanel)
             treePanel.cellRenderer = cellRenderer
 
-            treePanel.addTreeSelectionListener { event -> treeClickListener(event) }
+            treePanel.addTreeSelectionListener(::treeClickListener)
             treePanel
         }
     }
 
-    private fun buildRuleTree(
-        currentRoot: ReportNode?,
-        currentReport: List<ReferencableRuleType>
-    ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
-        for (group in currentReport) {
+    /**
+     * This recursively builds a tree of ReportNodes using the currentRoot parameter as the root to append nodes to.
+     * @param currentReport The ReportNode to which all new ReportNodes should be appended to
+     * @param currentReport A list of rule reports that come directly after the currentRoot
+     */
+    private fun buildRuleTree(currentRoot: ReportNode?, currentReport: List<ReferencableRuleType>): List<ReportNode> {
+        val nodeList = mutableListOf<ReportNode>()
+
+        val groups = currentReport.filterIsInstance<GroupType>()
+        val constraints = currentReport.filterIsInstance<ConstraintType>()
+        val concepts = currentReport.filterIsInstance<ConceptType>()
+
+        for (group in groups) {
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
-
-            when (group) {
-                is GroupType -> {
-                    buildRuleTree(newNode, group.groupOrConceptOrConstraint)
-                }
-
-                is ConstraintType -> {
-                }
-
-                is ConceptType -> {
-                    val result = group.result
-                    if (result != null) {
-                        buildResultTree(newNode, group.result.rows.row)
-                    }
-                }
-
-                else -> {
-
-                }
-            }
-
+            buildRuleTree(newNode, group.groupOrConceptOrConstraint)
             currentRoot?.addChild(newNode)
         }
 
-        return nodeList
-    }
+        if (constraints.isNotEmpty()) {
+            val groupingNode = GroupingNode("Constraints", currentRoot)
+            nodeList.add(groupingNode)
 
-    private fun buildResultTree(
-        currentRoot: ReferencableRuleTypeNode,
-        currentResult: List<RowType>
-    ): List<ReportNode> {
-        val nodeList = mutableListOf<ReportNode>();
-        for (resultRow in currentResult) {
-            val newNode = ConstraintResultRowNode(resultRow, currentRoot)
-            nodeList.add(newNode)
+            for (constraint in constraints) {
+                val newNode = ReferencableRuleTypeNode(constraint, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
 
-            currentRoot.addChild(newNode)
+            currentRoot?.addChild(groupingNode)
+        }
+
+        if (concepts.isNotEmpty()) {
+            val groupingNode = GroupingNode("Concepts", currentRoot)
+            nodeList.add(groupingNode)
+
+            for (concept in concepts) {
+                val newNode = ReferencableRuleTypeNode(concept, groupingNode)
+                nodeList.add(newNode)
+                groupingNode.addChild(newNode)
+            }
+
+            currentRoot?.addChild(groupingNode)
         }
 
         return nodeList
     }
 
     private fun treeClickListener(event: TreeSelectionEvent) {
-        when (val reportNode = event.path.lastPathComponent as ReportNode) {
-            is ConstraintResultRowNode -> {
-                val currentRow = reportNode.ref
-                val col = currentRow.column.find { c -> c.source != null }
+        val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
 
-                if (col == null) return
-                val source = col.source
+        if (reportNode.ref is GroupType) {
+            if (DumbService.isDumb(project)) return
 
-                val path = "biojava-core/src/test/java${source.fileName}"
-                openRelativeFileAt(path, source.startLine - 1, 0)
-            }
+            val ruleId = reportNode.ref.id
+            val ruleIndexingService = project.service<JqaRuleIndexingService>()
 
-            is ReferencableRuleTypeNode -> {
-                val rule = reportNode.ref
-                val ruleId = rule.id
-
-                val ruleIndexingService = project.service<JqaRuleIndexingService>()
-                
-                getApplication().executeOnPooledThread {
-                    val navigationElement = ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId) ?: return@compute null
+            getApplication().executeOnPooledThread {
+                val navigationElement =
+                    ReadAction.compute<Navigatable?, Throwable> {
+                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
 
                         val source = definition.computeSource() ?: return@compute null
 
                         source.navigationElement as? Navigatable
                     }
 
-                    getApplication().invokeLater {
-                        if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+                getApplication().invokeLater {
+                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
 
-                        navigationElement.navigate(true)
-                    }
+                    navigationElement.navigate(true)
                 }
             }
         }
-    }
 
-    private fun openRelativeFileAt(relativePath: String, line: Int, column: Int) {
-        val file = baseDir.findFile(relativePath)
+        val result =
+            when (val rule = reportNode.ref) {
+                is ConstraintType -> rule.result
+                is ConceptType -> rule.result
+                else -> null
+            }
 
-        if (file != null) {
-            val manager = FileEditorManager.getInstance(project)
-            val descriptor = OpenFileDescriptor(project, file, line, column)
-
-            getApplication().invokeLater({
-                manager.openTextEditor(descriptor, true)
-            }, ModalityState.defaultModalityState())
+        if (result == null) {
+            splitter.secondComponent = null
+            return
         }
+
+        val columnNames = result.columns.column
+        val rowData =
+            result.rows.row.map { row ->
+                row.column
+                    .map { col ->
+                        col.value
+                    }.toTypedArray()
+            }
+
+        val table =
+            JBTable(
+                object : AbstractTableModel() {
+                    override fun getColumnName(column: Int): String = columnNames[column].toString()
+
+                    override fun getRowCount(): Int = rowData.size
+
+                    override fun getColumnCount(): Int = columnNames.size
+
+                    override fun getValueAt(row: Int, col: Int): Any = rowData[row][col]
+
+                    override fun isCellEditable(row: Int, column: Int): Boolean = false
+
+                    override fun setValueAt(value: Any, row: Int, col: Int) {
+                        rowData[row][col] = value.toString()
+                        this.fireTableCellUpdated(row, col)
+                    }
+                },
+            )
+
+        val tableSpeedSearch = TableSpeedSearch(table)
+
+        splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
     }
 }
-

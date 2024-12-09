@@ -1,7 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
@@ -9,7 +8,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.AstLoadingFilter
 import com.intellij.util.indexing.FileBasedIndex
-import org.jqassistant.tooling.intellij.plugin.data.rules.*
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleDefinition
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategy
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategyFactory
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
+import org.jqassistant.tooling.intellij.plugin.data.rules.ValueBasedJqaRuleDefinition
 
 class JqaXmlRuleIndexingStrategy(
     private val project: Project,
@@ -19,47 +22,55 @@ class JqaXmlRuleIndexingStrategy(
     }
 
     // TODO: Use a separate type based index and support the [type] filter.
-    override fun getAll(type: JqaRuleType): List<JqaRuleDefinition> {
-        return FileBasedIndex.getInstance().getAllKeys(NameIndex.Util.NAME, project).map { name ->
+    override fun getAll(type: JqaRuleType): List<JqaRuleDefinition> =
+        FileBasedIndex.getInstance().getAllKeys(NameIndex.Util.NAME, project).map { name ->
             ValueBasedJqaRuleDefinition(
                 name,
                 type,
             )
         }
-    }
 
-    override fun resolve(name: String): JqaRuleDefinition? {
-        val res: Ref<JqaRuleDefinition?> = Ref.create()
-        FileBasedIndex.getInstance()
+    override fun resolve(identifier: String): List<JqaRuleDefinition> {
+        val res = mutableListOf<JqaRuleDefinition>()
+        FileBasedIndex
+            .getInstance()
             .processValues(
                 NameIndex.Util.NAME,
-                name,
+                identifier,
+                // Search in no particular file.
                 null,
-                { file, value ->
+                { file, values ->
                     val psiManager = PsiManager.getInstance(project)
                     val psiFile = psiManager.findFile(file)
-                    val psiElement = AstLoadingFilter.forceAllowTreeLoading<PsiElement?, Throwable>(psiFile) {
-                        val token = psiFile?.findElementAt(value)
-                        return@forceAllowTreeLoading PsiTreeUtil.getParentOfType(
-                            token,
-                            XmlAttributeValue::class.java,
-                            false
-                        )
-                    }
+                    val psiElements =
+                        AstLoadingFilter.forceAllowTreeLoading<List<PsiElement>, Throwable>(psiFile) {
+                            values.mapNotNull { value ->
+                                val token = psiFile?.findElementAt(value)
+                                PsiTreeUtil.getParentOfType(
+                                    token,
+                                    XmlAttributeValue::class.java,
+                                    false,
+                                )
+                            }
+                        }
 
-                    if (psiElement == null) return@processValues true
-
-                    res.set(
-                        ValueBasedJqaRuleDefinition(
-                            name,
-                            JqaRuleType.CONCEPT, // TODO: Extract correct type
-                            psiElement,
-                        )
+                    res.addAll(
+                        psiElements.map { psiElement ->
+                            ValueBasedJqaRuleDefinition(
+                                identifier,
+                                // TODO: Extract correct type
+                                JqaRuleType.CONCEPT,
+                                psiElement,
+                            )
+                        },
                     )
-                    false
+                    // Returning true signals to IntelliJ, that processing of the index should continue. Since we want
+                    // to find all matching rules we need to process the whole index everytime.
+                    true
                 },
+                // Search the whole project.
                 GlobalSearchScope.projectScope(project),
             )
-        return res.get()
+        return res
     }
 }

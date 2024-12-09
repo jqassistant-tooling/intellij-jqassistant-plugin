@@ -4,6 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 // TODO: Depending on how the indexing strategy for external plugins will work, it might be possible to remove the factory and provide the project as parameter to the methods.
+
 /**
  * A factory that creates a [JqaRuleIndexingStrategy].
  *
@@ -25,6 +26,8 @@ interface JqaRuleIndexingStrategyFactory {
  */
 interface JqaRuleIndexingStrategy {
     fun getAll(type: JqaRuleType): List<JqaRuleDefinition>
-    fun resolve(name: String): JqaRuleDefinition?
-    fun has(name: String): Boolean = resolve(name) != null
+
+    fun resolve(identifier: String): List<JqaRuleDefinition>
+
+    fun has(identifier: String): Boolean = resolve(identifier).isNotEmpty()
 }

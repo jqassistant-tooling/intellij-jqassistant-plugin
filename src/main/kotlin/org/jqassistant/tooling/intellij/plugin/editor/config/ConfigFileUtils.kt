@@ -53,7 +53,11 @@ object ConfigFileUtils {
                             for (keyPair in mapping.children) {
                                 if (keyPair.elementType == YAMLElementTypes.KEY_VALUE_PAIR) {
                                     val key = keyPair.firstChild ?: break
-                                    if (key.elementType == YAMLTokenTypes.SCALAR_KEY && key.text == "jqassistant") return true
+                                    if (key.elementType == YAMLTokenTypes.SCALAR_KEY &&
+                                        key.text == "jqassistant"
+                                    ) {
+                                        return true
+                                    }
                                 }
                             }
                         }
