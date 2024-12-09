@@ -22,6 +22,7 @@
             id="Effective Configuration"
             anchor="bottom"
             icon="/icons/jqaIcon_16x16.svg"/>
+
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
                     anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
@@ -33,10 +34,12 @@
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
             rootTagName="jqassistant-rules"
             stubVersion="1"/>
+
         <dom.fileMetaData
             implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.xml.JqaXmlPluginDescription"
             rootTagName="jqassistant-plugin"
             stubVersion="1"/>
+
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
         <additionalLibraryRootsProvider
             implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.JqaPluginRootsProvider"/>
@@ -50,6 +53,18 @@
                                               nameKey="org.jqassistant.tooling.intellij.inlay.name"
                                               descriptionKey="org.jqassistant.tooling.intellij.inlay.description"
                                               providerId="xml.org.jqassistant.tooling.intellij.plugin.editor.report.inlay.ReportSingularRuleResultDeclarativeInlayHintsProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <lang.refactoringSupport
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleRefactoringSupportProvider"
+            language="XML"
+        />
+        <refactoring.safeDeleteProcessor
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
+        <refactoring.safeDeleteProcessor
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
@@ -78,7 +93,7 @@
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
-                class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"></action>
+                class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
     </actions>
 
     <applicationListeners>
