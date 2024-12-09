@@ -94,7 +94,6 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
 
     /**
      * Detects usages which are not safe to delete.
-     * TODO when looking at the usages after dialog is shown by IntelliJ, IDE (2023.3) throws an error unrelated to this code
      *
      * @param element an element selected for deletion.
      * @param allElementsToDelete all elements selected for deletion.
@@ -113,8 +112,8 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         val noDeletableParents = possibleConflicts.filter { !allElementsToDelete.contains(it.parent) }
         val relatedConflicts =
             noDeletableParents.filter {
-                (element as? XmlTag)?.getAttributeValue("id") == it.getAttributeValue("refId")
-                    && it.getAttributeValue("refId") != null
+                (element as? XmlTag)?.getAttributeValue("id") == it.getAttributeValue("refId") &&
+                    it.getAttributeValue("refId") != null
             }
 
         relatedConflicts.forEach {
@@ -142,10 +141,8 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * @param usages all usages to be processed by the refactoring.
      * @return the filtered list of usages, or null if the user has cancelled the refactoring.
      */
-    override fun preprocessUsages(
-        project: Project,
-        usages: Array<out UsageInfo>,
-    ): Array<UsageInfo> = usages.map2Array { it }
+    override fun preprocessUsages(project: Project, usages: Array<out UsageInfo>): Array<UsageInfo> =
+        usages.map2Array { it }
 
     /**
      * Prepares an element for deletion e.g., normalizing declaration so the element declared in the same declaration won't be affected by deletion.
@@ -166,10 +163,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     /**
      * Called to save chosen for given `element` "Search in comments" value.
      */
-    override fun setToSearchInComments(
-        element: PsiElement?,
-        enabled: Boolean,
-    ) {
+    override fun setToSearchInComments(element: PsiElement?, enabled: Boolean) {
         // do nothing
     }
 
@@ -182,10 +176,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
     /**
      * Called to save chosen for given `element` "Search for text occurrences" value.
      */
-    override fun setToSearchForTextOccurrences(
-        element: PsiElement?,
-        enabled: Boolean,
-    ) {
+    override fun setToSearchForTextOccurrences(element: PsiElement?, enabled: Boolean) {
         // do nothing
     }
 
@@ -211,11 +202,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * @param element the element that is being deleted
      * @param referenceTag the tag that contains the refId attribute, e.g. providesConcept or requiresConcept
      */
-    protected fun findRefIdUsages(
-        element: PsiElement,
-        psiFile: PsiElement,
-        referenceTag: String,
-    ): List<PsiElement> {
+    private fun findRefIdUsages(element: PsiElement, psiFile: PsiElement, referenceTag: String): List<PsiElement> {
         val result = mutableListOf<PsiElement>()
         val psiXmlTags: Array<out PsiElement> =
             PsiTreeUtil.collectElements(psiFile) { (it as? XmlTag?) != null }

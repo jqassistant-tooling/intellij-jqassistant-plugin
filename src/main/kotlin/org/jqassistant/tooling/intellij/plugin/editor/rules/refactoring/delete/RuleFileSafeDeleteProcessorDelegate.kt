@@ -60,7 +60,5 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
     override fun findConflicts(
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,
-    ): MutableCollection<String> {
-        return mutableListOf()
-    }
+    ): MutableCollection<String> = mutableListOf()
 }
