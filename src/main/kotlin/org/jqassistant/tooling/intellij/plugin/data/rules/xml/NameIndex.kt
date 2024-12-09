@@ -28,7 +28,6 @@ class NameIndex : FileBasedIndexExtension<String, Collection<Int>>() {
     override fun getIndexer(): DataIndexer<String, Collection<Int>, FileContent> =
         object : DataIndexer<String, Collection<Int>, FileContent> {
             override fun map(content: FileContent): MutableMap<String, List<Int>> {
-                // TODO: Reject files based on the effective configuration.
                 val psiFile = content.psiFile as? XmlFile ?: return mutableMapOf()
                 val domManager = DomManager.getDomManager(psiFile.project)
                 val dom = domManager.getFileElement(psiFile, JqassistantRules::class.java) ?: return mutableMapOf()
