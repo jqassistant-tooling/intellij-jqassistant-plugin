@@ -109,10 +109,13 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
          * */
         val messages = mutableListOf<String>()
         val possibleConflicts =
-            allElementsToDelete.filter { (it as? XmlTag?)?.name == "requiresConcept" }.map { it as XmlTag }
+            allElementsToDelete.filterIsInstance<XmlTag>().filter { it.name == "requiresConcept" }
         val noDeletableParents = possibleConflicts.filter { !allElementsToDelete.contains(it.parent) }
         val relatedConflicts =
-            noDeletableParents.filter { (element as? XmlTag)?.getAttributeValue("id") == it.getAttributeValue("refId") }
+            noDeletableParents.filter {
+                (element as? XmlTag)?.getAttributeValue("id") == it.getAttributeValue("refId")
+                    && it.getAttributeValue("refId") != null
+            }
 
         relatedConflicts.forEach {
             messages.add(

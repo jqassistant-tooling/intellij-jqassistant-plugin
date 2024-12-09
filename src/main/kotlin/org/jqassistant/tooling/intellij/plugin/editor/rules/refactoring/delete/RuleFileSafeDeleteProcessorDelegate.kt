@@ -50,7 +50,9 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
 
     /**
      * Find all conflicts with the deletion of the file
-     * The conflicts for each group, concept and constraint are calculated by the RuleSafeDeleteProcessorDelegate which is called by IntelliJ automatically
+     * The conflicts for each group, concept and constraint in this file are calculated by the RuleSafeDeleteProcessorDelegate,
+     * which is called by IntelliJ automatically, so we don't need to handle those.
+     *
      * @param element the file that is being deleted
      * @param allElementsToDelete all elements selected for deletion.
      * @return the list of conflicts as String to be display to the user
@@ -59,8 +61,6 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,
     ): MutableCollection<String> {
-        // TODO look for file references? Maybe intellij already handles this automatically (it is quite smart)
-        val messages = mutableListOf<String>()
-        return messages
+        return mutableListOf()
     }
 }
