@@ -74,15 +74,25 @@ abstract class RuleJqaTemplateFileCreator(
     }
 
     // Prompts the user for input and validates the file name recursively.
-    private fun getValidFileName(project: Project, message: String?, initialValue: String?): String? {
+    private fun getValidFileName(project: Project, insertedMessage: String?, initialValue: String?): String? {
+        var message = insertedMessage
         var input = getUserInput(project, message ?: "Enter file name:", initialValue) ?: return null
+        message = promptMessage ?: return null // Reset so that only the most recently suggested name is displayed
 
         if (input.isEmpty()) {
             Messages.showWarningDialog(project, "File name can't be empty.", "Invalid Input")
             return null
         } else if (!isNameValid(input)) {
-            Messages.showWarningDialog(project, "Invalid file name.", "Invalid Input")
-            input = getValidFileName(project, message, input) ?: return null // Recursive call for re-entry.
+            Messages.showWarningDialog(
+                project,
+                "$input is invalid. Maybe try: ${PathUtilRt.suggestFileName(input)}",
+                "Invalid Input",
+            )
+            input = getValidFileName(
+                project,
+                "$message \nSuggested name: ${PathUtilRt.suggestFileName(input)}",
+                input,
+            ) ?: return null // Recursive call for re-entry.
         }
 
         return input
@@ -106,7 +116,7 @@ abstract class RuleJqaTemplateFileCreator(
         if (name.endsWith(".xml")) {
             return false // Disallow file names ending with ".xml".
         } else {
-            return PathUtilRt.isValidFileName(name, true)
+            return PathUtilRt.isValidFileName("$name${getFileExtension()}", true)
         }
     }
 
