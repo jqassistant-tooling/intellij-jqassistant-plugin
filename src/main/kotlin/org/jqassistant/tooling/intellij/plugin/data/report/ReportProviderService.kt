@@ -4,19 +4,33 @@ import com.buschmais.jqassistant.core.report.api.ReportReader
 import com.buschmais.jqassistant.core.report.impl.XmlReportPlugin
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import java.io.File
 
+typealias ReportChangedListener = (rootDirectory: VirtualFile) -> Unit
+
 @Service(Service.Level.PROJECT)
 class ReportProviderService(
     private val project: Project,
 ) {
     private val cachedReports: MutableMap<VirtualFile, JqassistantReport> = mutableMapOf()
+
+    private val listeners: MutableList<ReportChangedListener> = mutableListOf()
+
+    /** This is needed to avoid creating mutable listeners on the same file
+     * The Set is not using [com.intellij.openapi.editor.Document] on purpose, see
+     * [https://plugins.jetbrains.com/docs/intellij/documents.html#how-long-does-a-document-persist](https://plugins.jetbrains.com/docs/intellij/documents.html#how-long-does-a-document-persist)
+     */
+    private val currentlyWatchedFiles: MutableSet<VirtualFile> = mutableSetOf()
 
     /**
      * Returns all found jQAssistant reports in the current project, if no reports are cached yet this function will
@@ -34,8 +48,27 @@ class ReportProviderService(
         // Clear reports cache to avoid stale entries
         cachedReports.clear()
 
+        val localFileSystem = LocalFileSystem.getInstance()
+        val fileDocumentManager = FileDocumentManager.getInstance()
+
         for (baseDir in directoryList) {
             val file = getXmlReportPath(baseDir) ?: continue
+            val vFile = localFileSystem.findFileByIoFile(file) ?: continue
+
+            // Add listener if not already watching this file
+            if (!currentlyWatchedFiles.contains(vFile)) {
+                val document = fileDocumentManager.getDocument(vFile) ?: continue
+                currentlyWatchedFiles.add(vFile)
+
+                document.addDocumentListener(
+                    object : DocumentListener {
+                        override fun documentChanged(event: DocumentEvent) {
+                            super.documentChanged(event)
+                            for (listener in listeners) listener(baseDir)
+                        }
+                    },
+                )
+            }
 
             // https://plugins.jetbrains.com/docs/intellij/plugin-class-loaders.html
             val pluginClassLoader = javaClass.classLoader
@@ -52,6 +85,14 @@ class ReportProviderService(
         }
 
         return cachedReports
+    }
+
+    /**
+     * This registers a handler that will be called once a previously read report changes.
+     * Listeners will not be called if a new report is created that was not previously there.
+     */
+    fun onReportChange(listener: ReportChangedListener) {
+        listeners.add(listener)
     }
 
     /**
