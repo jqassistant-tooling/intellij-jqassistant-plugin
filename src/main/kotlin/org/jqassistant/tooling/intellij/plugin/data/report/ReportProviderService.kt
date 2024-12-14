@@ -8,11 +8,10 @@ import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDire
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
+import org.jqassistant.tooling.intellij.plugin.common.JQAssistantPluginDisposable
 import java.io.File
 
 typealias ReportChangedListener = (rootDirectory: VirtualFile) -> Unit
@@ -32,26 +31,18 @@ class ReportProviderService(
     private val currentlyWatchedFiles: MutableSet<VirtualFile> = mutableSetOf()
 
     init {
-        /*
+
         VirtualFileManager.getInstance().addAsyncFileListener(
-            object : AsyncFileListener {
-            },
-            this,
-        )
-         */
+            { events ->
+                val matchingFiles = events.mapNotNull { event -> event.file }.intersect(currentlyWatchedFiles)
 
-        project.messageBus.connect().subscribe(
-            VirtualFileManager.VFS_CHANGES,
-            object : BulkFileListener {
-                override fun after(events: List<VFileEvent>) {
-                    // handle the events
-                    val matchingFiles = events.mapNotNull { event -> event.file }.intersect(currentlyWatchedFiles)
-
-                    for (file in matchingFiles) {
-                        for (listener in listeners) listener(file)
-                    }
+                for (file in matchingFiles) {
+                    for (listener in listeners) listener(file)
                 }
+
+                null
             },
+            JQAssistantPluginDisposable.getInstance(project),
         )
     }
 
