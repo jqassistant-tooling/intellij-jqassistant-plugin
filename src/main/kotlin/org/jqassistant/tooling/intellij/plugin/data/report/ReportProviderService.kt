@@ -4,13 +4,12 @@ import com.buschmais.jqassistant.core.report.api.ReportReader
 import com.buschmais.jqassistant.core.report.impl.XmlReportPlugin
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.BaseProjectDirectories.Companion.getBaseDirectories
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
@@ -32,6 +31,30 @@ class ReportProviderService(
      */
     private val currentlyWatchedFiles: MutableSet<VirtualFile> = mutableSetOf()
 
+    init {
+        /*
+        VirtualFileManager.getInstance().addAsyncFileListener(
+            object : AsyncFileListener {
+            },
+            this,
+        )
+         */
+
+        project.messageBus.connect().subscribe(
+            VirtualFileManager.VFS_CHANGES,
+            object : BulkFileListener {
+                override fun after(events: List<VFileEvent>) {
+                    // handle the events
+                    val matchingFiles = events.mapNotNull { event -> event.file }.intersect(currentlyWatchedFiles)
+
+                    for (file in matchingFiles) {
+                        for (listener in listeners) listener(file)
+                    }
+                }
+            },
+        )
+    }
+
     /**
      * Returns all found jQAssistant reports in the current project, if no reports are cached yet this function will
      * read the reports from all baseDirectories and return them. If the reports have already been read previously in
@@ -48,26 +71,12 @@ class ReportProviderService(
         // Clear reports cache to avoid stale entries
         cachedReports.clear()
 
-        val localFileSystem = LocalFileSystem.getInstance()
-        val fileDocumentManager = FileDocumentManager.getInstance()
-
         for (baseDir in directoryList) {
-            val file = getXmlReportPath(baseDir) ?: continue
-            val vFile = localFileSystem.findFileByIoFile(file) ?: continue
+            val (file, vFile) = getXmlReportPath(baseDir) ?: continue
 
             // Add listener if not already watching this file
             if (!currentlyWatchedFiles.contains(vFile)) {
-                val document = fileDocumentManager.getDocument(vFile) ?: continue
                 currentlyWatchedFiles.add(vFile)
-
-                document.addDocumentListener(
-                    object : DocumentListener {
-                        override fun documentChanged(event: DocumentEvent) {
-                            super.documentChanged(event)
-                            for (listener in listeners) listener(baseDir)
-                        }
-                    },
-                )
             }
 
             // https://plugins.jetbrains.com/docs/intellij/plugin-class-loaders.html
@@ -124,18 +133,19 @@ class ReportProviderService(
      * Constructs the default path to the report xml file from a given base directory
      * This does not work with custom target directories
      */
-    private fun getXmlReportPath(dir: VirtualFile): File? {
-        // !TODO: Try to use virtual file system
+    private fun getXmlReportPath(dir: VirtualFile): Pair<File, VirtualFile>? {
         // !TODO: Use maven to get correct build directory
         // https://github.com/jQAssistant/jqassistant/blob/2e7405df54a63f74d039c95b71b5a0a7431f8be2/maven/src/main/java/com/buschmais/jqassistant/scm/maven/ReportMojo.java
-        val selectedXmlReportFile =
-            File("${dir.path}/target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+        val rootPath = dir.fileSystem.getNioPath(dir) ?: return null
+        val reportPath = rootPath.resolve("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
 
-        // This does not work for some reason
-        // val vFile = dir.findFileByRelativePath("target/jqassistant/${XmlReportPlugin.DEFAULT_XML_REPORT_FILE}")
+        val file = reportPath.toFile()
+        val vFile = VirtualFileManager.getInstance().findFileByNioPath(reportPath) ?: return null
 
-        if (!selectedXmlReportFile.exists() || selectedXmlReportFile.isDirectory) return null
+        val notExists = vFile.exists().not()
+        val isDirectory = vFile.isDirectory
+        if (notExists || isDirectory) return null
 
-        return selectedXmlReportFile
+        return Pair(file, vFile)
     }
 }
