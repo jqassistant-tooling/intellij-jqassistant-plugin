@@ -25,6 +25,7 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import java.awt.BorderLayout
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
@@ -34,7 +35,7 @@ class ReportToolWindowContent(
     private val toolWindow: ToolWindow,
     private val report: JqassistantReport,
 ) {
-    val contentPanel: JPanel
+    val toolWindowPanel: JPanel
     val splitter: JBSplitter
 
     init {
@@ -51,7 +52,7 @@ class ReportToolWindowContent(
                 JBScrollPane(subPanel)
             }
 
-        val toolWindowPanel = SimpleToolWindowPanel(true)
+        toolWindowPanel = SimpleToolWindowPanel(true)
 
         splitter = OnePixelSplitter(true)
         splitter.firstComponent = scrollableTree
@@ -66,9 +67,11 @@ class ReportToolWindowContent(
         actionToolbar.targetComponent = toolWindowPanel
         toolWindowPanel.toolbar = actionToolbar.component
 
-        toolWindowPanel.setContent(splitter)
+        // Banner for outdated report
+        val outdatedReportBanner = OutdatedReportBanner(project, toolWindow)
 
-        contentPanel = toolWindowPanel
+        toolWindowPanel.add(outdatedReportBanner, BorderLayout.SOUTH)
+        toolWindowPanel.setContent(splitter)
     }
 
     /**

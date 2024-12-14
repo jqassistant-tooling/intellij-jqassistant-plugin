@@ -12,14 +12,18 @@ internal class ReportToolWindowFactory :
     ToolWindowFactory,
     DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        loadToolWindowContent(project, toolWindow, false)
+    }
+
+    private fun loadToolWindowContent(project: Project, toolWindow: ToolWindow, forceReload: Boolean = false) {
         val reportProviderService = project.service<ReportProviderService>()
 
-        for ((baseDir, report) in reportProviderService.getReports()) {
+        for ((baseDir, report) in reportProviderService.getReports(forceReload)) {
             val toolWindowContent = ReportToolWindowContent(project, toolWindow, report)
 
             // Add individual tabs for every base directory in the current project that contains a report xml file
             val content =
-                ContentFactory.getInstance().createContent(toolWindowContent.contentPanel, baseDir.name, false)
+                ContentFactory.getInstance().createContent(toolWindowContent.toolWindowPanel, baseDir.name, false)
             toolWindow.contentManager.addContent(content)
         }
     }
@@ -27,6 +31,6 @@ internal class ReportToolWindowFactory :
     fun reloadToolWindow(project: Project, toolWindow: ToolWindow) {
         toolWindow.contentManager.removeAllContents(true)
 
-        createToolWindowContent(project, toolWindow)
+        loadToolWindowContent(project, toolWindow, true)
     }
 }
