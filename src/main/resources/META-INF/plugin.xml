@@ -64,7 +64,8 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
-
+        <annotator language="XML"
+                   implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.annotator.FindUnusedAnnotator"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
