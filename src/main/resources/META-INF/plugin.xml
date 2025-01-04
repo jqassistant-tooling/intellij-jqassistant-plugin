@@ -34,12 +34,6 @@
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
             rootTagName="jqassistant-rules"
             stubVersion="1"/>
-
-        <dom.fileMetaData
-            implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.xml.JqaXmlPluginDescription"
-            rootTagName="jqassistant-plugin"
-            stubVersion="1"/>
-
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
         <additionalLibraryRootsProvider
             implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.JqaPluginRootsProvider"/>
