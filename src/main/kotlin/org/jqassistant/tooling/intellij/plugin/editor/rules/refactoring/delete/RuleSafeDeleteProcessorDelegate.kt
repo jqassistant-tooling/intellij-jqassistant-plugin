@@ -4,13 +4,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiReference
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.xml.XmlTag
 import com.intellij.refactoring.safeDelete.NonCodeUsageSearchInfo
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessor
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegate
 import com.intellij.usageView.UsageInfo
+import com.intellij.util.Query
+import com.intellij.util.containers.addIfNotNull
 import com.intellij.util.containers.map2Array
 import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.util.xml.DomManager
@@ -35,6 +38,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         result: MutableList<in UsageInfo>,
     ): NonCodeUsageSearchInfo? {
         // Search for all usages of the element with the same ID
+
         SafeDeleteProcessor.findGenericElementUsages(
             element,
             result,
@@ -80,15 +84,8 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
         allElementsToDelete: MutableCollection<out PsiElement>,
         askUser: Boolean,
     ): MutableCollection<PsiElement> {
-        val files = findEligiblePsiFiles(element)
         val result = mutableSetOf<PsiElement>()
-        for (file in files) {
-            result.addAll(findRefIdUsages(element, file, "providesConcept"))
-            result.addAll(findRefIdUsages(element, file, "requiresConcept"))
-            result.addAll(findRefIdUsages(element, file, "includeConcept"))
-            result.addAll(findRefIdUsages(element, file, "includeConstraint"))
-            result.addAll(findRefIdUsages(element, file, "includeGroup"))
-        }
+        result.addAll(findRefIdUsages(element))
         return result
     }
 
@@ -200,20 +197,19 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * Find refId usages in the project
      * TODO this operation belongs into a the JqaRuleIndexingService
      * @param element the element that is being deleted
-     * @param referenceTag the tag that contains the refId attribute, e.g. providesConcept or requiresConcept
      */
-    private fun findRefIdUsages(element: PsiElement, psiFile: PsiElement, referenceTag: String): List<PsiElement> {
+    private fun findRefIdUsages(element: PsiElement): List<PsiElement> {
         val result = mutableListOf<PsiElement>()
-        val psiXmlTags: Array<out PsiElement> =
-            PsiTreeUtil.collectElements(psiFile) { (it as? XmlTag?) != null }
-        for (tag in psiXmlTags) {
-            val xmlTag = tag as XmlTag
-            val providesConceptTags = xmlTag.findSubTags(referenceTag)
-            for (providesConceptTag in providesConceptTags) {
-                if (providesConceptTag.getAttributeValue("refId") == (element as XmlTag).getAttributeValue("id")) {
-                    result.add(providesConceptTag)
-                }
-            }
+
+        val searchScope = GlobalSearchScope.projectScope(element.project)
+        val xmlTag = element as XmlTag
+        val searchElement = xmlTag.getAttribute("id")?.valueElement?.navigationElement
+        val query: Query<PsiReference> = ReferencesSearch.search(searchElement!!, searchScope)
+        query.forEach { reference ->
+            val ref = UsageInfo(reference).element
+            val xmlAttributeTag = ref?.parent
+            val xmlParentTag = xmlAttributeTag?.parent
+            result.addIfNotNull(xmlParentTag)
         }
         return result.toList()
     }
