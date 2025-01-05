@@ -25,6 +25,7 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
 import java.awt.BorderLayout
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -62,7 +63,11 @@ class ReportToolWindowContent(
         val actionManager = ActionManager.getInstance()
 
         val actionGroup =
-            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow))
+            DefaultActionGroup(
+                LayoutSwitchAction(this),
+                RefreshAction(project, toolWindow),
+                SortingToggleAction(projectTrees),
+            )
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
@@ -84,7 +89,9 @@ class ReportToolWindowContent(
         val cellRenderer = ReportCellRenderer()
 
         return nodeList.map { rootNode ->
-            val treePanel = Tree(rootNode)
+            val treeModel = ReportTreeModel(rootNode)
+            val treePanel = Tree(treeModel)
+
             TreeUIHelper.getInstance().installTreeSpeedSearch(treePanel)
             TreeUIHelper.getInstance().installSelectionSaver(treePanel)
             TreeUIHelper.getInstance().installSmartExpander(treePanel)
