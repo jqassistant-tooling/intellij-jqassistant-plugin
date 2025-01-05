@@ -1,5 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report
 
+import com.intellij.find.SearchTextArea
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager.getApplication
@@ -30,6 +31,9 @@ import java.awt.BorderLayout
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JPanel
+import javax.swing.JTextArea
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
 
@@ -72,7 +76,40 @@ class ReportToolWindowContent(
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
         actionToolbar.targetComponent = toolWindowPanel
-        toolWindowPanel.toolbar = actionToolbar.component
+
+        // Add search bar and handle text changes
+        val textArea = JTextArea()
+        val searchBar = SearchTextArea(textArea, false)
+        textArea.document.addDocumentListener(
+            object : DocumentListener {
+                override fun insertUpdate(p0: DocumentEvent?) {
+                    updateSearch(p0)
+                }
+
+                override fun removeUpdate(p0: DocumentEvent?) {
+                    updateSearch(p0)
+                }
+
+                override fun changedUpdate(p0: DocumentEvent?) {
+                    updateSearch(p0)
+                }
+
+                fun updateSearch(event: DocumentEvent?) {
+                    val newText = textArea.text
+
+                    for (tree in projectTrees) {
+                        val model = tree.model as? ReportTreeModel ?: continue
+                        model.searchText = newText
+                    }
+                }
+            },
+        )
+
+        val toolBarSplitter = OnePixelSplitter(false)
+        toolBarSplitter.firstComponent = actionToolbar.component
+        toolBarSplitter.secondComponent = searchBar
+
+        toolWindowPanel.toolbar = toolBarSplitter
 
         // Banner for outdated report
         val outdatedReportBanner = OutdatedReportBanner(project, toolWindow)

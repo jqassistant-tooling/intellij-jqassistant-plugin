@@ -7,6 +7,18 @@ class ReportTreeModel(
     root: TreeNode,
 ) : DefaultTreeModel(root, false) {
     var reverseSorting: Boolean = false
+    var searchText: String = ""
+
+    override fun getIndexOfChild(parent: Any?, child: Any?): Int {
+        val index = super.getIndexOfChild(parent, child)
+        val count = getChildCount(parent)
+
+        return if (reverseSorting) {
+            count - (index + 1)
+        } else {
+            index
+        }
+    }
 
     override fun getChild(parent: Any?, index: Int): Any {
         if (reverseSorting) {
@@ -15,5 +27,11 @@ class ReportTreeModel(
         } else {
             return super.getChild(parent, index)
         }
+    }
+
+    override fun getChildCount(parent: Any?): Int {
+        if (searchText.isEmpty()) return super.getChildCount(parent)
+
+        return 0
     }
 }
