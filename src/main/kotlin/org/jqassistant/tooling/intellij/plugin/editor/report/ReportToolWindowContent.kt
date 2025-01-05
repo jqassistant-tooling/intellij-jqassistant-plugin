@@ -26,6 +26,8 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
 import java.awt.BorderLayout
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.JPanel
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
@@ -88,7 +90,29 @@ class ReportToolWindowContent(
             TreeUIHelper.getInstance().installSmartExpander(treePanel)
             treePanel.cellRenderer = cellRenderer
 
-            treePanel.addTreeSelectionListener(::treeClickListener)
+            treePanel.addTreeSelectionListener(::treeSelectionListener)
+
+            // Listen to double-clicks
+            // addTreeSelectionListener(::treeClickListener) does not allow
+            // differentiating between normal and double clicks
+            treePanel.addMouseListener(
+                object : MouseListener {
+                    override fun mouseClicked(event: java.awt.event.MouseEvent?) {
+                        if (event == null) return
+
+                        treeClickListener(treePanel, event)
+                    }
+
+                    override fun mousePressed(p0: java.awt.event.MouseEvent?) {}
+
+                    override fun mouseReleased(p0: java.awt.event.MouseEvent?) {}
+
+                    override fun mouseEntered(p0: java.awt.event.MouseEvent?) {}
+
+                    override fun mouseExited(p0: java.awt.event.MouseEvent?) {}
+                },
+            )
+
             treePanel
         }
     }
@@ -141,33 +165,11 @@ class ReportToolWindowContent(
         return nodeList
     }
 
-    private fun treeClickListener(event: TreeSelectionEvent) {
-        val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
+    private fun treeSelectionListener(event: TreeSelectionEvent) {
+        val node = event.path.lastPathComponent ?: return
+        val reportNode = node as? ReferencableRuleTypeNode ?: return
 
-        if (reportNode.ref is GroupType) {
-            if (DumbService.isDumb(project)) return
-
-            val ruleId = reportNode.ref.id
-            val ruleIndexingService = project.service<JqaRuleIndexingService>()
-
-            getApplication().executeOnPooledThread {
-                val navigationElement =
-                    ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
-
-                        val source = definition.computeSource() ?: return@compute null
-
-                        source.navigationElement as? Navigatable
-                    }
-
-                getApplication().invokeLater {
-                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
-
-                    navigationElement.navigate(true)
-                }
-            }
-        }
-
+        // Expand constraint/concept results on single click
         val result =
             when (val rule = reportNode.ref) {
                 is ConstraintType -> rule.result
@@ -175,6 +177,7 @@ class ReportToolWindowContent(
                 else -> null
             }
 
+        // Clear report results table when no results are available
         if (result == null) {
             splitter.secondComponent = null
             return
@@ -212,5 +215,35 @@ class ReportToolWindowContent(
         val tableSpeedSearch = TableSpeedSearch(table)
 
         splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
+    }
+
+    private fun treeClickListener(tree: Tree, event: MouseEvent) {
+        val node = tree.selectionPath?.lastPathComponent ?: return
+        val reportNode = node as? ReferencableRuleTypeNode ?: return
+
+        // Navigate to rule on double click
+        if (event.clickCount == 2) {
+            if (DumbService.isDumb(project)) return
+
+            val ruleId = reportNode.ref.id
+            val ruleIndexingService = project.service<JqaRuleIndexingService>()
+
+            getApplication().executeOnPooledThread {
+                val navigationElement =
+                    ReadAction.compute<Navigatable?, Throwable> {
+                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
+
+                        val source = definition.computeSource() ?: return@compute null
+
+                        source.navigationElement as? Navigatable
+                    }
+
+                getApplication().invokeLater {
+                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+
+                    navigationElement.navigate(true)
+                }
+            }
+        }
     }
 }
