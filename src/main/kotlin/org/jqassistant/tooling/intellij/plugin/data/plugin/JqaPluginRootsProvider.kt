@@ -10,17 +10,17 @@ import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
 /**
- * A synthetic library representing an jQA-Plugin.
+ * Adapter to present an [JqaPlugin] as [SyntheticLibrary] to IntelliJ.
  *
  * Will be displayed in the external libraries view of the project pane.
  */
-class JqaPluginLibrary(
+class JqaPluginLibraryAdapter(
     private val plugin: JqaPlugin,
 ) : SyntheticLibrary(),
     ItemPresentation {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        val otherLib = other as? JqaPluginLibrary ?: return false
+        val otherLib = other as? JqaPluginLibraryAdapter ?: return false
         return otherLib.plugin == plugin
     }
 
@@ -34,13 +34,13 @@ class JqaPluginLibrary(
 }
 
 /**
- * Provides jQA-Plugins in form of [JqaPluginLibrary] to IntelliJ.
+ * Provides jQA-Plugins in form of [JqaPluginLibraryAdapter] to IntelliJ.
  *
  * See [JqaPluginService] for how jQA-Plugins are managed and how this gets updated.
  */
 class JqaPluginRootsProvider : AdditionalLibraryRootsProvider() {
     override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> =
         project.service<JqaPluginService>().pluginJars.map { root ->
-            JqaPluginLibrary(root)
+            JqaPluginLibraryAdapter(root)
         }
 }

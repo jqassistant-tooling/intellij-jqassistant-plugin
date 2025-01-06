@@ -3,7 +3,7 @@ package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.AstLoadingFilter
@@ -69,7 +69,7 @@ class JqaXmlRuleIndexingStrategy(
                     true
                 },
                 // Search the whole project.
-                GlobalSearchScope.projectScope(project),
+                ProjectScope.getAllScope(project),
             )
         return res
     }

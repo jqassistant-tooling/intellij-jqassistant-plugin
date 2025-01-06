@@ -114,6 +114,16 @@ class JqaPluginService(
                 pluginJars,
             )
 
+        // Files from the plugin that IntelliJ will index.
+        val newRoots =
+            pluginJars.flatMap { plugin ->
+                plugin.rules.map { ruleFile ->
+                    plugin.jarRoot.findFileByRelativePath(
+                        ruleFile,
+                    )
+                }
+            }
+
         ApplicationManager.getApplication().invokeLater {
             WriteAction.run<Throwable> {
                 // TODO: Search for a stable alternative.
@@ -121,7 +131,7 @@ class JqaPluginService(
                     project,
                     null,
                     emptyList(),
-                    emptyList(),
+                    newRoots,
                     JqaPluginService::class.jvmName,
                 )
             }
