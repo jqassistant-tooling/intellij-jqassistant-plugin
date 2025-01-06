@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.report
+package org.jqassistant.tooling.intellij.plugin.editor.report.tree
 
 import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTreeCellRenderer

@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.report
+package org.jqassistant.tooling.intellij.plugin.editor.report.tree
 
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import javax.swing.tree.DefaultMutableTreeNode

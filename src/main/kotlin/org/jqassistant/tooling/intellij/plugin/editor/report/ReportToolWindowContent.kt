@@ -28,6 +28,11 @@ import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitc
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
 import java.awt.BorderLayout
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.GroupingNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReferencableRuleTypeNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportCellRenderer
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportTreeModel
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JPanel

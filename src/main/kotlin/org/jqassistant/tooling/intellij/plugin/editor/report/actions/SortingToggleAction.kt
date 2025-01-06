@@ -4,7 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.ui.treeStructure.Tree
-import org.jqassistant.tooling.intellij.plugin.editor.report.ReportTreeModel
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportTreeModel
 
 class SortingToggleAction(
     private val trees: List<Tree>,

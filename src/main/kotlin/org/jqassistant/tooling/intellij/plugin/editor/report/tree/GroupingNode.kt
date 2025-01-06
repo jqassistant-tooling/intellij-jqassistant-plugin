@@ -1,4 +1,4 @@
-package org.jqassistant.tooling.intellij.plugin.editor.report
+package org.jqassistant.tooling.intellij.plugin.editor.report.tree
 
 class GroupingNode(
     private val text: String,
