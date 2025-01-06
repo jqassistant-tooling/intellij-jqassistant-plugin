@@ -1,6 +1,9 @@
 package org.jqassistant.tooling.intellij.plugin.data.config
 
+import com.buschmais.jqassistant.core.rule.api.model.RuleSet
 import com.intellij.openapi.project.Project
+import org.jqassistant.tooling.intellij.plugin.data.jqa.JqaCliTaskRunner
+import org.jqassistant.tooling.intellij.plugin.data.jqa.tasks.EffectiveRulesTask
 import java.io.File
 
 /** This provides the effective Configuration
@@ -30,6 +33,10 @@ class JqaEffectiveConfigProvider(
      * */
     override fun onEvent() {
         config.isValid = false
+
+        // TODO remove this, it is for testing
+        // val what = Main.main(arrayOf("effective-configuration"))
+        val testResult: RuleSet? = JqaCliTaskRunner(project).runTask(EffectiveRulesTask::class)
     }
 
     /** Returns the stored configuration, might not be valid at the time of retrieval

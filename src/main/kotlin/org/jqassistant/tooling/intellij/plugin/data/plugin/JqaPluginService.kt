@@ -88,7 +88,7 @@ class JqaPluginService(
     }
 
     // TODO: Replace with configuration service that handles maven and everything config related.
-    private fun getJqaConfiguration(): CliConfiguration? {
+    fun getJqaConfiguration(): CliConfiguration? {
         val workingDirectory = project.basePath?.let { File(it) } ?: return null
 
         return ConfigurationMappingLoader
