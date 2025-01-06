@@ -26,6 +26,7 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SearchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
 import java.awt.BorderLayout
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.GroupingNode
@@ -76,6 +77,7 @@ class ReportToolWindowContent(
                 LayoutSwitchAction(this),
                 RefreshAction(project, toolWindow),
                 SortingToggleAction(projectTrees),
+                SearchAction(projectTrees),
             )
 
         val actionToolbar =
