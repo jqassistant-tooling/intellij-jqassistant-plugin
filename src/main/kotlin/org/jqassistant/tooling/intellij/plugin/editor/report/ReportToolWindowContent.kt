@@ -177,7 +177,7 @@ class ReportToolWindowContent(
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
             buildRuleTree(newNode, group.groupOrConceptOrConstraint)
-            currentRoot?.addChild(newNode)
+            currentRoot?.add(newNode)
         }
 
         if (constraints.isNotEmpty()) {
@@ -187,10 +187,10 @@ class ReportToolWindowContent(
             for (constraint in constraints) {
                 val newNode = ReferencableRuleTypeNode(constraint, groupingNode)
                 nodeList.add(newNode)
-                groupingNode.addChild(newNode)
+                groupingNode.add(newNode)
             }
 
-            currentRoot?.addChild(groupingNode)
+            currentRoot?.add(groupingNode)
         }
 
         if (concepts.isNotEmpty()) {
@@ -200,10 +200,10 @@ class ReportToolWindowContent(
             for (concept in concepts) {
                 val newNode = ReferencableRuleTypeNode(concept, groupingNode)
                 nodeList.add(newNode)
-                groupingNode.addChild(newNode)
+                groupingNode.add(newNode)
             }
 
-            currentRoot?.addChild(groupingNode)
+            currentRoot?.add(groupingNode)
         }
 
         return nodeList

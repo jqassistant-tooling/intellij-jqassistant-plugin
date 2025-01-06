@@ -1,37 +1,42 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report
 
 import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
 
 class ReportTreeModel(
-    root: TreeNode,
-) : DefaultTreeModel(root, false) {
+    private val originalRoot: ReportNode,
+) : DefaultTreeModel(originalRoot, false) {
     var reverseSorting: Boolean = false
     var searchText: String = ""
 
-    override fun getIndexOfChild(parent: Any?, child: Any?): Int {
-        val index = super.getIndexOfChild(parent, child)
-        val count = getChildCount(parent)
+    /**
+     * Swap the root so that the tree model now shows a new tree
+     * with the reversing and filter applied
+     */
+    private fun buildVisibleTree() {
+        // insertNodeInto(originalRoot, originalRoot, 0)
+    }
 
-        return if (reverseSorting) {
-            count - (index + 1)
-        } else {
-            index
+    private fun getChildren(parent: Any?): List<ReportNode> {
+        val count = super.getChildCount(parent)
+
+        var children = (0..<count).mapNotNull { i -> super.getChild(parent, i) as? ReportNode }
+
+        if (reverseSorting) children = children.reversed()
+
+        if (searchText.isNotEmpty()) {
+            children =
+                children.filter { node ->
+                    if (!node.isLeaf) return@filter true
+                    node.toString().startsWith(searchText)
+                }
         }
+
+        return children
     }
 
-    override fun getChild(parent: Any?, index: Int): Any {
-        if (reverseSorting) {
-            val count = getChildCount(parent)
-            return super.getChild(parent, count - (index + 1))
-        } else {
-            return super.getChild(parent, index)
-        }
-    }
+    override fun getIndexOfChild(parent: Any?, child: Any?): Int = getChildren(parent).indexOf(child)
 
-    override fun getChildCount(parent: Any?): Int {
-        if (searchText.isEmpty()) return super.getChildCount(parent)
+    override fun getChild(parent: Any?, index: Int): Any = getChildren(parent)[index]
 
-        return 0
-    }
+    override fun getChildCount(parent: Any?): Int = getChildren(parent).size
 }
