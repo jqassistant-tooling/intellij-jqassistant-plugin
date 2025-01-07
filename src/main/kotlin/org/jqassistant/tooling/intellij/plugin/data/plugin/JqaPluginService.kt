@@ -3,16 +3,55 @@ package org.jqassistant.tooling.intellij.plugin.data.plugin
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
 import com.buschmais.jqassistant.commandline.plugin.ArtifactProviderFactory
 import com.buschmais.jqassistant.core.runtime.api.configuration.ConfigurationMappingLoader
-import com.buschmais.jqassistant.core.shared.configuration.Plugin
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
+import com.intellij.openapi.vfs.JarFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import io.smallrye.config.SysPropConfigSource
+import org.jqassistant.tooling.intellij.plugin.common.PluginUtil
 import java.io.File
 import kotlin.reflect.jvm.jvmName
+
+/**
+ * Representation of jQA-Plugin for use in IntelliJ.
+ *
+ * Contains information about the jar, and plugin details which are extracted from the jar and saved for quick access.
+ *
+ * @see [PluginUtil.readJqaPlugin]
+ */
+class JqaPlugin(
+    /**
+     * A [VirtualFile] representing the jar root of a plugin.
+     *
+     * This [VirtualFile] should have the jar contents accessible, see [JarFileSystem.getJarRootForLocalFile].
+     */
+    val jarRoot: VirtualFile,
+    /**
+     * Names of rule files which this plugin has.
+     *
+     * The names are relative to the jar (meaning they contain the `META-INF/jqassistant-rules` prefix), this
+     * means they can be resolved against the [jarRoot] by using [VirtualFile.findFileByRelativePath].
+     */
+    val rules: List<String>,
+    /**
+     * Human-readable name of the plugin.
+     *
+     * Usually the name is configured through the plugin config file.
+     */
+    val name: String,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        val otherPlugin = other as? JqaPlugin ?: return false
+        return jarRoot == otherPlugin.jarRoot
+    }
+
+    override fun hashCode(): Int = jarRoot.hashCode()
+}
 
 /**
  * Handles installation and localization of jQA-Plugins.
@@ -26,17 +65,17 @@ class JqaPluginService(
     private val userHome = File(System.getProperty("user.home"))
 
     private data class PluginCache(
-        val plugins: Map<Plugin, List<File>>,
+        val pluginJars: List<JqaPlugin>,
     )
 
     // TODO: Evaluate whether we can persist this.
     @Volatile
     private var cache: PluginCache =
         PluginCache(
-            emptyMap(),
+            emptyList(),
         )
 
-    val plugins: Map<Plugin, List<File>> get() = cache.plugins
+    val pluginJars: List<JqaPlugin> get() = cache.pluginJars
 
     /**
      * Synchronizes jQA-Plugins based on the current configuration.
@@ -63,15 +102,27 @@ class JqaPluginService(
 
         val provider = ArtifactProviderFactory(userHome).create(config)
 
-        val mappedPlugins =
-            plugins.associateWith {
-                provider.resolve(listOf(it))
+        val jars = provider.resolve(plugins)
+
+        val pluginJars =
+            jars.mapNotNull { jar ->
+                PluginUtil.readJqaPlugin(jar)
             }
 
         cache =
             PluginCache(
-                mappedPlugins,
+                pluginJars,
             )
+
+        // Files from the plugin that IntelliJ will index.
+        val newRoots =
+            pluginJars.flatMap { plugin ->
+                plugin.rules.map { ruleFile ->
+                    plugin.jarRoot.findFileByRelativePath(
+                        ruleFile,
+                    )
+                }
+            }
 
         ApplicationManager.getApplication().invokeLater {
             WriteAction.run<Throwable> {
@@ -80,7 +131,7 @@ class JqaPluginService(
                     project,
                     null,
                     emptyList(),
-                    emptyList(),
+                    newRoots,
                     JqaPluginService::class.jvmName,
                 )
             }
