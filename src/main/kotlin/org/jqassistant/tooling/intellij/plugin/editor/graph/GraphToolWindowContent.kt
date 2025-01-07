@@ -10,16 +10,19 @@ import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
-import javax.swing.JPanel
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.ReferenceType
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class GraphToolWindowContent(
     private val project: Project,
     private val toolWindow: ToolWindow,
-) {
-    val toolWindowPanel: JPanel
+) : SimpleToolWindowPanel(true) {
+    var currentRule: RuleBase? = null
+    var groups = mutableListOf<ReferenceType>()
+    var constraints = mutableListOf<ReferenceType>()
+    var concepts = mutableListOf<ReferenceType>()
 
     init {
-        toolWindowPanel = SimpleToolWindowPanel(true)
 
         val graph = MultiGraph("embedded")
 
@@ -79,6 +82,6 @@ class GraphToolWindowContent(
         // false indicates "no JFrame".
         val view = viewer.addDefaultView(false) as DefaultView
 
-        toolWindowPanel.setContent(view)
+        this.setContent(view)
     }
 }
