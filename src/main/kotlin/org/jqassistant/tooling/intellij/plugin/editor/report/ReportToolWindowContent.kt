@@ -1,5 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.editor.report
 
+import com.intellij.find.SearchTextArea
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager.getApplication
@@ -23,10 +24,22 @@ import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.FilterAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.GroupingNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReferencableRuleTypeNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportCellRenderer
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportNode
+import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportTreeModel
 import java.awt.BorderLayout
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.JPanel
+import javax.swing.JTextArea
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.table.AbstractTableModel
 
@@ -60,12 +73,46 @@ class ReportToolWindowContent(
         val actionManager = ActionManager.getInstance()
 
         val actionGroup =
-            DefaultActionGroup(LayoutSwitchAction(this), RefreshAction(project, toolWindow))
+            DefaultActionGroup(
+                LayoutSwitchAction(this),
+                RefreshAction(project, toolWindow),
+                SortingToggleAction(projectTrees),
+            )
 
         val actionToolbar =
             actionManager.createActionToolbar("jQAssistantReport Toolbar", actionGroup, true)
         actionToolbar.targetComponent = toolWindowPanel
-        toolWindowPanel.toolbar = actionToolbar.component
+
+        // Add search bar and handle text changes
+        val textArea = JTextArea()
+        val searchBar = SearchTextArea(textArea, false)
+        searchBar.setMultilineEnabled(false)
+        searchBar.setExtraActions(FilterAction(projectTrees))
+
+        textArea.document.addDocumentListener(
+            object : DocumentListener {
+                override fun insertUpdate(p0: DocumentEvent?) = updateSearch(p0)
+
+                override fun removeUpdate(p0: DocumentEvent?) = updateSearch(p0)
+
+                override fun changedUpdate(p0: DocumentEvent?) = updateSearch(p0)
+
+                fun updateSearch(event: DocumentEvent?) {
+                    val newText = textArea.text
+
+                    for (tree in projectTrees) {
+                        val model = tree.model as? ReportTreeModel ?: continue
+                        model.searchText = newText
+                    }
+                }
+            },
+        )
+
+        val toolBarSplitter = OnePixelSplitter(false)
+        toolBarSplitter.firstComponent = actionToolbar.component
+        toolBarSplitter.secondComponent = searchBar
+
+        toolWindowPanel.toolbar = toolBarSplitter
 
         // Banner for outdated report
         val outdatedReportBanner = OutdatedReportBanner(project, toolWindow)
@@ -82,13 +129,37 @@ class ReportToolWindowContent(
         val cellRenderer = ReportCellRenderer()
 
         return nodeList.map { rootNode ->
-            val treePanel = Tree(rootNode)
+            val treeModel = ReportTreeModel(rootNode)
+            val treePanel = Tree(treeModel)
+
             TreeUIHelper.getInstance().installTreeSpeedSearch(treePanel)
             TreeUIHelper.getInstance().installSelectionSaver(treePanel)
             TreeUIHelper.getInstance().installSmartExpander(treePanel)
             treePanel.cellRenderer = cellRenderer
 
-            treePanel.addTreeSelectionListener(::treeClickListener)
+            treePanel.addTreeSelectionListener(::treeSelectionListener)
+
+            // Listen to double-clicks
+            // addTreeSelectionListener(::treeClickListener) does not allow
+            // differentiating between normal and double clicks
+            treePanel.addMouseListener(
+                object : MouseListener {
+                    override fun mouseClicked(event: java.awt.event.MouseEvent?) {
+                        if (event == null) return
+
+                        treeClickListener(treePanel, event)
+                    }
+
+                    override fun mousePressed(p0: java.awt.event.MouseEvent?) = Unit
+
+                    override fun mouseReleased(p0: java.awt.event.MouseEvent?) = Unit
+
+                    override fun mouseEntered(p0: java.awt.event.MouseEvent?) = Unit
+
+                    override fun mouseExited(p0: java.awt.event.MouseEvent?) = Unit
+                },
+            )
+
             treePanel
         }
     }
@@ -109,7 +180,7 @@ class ReportToolWindowContent(
             val newNode = ReferencableRuleTypeNode(group, currentRoot)
             nodeList.add(newNode)
             buildRuleTree(newNode, group.groupOrConceptOrConstraint)
-            currentRoot?.addChild(newNode)
+            currentRoot?.add(newNode)
         }
 
         if (constraints.isNotEmpty()) {
@@ -119,10 +190,10 @@ class ReportToolWindowContent(
             for (constraint in constraints) {
                 val newNode = ReferencableRuleTypeNode(constraint, groupingNode)
                 nodeList.add(newNode)
-                groupingNode.addChild(newNode)
+                groupingNode.add(newNode)
             }
 
-            currentRoot?.addChild(groupingNode)
+            currentRoot?.add(groupingNode)
         }
 
         if (concepts.isNotEmpty()) {
@@ -132,42 +203,20 @@ class ReportToolWindowContent(
             for (concept in concepts) {
                 val newNode = ReferencableRuleTypeNode(concept, groupingNode)
                 nodeList.add(newNode)
-                groupingNode.addChild(newNode)
+                groupingNode.add(newNode)
             }
 
-            currentRoot?.addChild(groupingNode)
+            currentRoot?.add(groupingNode)
         }
 
         return nodeList
     }
 
-    private fun treeClickListener(event: TreeSelectionEvent) {
-        val reportNode = event.path.lastPathComponent as? ReferencableRuleTypeNode ?: return
+    private fun treeSelectionListener(event: TreeSelectionEvent) {
+        val node = event.path.lastPathComponent ?: return
+        val reportNode = node as? ReferencableRuleTypeNode ?: return
 
-        if (reportNode.ref is GroupType) {
-            if (DumbService.isDumb(project)) return
-
-            val ruleId = reportNode.ref.id
-            val ruleIndexingService = project.service<JqaRuleIndexingService>()
-
-            getApplication().executeOnPooledThread {
-                val navigationElement =
-                    ReadAction.compute<Navigatable?, Throwable> {
-                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
-
-                        val source = definition.computeSource() ?: return@compute null
-
-                        source.navigationElement as? Navigatable
-                    }
-
-                getApplication().invokeLater {
-                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
-
-                    navigationElement.navigate(true)
-                }
-            }
-        }
-
+        // Expand constraint/concept results on single click
         val result =
             when (val rule = reportNode.ref) {
                 is ConstraintType -> rule.result
@@ -175,6 +224,7 @@ class ReportToolWindowContent(
                 else -> null
             }
 
+        // Clear report results table when no results are available
         if (result == null) {
             splitter.secondComponent = null
             return
@@ -209,8 +259,39 @@ class ReportToolWindowContent(
                 },
             )
 
+        table.autoCreateRowSorter = true
         val tableSpeedSearch = TableSpeedSearch(table)
 
         splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
+    }
+
+    private fun treeClickListener(tree: Tree, event: MouseEvent) {
+        val node = tree.selectionPath?.lastPathComponent ?: return
+        val reportNode = node as? ReferencableRuleTypeNode ?: return
+
+        // Navigate to rule on double click
+        if (event.clickCount == 2) {
+            if (DumbService.isDumb(project)) return
+
+            val ruleId = reportNode.ref.id
+            val ruleIndexingService = project.service<JqaRuleIndexingService>()
+
+            getApplication().executeOnPooledThread {
+                val navigationElement =
+                    ReadAction.compute<Navigatable?, Throwable> {
+                        val definition = ruleIndexingService.resolve(ruleId).firstOrNull() ?: return@compute null
+
+                        val source = definition.computeSource() ?: return@compute null
+
+                        source.navigationElement as? Navigatable
+                    }
+
+                getApplication().invokeLater {
+                    if (navigationElement == null || !navigationElement.canNavigate()) return@invokeLater
+
+                    navigationElement.navigate(true)
+                }
+            }
+        }
     }
 }
