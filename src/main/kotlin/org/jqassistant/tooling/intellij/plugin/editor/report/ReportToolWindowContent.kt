@@ -259,6 +259,7 @@ class ReportToolWindowContent(
                 },
             )
 
+        table.autoCreateRowSorter = true
         val tableSpeedSearch = TableSpeedSearch(table)
 
         splitter.secondComponent = JBScrollPane(tableSpeedSearch.component)
