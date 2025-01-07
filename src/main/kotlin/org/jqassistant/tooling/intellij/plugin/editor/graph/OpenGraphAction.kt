@@ -6,9 +6,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.pom.PomTargetPsiElement
 import com.intellij.util.xml.DomTarget
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Concept
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Constraint
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Group
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class OpenGraphAction : AnAction() {
@@ -30,26 +27,6 @@ class OpenGraphAction : AnAction() {
         val component = content.component as? GraphToolWindowContent ?: return
 
         component.currentRule = ruleBase
-        when (ruleBase) {
-            is Concept -> {
-                component.concepts = ruleBase.providesConcept.toMutableList()
-                component.concepts.addAll(0, ruleBase.requiresConcept)
-                component.constraints = mutableListOf()
-                component.groups = mutableListOf()
-            }
-
-            is Constraint -> {
-                component.concepts = ruleBase.requiresConcept.toMutableList()
-                component.constraints = mutableListOf()
-                component.groups = mutableListOf()
-            }
-
-            is Group -> {
-                component.groups = ruleBase.includeGroup.toMutableList()
-                component.constraints = ruleBase.includeConstraint.toMutableList()
-                component.concepts = ruleBase.includeConcept.toMutableList()
-            }
-        }
 
         component.buildGraph()
     }
