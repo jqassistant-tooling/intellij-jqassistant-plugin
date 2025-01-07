@@ -18,7 +18,7 @@ internal class GraphToolWindowFactory :
 
         // Add individual tabs for every base directory in the current project that contains a report xml file
         val content =
-            ContentFactory.getInstance().createContent(toolWindowContent.toolWindowPanel, "Graph", false)
+            ContentFactory.getInstance().createContent(toolWindowContent, "Graph", false)
         toolWindow.contentManager.addContent(content)
     }
 
