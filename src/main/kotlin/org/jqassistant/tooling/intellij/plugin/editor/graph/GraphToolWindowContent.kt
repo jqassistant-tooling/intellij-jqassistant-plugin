@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.implementations.MultiGraph
 import org.graphstream.ui.layout.Layouts
@@ -95,9 +96,17 @@ class GraphToolWindowContent(
         val rgbBackground = "rgb(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue})"
         val rgbText = "rgb(${textColor.red}, ${textColor.green}, ${textColor.blue})"
 
-        val rgbConcept = "rgba(38, 196, 251, 50)"
-        val rgbConstraint = "rgba(255, 196, 0, 67)"
-        val rgbGroup = "rgba(55, 242, 70, 50)"
+        val blendingValue = 0.15
+        val blendedColor =
+            { col: String -> ColorUtil.blendColorsInRgb(backgroundColor, ColorUtil.fromHex(col), blendingValue) }
+
+        val conceptColor = blendedColor("f4f02d")
+        val constraintColor = blendedColor("f4612d")
+        val groupColor = blendedColor("2df4d1")
+
+        val rgbConcept = "rgb(${conceptColor.red}, ${conceptColor.green}, ${conceptColor.blue})"
+        val rgbConstraint = "rgb(${constraintColor.red}, ${constraintColor.green}, ${constraintColor.blue})"
+        val rgbGroup = "rgb(${groupColor.red}, ${groupColor.green}, ${groupColor.blue})"
 
         graph.setAttribute(
             "ui.stylesheet",
@@ -108,10 +117,12 @@ class GraphToolWindowContent(
 
             node {
                 shape: rounded-box;
+                fill-color: $rgbBackground;
+
+                text-size: 15;
                 text-color: $rgbText;
-                text-padding: 10px;
+                text-padding: 10px, 5px;
                 text-background-mode: rounded-box;
-                text-background-color: $rgbBackground;
             }
             node.concept {
                 text-background-color: $rgbConcept;
@@ -126,7 +137,9 @@ class GraphToolWindowContent(
             edge {
                 fill-color: $rgbText;
                 text-color: $rgbText;
-                text-padding: 30px;
+
+                text-size: 10;
+                text-padding: 20px;
                 text-background-mode: plain;
                 text-alignment: along;
                 text-background-color: $rgbBackground;
