@@ -9,7 +9,7 @@ import org.jqassistant.tooling.intellij.plugin.data.jqa.tasks.EffectiveRulesTask
 class JqaCliAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        ApplicationManager.getApplication().invokeLater {
+        ApplicationManager.getApplication().executeOnPooledThread {
             val currentThread = Thread.currentThread()
             val originalClassLoader = currentThread.contextClassLoader
             val pluginClassLoader = javaClass.classLoader
