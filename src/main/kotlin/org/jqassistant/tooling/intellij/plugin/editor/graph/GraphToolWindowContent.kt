@@ -25,18 +25,18 @@ class GraphToolWindowContent(
 
     init {
 
-        val G = graph.addNode("Graph")
-        G.setAttribute("ui.label", "Graph")
-        G.setAttribute("xy", 1, 3)
+        val g = graph.addNode("Graph")
+        g.setAttribute("ui.label", "Graph")
+        g.setAttribute("xy", 1, 3)
 
-        val V = graph.addNode("Viewer")
-        V.setAttribute("ui.label", "V")
-        V.setAttribute("xy", 3, 3)
+        val v = graph.addNode("Viewer")
+        v.setAttribute("ui.label", "V")
+        v.setAttribute("xy", 3, 3)
 
-        val P1 = graph.addNode("GtoV")
-        P1.setAttribute("ui.label", "P1")
-        val P2 = graph.addNode("VtoG")
-        P2.setAttribute("ui.label", "P2")
+        val p1 = graph.addNode("GtoV")
+        p1.setAttribute("ui.label", "P1")
+        val p2 = graph.addNode("VtoG")
+        p2.setAttribute("ui.label", "P2")
 
         graph.addEdge("G->GtoV", "Graph", "GtoV", true)
         graph.addEdge("GtoV->V", "GtoV", "Viewer", true)
@@ -95,18 +95,34 @@ class GraphToolWindowContent(
         val rgbBackground = "rgb(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue})"
         val rgbText = "rgb(${textColor.red}, ${textColor.green}, ${textColor.blue})"
 
+        val rgbConcept = "rgba(38, 196, 251, 50)"
+        val rgbConstraint = "rgba(255, 196, 0, 67)"
+        val rgbGroup = "rgba(55, 242, 70, 50)"
+
         graph.setAttribute(
             "ui.stylesheet",
             """
             graph {
                 fill-color: $rgbBackground;
             }
+
             node {
+                shape: rounded-box;
                 text-color: $rgbText;
-                text-padding: 30px;
-                text-background-mode: plain;
+                text-padding: 10px;
+                text-background-mode: rounded-box;
                 text-background-color: $rgbBackground;
             }
+            node.concept {
+                text-background-color: $rgbConcept;
+            }
+            node.constraint {
+                text-background-color: $rgbConstraint;
+            }
+            node.group {
+                text-background-color: $rgbGroup;
+            }
+
             edge {
                 fill-color: $rgbText;
                 text-color: $rgbText;
@@ -128,11 +144,13 @@ class GraphToolWindowContent(
             is Concept -> {
                 // Multithreading
                 val currentRule = currentRule as? Concept ?: return
+                centerNode.setAttribute("ui.class", "concept", "center")
 
                 for (concept in currentRule.requiresConcept) {
                     val name = concept.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "requiresConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "requiresConcept")
@@ -142,6 +160,7 @@ class GraphToolWindowContent(
                     val name = concept.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "providesConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId<-$name", name, currentRuleId, true)
                     e.setAttribute("ui.label", "providesConcept")
@@ -151,11 +170,13 @@ class GraphToolWindowContent(
             is Constraint -> {
                 // Multithreading
                 val currentRule = currentRule as? Constraint ?: return
+                centerNode.setAttribute("ui.class", "group", "center")
 
                 for (concept in currentRule.requiresConcept) {
                     val name = concept.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "requiresConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "requiresConcept")
@@ -164,11 +185,13 @@ class GraphToolWindowContent(
 
             is Group -> {
                 val currentRule = currentRule as? Group ?: return
+                centerNode.setAttribute("ui.class", "group", "center")
 
                 for (group in currentRule.includeGroup) {
                     val name = group.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "includeGroup", "group")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeGroup")
@@ -178,6 +201,7 @@ class GraphToolWindowContent(
                     val name = concept.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "includeConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId->$name", name, currentRuleId, true)
                     e.setAttribute("ui.label", "includeConcept")
@@ -187,6 +211,7 @@ class GraphToolWindowContent(
                     val name = constraint.refType.value
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
+                    n.setAttribute("ui.class", "includeConstraint", "constraint")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConstraint")
