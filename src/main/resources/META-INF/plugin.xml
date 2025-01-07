@@ -61,6 +61,9 @@
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
                     anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
+        <toolWindow id="Rule Graph" secondary="true" icon="AllIcons.Graph.Layout"
+                    anchor="right"
+                    factoryClass="org.jqassistant.tooling.intellij.plugin.editor.graph.GraphToolWindowFactory"/>
         <spellchecker.bundledDictionaryProvider
             implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
