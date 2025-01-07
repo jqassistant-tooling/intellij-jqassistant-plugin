@@ -42,6 +42,15 @@ class ReportTreeModel(
         }
     }
 
+    /**
+     * Swap the root so that the tree model now shows a new tree
+     * with the reversing and filter applied
+     */
+    fun buildVisibleTree() {
+        // originalRoot.add(GroupingNode("test", originalRoot))
+        insertNodeInto(GroupingNode("test", originalRoot), originalRoot, 1)
+    }
+
     private fun getChildren(parent: Any?): List<ReportNode> {
         val count = super.getChildCount(parent)
 
@@ -52,8 +61,24 @@ class ReportTreeModel(
         if (searchText.isNotEmpty()) {
             children =
                 children.filter { node ->
-                    if (!node.isLeaf) return@filter true
-                    node.toString().startsWith(searchText)
+                    if (node.isLeaf) {
+                        node.toString().contains(searchText)
+                    } else {
+                        val enumeration = node.breadthFirstEnumeration()
+
+                        // Skip all grouping nodes
+                        var currentElement = enumeration.nextElement()
+                        while (currentElement is GroupingNode) {
+                            if (!enumeration.hasMoreElements()) return@filter false
+                            currentElement = enumeration.nextElement()
+                        }
+
+                        val iter = enumeration.toList().toMutableList()
+                        // Add back the last skipped node from while loop
+                        iter.add(0, currentElement)
+
+                        iter.any { subNode -> subNode.toString().contains(searchText) }
+                    }
                 }
         }
 

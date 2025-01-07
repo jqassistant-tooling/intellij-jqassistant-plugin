@@ -24,9 +24,9 @@ import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.JqassistantReport
 import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
+import org.jqassistant.tooling.intellij.plugin.editor.report.actions.FilterAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
-import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SearchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
 import java.awt.BorderLayout
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.GroupingNode
@@ -77,7 +77,6 @@ class ReportToolWindowContent(
                 LayoutSwitchAction(this),
                 RefreshAction(project, toolWindow),
                 SortingToggleAction(projectTrees),
-                SearchAction(projectTrees),
             )
 
         val actionToolbar =
@@ -87,19 +86,16 @@ class ReportToolWindowContent(
         // Add search bar and handle text changes
         val textArea = JTextArea()
         val searchBar = SearchTextArea(textArea, false)
+        searchBar.setMultilineEnabled(false)
+        searchBar.setExtraActions(FilterAction(projectTrees))
+
         textArea.document.addDocumentListener(
             object : DocumentListener {
-                override fun insertUpdate(p0: DocumentEvent?) {
-                    updateSearch(p0)
-                }
+                override fun insertUpdate(p0: DocumentEvent?) = updateSearch(p0)
 
-                override fun removeUpdate(p0: DocumentEvent?) {
-                    updateSearch(p0)
-                }
+                override fun removeUpdate(p0: DocumentEvent?) = updateSearch(p0)
 
-                override fun changedUpdate(p0: DocumentEvent?) {
-                    updateSearch(p0)
-                }
+                override fun changedUpdate(p0: DocumentEvent?) = updateSearch(p0)
 
                 fun updateSearch(event: DocumentEvent?) {
                     val newText = textArea.text

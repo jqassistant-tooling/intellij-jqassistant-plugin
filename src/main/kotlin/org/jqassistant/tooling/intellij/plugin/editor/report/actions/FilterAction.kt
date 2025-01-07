@@ -6,12 +6,12 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.ui.treeStructure.Tree
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportTreeModel
 
-class SearchAction(
+class FilterAction(
     private val trees: List<Tree>,
 ) : DumbAwareAction(
-        "Search",
-        "Search for content ",
-        AllIcons.Actions.Search,
+        "Filter",
+        "Filter report",
+        AllIcons.General.Filter,
     ) {
     override fun actionPerformed(e: AnActionEvent) {
         for (tree in trees) {
