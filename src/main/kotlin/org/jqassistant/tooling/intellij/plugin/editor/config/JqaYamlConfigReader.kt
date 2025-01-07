@@ -6,7 +6,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -55,7 +54,18 @@ class JqaYamlConfigReader : AnAction("Extract Jqa config from pom.xml") {
                 "Success",
                 Messages.getInformationIcon(),
             )
-            PomXmlProcessor.openYamlInEditor(project, VfsUtil.loadText(extractedYaml))
+            // PomXmlProcessor.openYamlInEditor(project, VfsUtil.loadText(extractedYaml))
+
+            val injector = YamlXmlInjector()
+            val injection = injector.getInjection(psiFile)
+
+            // Überprüfe das Ergebnis
+            if (injection != null) {
+                println("Injection erfolgreich: ${injection.injectedLanguage}")
+                println("Injection erfolgreich: $injection")
+            } else {
+                println("Keine Injection durchgeführt.")
+            }
         } else {
             Messages.showErrorDialog(
                 project,
@@ -105,7 +115,10 @@ object PomXmlProcessor {
         return null
     }
 
-    fun openYamlInEditor(project: Project, yamlContent: String) {
+    fun openYamlInEditor(
+        project: Project,
+        yamlContent: String,
+    ) {
         val fileType = FileTypeManager.getInstance().getFileTypeByExtension("yaml")
         val yamlFile = LightVirtualFile("extracted.yaml", fileType, yamlContent)
         FileEditorManager.getInstance(project).openFile(yamlFile, true)

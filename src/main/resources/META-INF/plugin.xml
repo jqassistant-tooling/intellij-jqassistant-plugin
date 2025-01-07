@@ -30,6 +30,9 @@
                 rootTagName="jqassistant-rules"
                 stubVersion="1"/>
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
+        <languageInjectionContributor
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlXmlInjector"
+            language="yaml"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
