@@ -14,7 +14,7 @@ maven-bom = "3.9.9"
 
 jgrapht-core = "1.5.2"
 jgraphx = "4.2.2"
-graphstream = "2.0.0"
+graphstream = "2.0"
 
 
 # plugins
