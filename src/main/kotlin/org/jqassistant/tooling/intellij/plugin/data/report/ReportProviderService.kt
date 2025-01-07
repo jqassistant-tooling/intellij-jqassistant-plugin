@@ -14,7 +14,9 @@ import org.jqassistant.schema.report.v2.ReferencableRuleType
 import org.jqassistant.tooling.intellij.plugin.common.JQAssistantPluginDisposable
 import java.io.File
 
-typealias ReportChangedListener = (rootDirectory: VirtualFile) -> Unit
+fun interface ReportChangedListener {
+    operator fun invoke(rootDirectory: VirtualFile)
+}
 
 @Service(Service.Level.PROJECT)
 class ReportProviderService(
