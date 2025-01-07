@@ -24,7 +24,7 @@ class ReportProviderService(
 
     private val listeners: MutableList<ReportChangedListener> = mutableListOf()
 
-    /** This is needed to avoid creating mutable listeners on the same file
+    /** This is needed to avoid creating multiple listeners on the same file
      * The Set is not using [com.intellij.openapi.editor.Document] on purpose, see
      * [https://plugins.jetbrains.com/docs/intellij/documents.html#how-long-does-a-document-persist](https://plugins.jetbrains.com/docs/intellij/documents.html#how-long-does-a-document-persist)
      */
