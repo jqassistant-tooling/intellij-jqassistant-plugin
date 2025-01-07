@@ -142,6 +142,11 @@
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
                 class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
+        <action id="org.jqassistant.tooling.intellij.plugin.editor.graph.OpenGraphAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.graph.OpenGraphAction" text="Open Rule Graph"
+                description="Opens the graph of rules related to the currently selected element">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
                 class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
