@@ -12,6 +12,10 @@ jqa-core-configuration = "2.0.0-RC1"
 
 maven-bom = "3.9.9"
 
+jgrapht-core = "1.5.2"
+jgraphx = "4.2.2"
+graphstream = "2.0.0"
+
 
 # plugins
 changelog = "2.2.1"
@@ -28,6 +32,11 @@ jqa-core-configuration = { group = "com.buschmais.jqassistant.core", name = "con
 jqa-core-runtime = { group = "com.buschmais.jqassistant.core", name = "runtime", version.ref = "jqa-core-runtime" }
 jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa-cli-application" }
 jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa-maven" }
+
+jgrapht-core = { group = "org.jgrapht", name = "jgrapht-core", version.ref = "jgrapht-core" }
+jgraphx = { group = "com.github.vlsi.mxgraph", name = "jgraphx", version.ref = "jgraphx" }
+gs-core = { group = "org.graphstream", name = "gs-core", version.ref = "graphstream" }
+gs-ui-swing = { group = "org.graphstream", name = "gs-ui-swing", version.ref = "graphstream" }
 
 maven-bom = { module = "org.apache.maven:maven-bom", version.ref = "maven-bom" }
 maven-core = { group = "org.apache.maven", name = "maven-core", version.ref = "maven-bom" }
