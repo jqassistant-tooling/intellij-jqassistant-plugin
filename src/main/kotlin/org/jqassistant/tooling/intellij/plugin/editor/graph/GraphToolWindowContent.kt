@@ -1,10 +1,14 @@
 package org.jqassistant.tooling.intellij.plugin.editor.graph
 
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
-import com.mxgraph.swing.mxGraphComponent
-import com.mxgraph.view.mxGraph
+import org.graphstream.graph.implementations.MultiGraph
+import org.graphstream.ui.layout.Layouts
+import org.graphstream.ui.swing_viewer.DefaultView
+import org.graphstream.ui.swing_viewer.SwingViewer
+import org.graphstream.ui.view.Viewer
 import javax.swing.JPanel
 
 class GraphToolWindowContent(
@@ -16,38 +20,64 @@ class GraphToolWindowContent(
     init {
         toolWindowPanel = SimpleToolWindowPanel(true)
 
-        val graph = mxGraph()
-        val parent = graph.defaultParent
+        val graph = MultiGraph("embedded")
 
-        graph.model.beginUpdate()
-        try {
-            val v1 =
-                graph.insertVertex(
-                    parent,
-                    null,
-                    "Hello",
-                    20.0,
-                    20.0,
-                    80.0,
-                    30.0,
-                )
-            val v2 =
-                graph.insertVertex(
-                    parent,
-                    null,
-                    "World!",
-                    240.0,
-                    150.0,
-                    80.0,
-                    30.0,
-                )
-            graph.insertEdge(parent, null, "Edge", v1, v2)
-        } finally {
-            graph.model.endUpdate()
-        }
+        val G = graph.addNode("Graph")
+        G.setAttribute("ui.label", "Graph")
+        G.setAttribute("xy", 1, 3)
 
-        val graphComponent = mxGraphComponent(graph)
+        val V = graph.addNode("Viewer")
+        V.setAttribute("ui.label", "V")
+        V.setAttribute("xy", 3, 3)
 
-        toolWindowPanel.setContent(graphComponent)
+        val P1 = graph.addNode("GtoV")
+        P1.setAttribute("ui.label", "P1")
+        val P2 = graph.addNode("VtoG")
+        P2.setAttribute("ui.label", "P2")
+
+        graph.addEdge("G->GtoV", "Graph", "GtoV", true)
+        graph.addEdge("GtoV->V", "GtoV", "Viewer", true)
+        graph.addEdge("VtoG<-V", "Viewer", "VtoG", true)
+        graph.addEdge("G<-VtoG", "VtoG", "Graph", true)
+
+        System.setProperty("org.graphstream.ui", "swing")
+        System.setProperty("sun.java2d.opengl", "True")
+
+        graph.setAttribute("ui.antialias")
+
+        val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
+
+        val background = colorsScheme.defaultBackground
+        val textColor = colorsScheme.defaultForeground
+
+        graph.setAttribute(
+            "ui.stylesheet",
+            """
+            graph {
+                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
+            }
+            node {
+            	size: 30px, 35px;
+            	shape: box;
+                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
+            	stroke-mode: plain;
+                stroke-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+                text-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+            }
+            edge {
+                fill-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+            }
+            """.trimIndent(),
+        )
+
+        val viewer = SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
+
+        val layout = Layouts.newLayoutAlgorithm()
+        viewer.enableAutoLayout(layout)
+
+        // false indicates "no JFrame".
+        val view = viewer.addDefaultView(false) as DefaultView
+
+        toolWindowPanel.setContent(view)
     }
 }
