@@ -30,9 +30,6 @@ class JqaEffectiveConfigProvider(
      * */
     override fun onEvent() {
         config.isValid = false
-
-        // TODO remove this, it is for testing
-        // val what = Main.main(arrayOf("effective-configuration"))
     }
 
     /** Returns the stored configuration, might not be valid at the time of retrieval
