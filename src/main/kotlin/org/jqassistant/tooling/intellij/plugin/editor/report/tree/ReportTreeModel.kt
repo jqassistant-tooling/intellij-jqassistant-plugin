@@ -3,53 +3,10 @@ package org.jqassistant.tooling.intellij.plugin.editor.report.tree
 import javax.swing.tree.DefaultTreeModel
 
 class ReportTreeModel(
-    private val originalRoot: ReportNode,
-) : DefaultTreeModel(originalRoot, false) {
+    root: ReportNode,
+) : DefaultTreeModel(root, false) {
     var reverseSorting: Boolean = false
     var searchText: String = ""
-    private val treeCopy: ReportNode
-
-    init {
-        treeCopy =
-            when (originalRoot) {
-                is ReferencableRuleTypeNode ->
-                    ReferencableRuleTypeNode(originalRoot.ref, null)
-
-                is GroupingNode ->
-                    GroupingNode(originalRoot.text, null)
-
-                else -> throw IllegalArgumentException()
-            }
-
-        copyTree(originalRoot, treeCopy)
-    }
-
-    private fun copyTree(oldRoot: ReportNode, newRoot: ReportNode) {
-        for (child in oldRoot.children()) {
-            val newChild =
-                when (child) {
-                    is ReferencableRuleTypeNode ->
-                        ReferencableRuleTypeNode(child.ref, null)
-
-                    is GroupingNode ->
-                        GroupingNode(child.text, null)
-
-                    else -> throw IllegalArgumentException()
-                }
-
-            copyTree(child as ReportNode, newChild)
-            newRoot.add(newChild)
-        }
-    }
-
-    /**
-     * Swap the root so that the tree model now shows a new tree
-     * with the reversing and filter applied
-     */
-    fun buildVisibleTree() {
-        // originalRoot.add(GroupingNode("test", originalRoot))
-        insertNodeInto(GroupingNode("test", originalRoot), originalRoot, 1)
-    }
 
     private fun getChildren(parent: Any?): List<ReportNode> {
         val count = super.getChildCount(parent)
