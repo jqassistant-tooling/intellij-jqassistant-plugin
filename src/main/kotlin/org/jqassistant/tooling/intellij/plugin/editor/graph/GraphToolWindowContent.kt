@@ -10,7 +10,9 @@ import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.ReferenceType
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Concept
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Constraint
+import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Group
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class GraphToolWindowContent(
@@ -18,11 +20,8 @@ class GraphToolWindowContent(
     private val toolWindow: ToolWindow,
 ) : SimpleToolWindowPanel(true) {
     var currentRule: RuleBase? = null
-    var groups = mutableListOf<ReferenceType>()
-    var constraints = mutableListOf<ReferenceType>()
-    var concepts = mutableListOf<ReferenceType>()
 
-    val graph = MultiGraph("toolWindowGraph")
+    private val graph = MultiGraph("toolWindowGraph")
 
     init {
 
@@ -89,26 +88,32 @@ class GraphToolWindowContent(
 
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
-        val background = UIUtil.getPanelBackground()
+        val backgroundColor = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
         graph.setAttribute("ui.antialias")
+        val rgbBackground = "rgb(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue})"
+        val rgbText = "rgb(${textColor.red}, ${textColor.green}, ${textColor.blue})"
+
         graph.setAttribute(
             "ui.stylesheet",
             """
             graph {
-                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
+                fill-color: $rgbBackground;
             }
             node {
-            	size: 90px, 35px;
-            	shape: box;
-                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
-            	stroke-mode: plain;
-                stroke-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
-                text-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+                text-color: $rgbText;
+                text-padding: 30px;
+                text-background-mode: plain;
+                text-background-color: $rgbBackground;
             }
             edge {
-                fill-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+                fill-color: $rgbText;
+                text-color: $rgbText;
+                text-padding: 30px;
+                text-background-mode: plain;
+                text-alignment: along;
+                text-background-color: $rgbBackground;
             }
             """.trimIndent(),
         )
@@ -119,28 +124,74 @@ class GraphToolWindowContent(
         val centerNode = graph.addNode(currentRuleId)
         centerNode.setAttribute("ui.label", currentRuleId)
 
-        for (group in groups) {
-            val name = group.refType.value
-            val g = graph.addNode(group.refType.value)
-            g.setAttribute("ui.label", name)
+        when (currentRule) {
+            is Concept -> {
+                // Multithreading
+                val currentRule = currentRule as? Concept ?: return
 
-            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
-        }
+                for (concept in currentRule.requiresConcept) {
+                    val name = concept.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
 
-        for (concept in concepts) {
-            val name = concept.refType.value
-            val g = graph.addNode(concept.refType.value)
-            g.setAttribute("ui.label", name)
+                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    e.setAttribute("ui.label", "requiresConcept")
+                }
 
-            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
-        }
+                for (concept in currentRule.providesConcept) {
+                    val name = concept.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
 
-        for (constraint in constraints) {
-            val name = constraint.refType.value
-            val g = graph.addNode(constraint.refType.value)
-            g.setAttribute("ui.label", name)
+                    val e = graph.addEdge("$currentRuleId<-$name", name, currentRuleId, true)
+                    e.setAttribute("ui.label", "providesConcept")
+                }
+            }
 
-            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
+            is Constraint -> {
+                // Multithreading
+                val currentRule = currentRule as? Constraint ?: return
+
+                for (concept in currentRule.requiresConcept) {
+                    val name = concept.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
+
+                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    e.setAttribute("ui.label", "requiresConcept")
+                }
+            }
+
+            is Group -> {
+                val currentRule = currentRule as? Group ?: return
+
+                for (group in currentRule.includeGroup) {
+                    val name = group.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
+
+                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    e.setAttribute("ui.label", "includeGroup")
+                }
+
+                for (concept in currentRule.includeConcept) {
+                    val name = concept.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
+
+                    val e = graph.addEdge("$currentRuleId->$name", name, currentRuleId, true)
+                    e.setAttribute("ui.label", "includeConcept")
+                }
+
+                for (constraint in currentRule.includeConstraint) {
+                    val name = constraint.refType.value
+                    val n = graph.addNode(name)
+                    n.setAttribute("ui.label", name)
+
+                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    e.setAttribute("ui.label", "includeConstraint")
+                }
+            }
         }
     }
 }
