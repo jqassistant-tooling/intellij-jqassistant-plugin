@@ -46,8 +46,6 @@ dependencies {
         exclude(group = "org.neo4j.community")
     }
 
-    implementation(libs.jgrapht.core)
-    implementation(libs.jgraphx)
     implementation(libs.gs.core)
     implementation(libs.gs.ui.swing)
 

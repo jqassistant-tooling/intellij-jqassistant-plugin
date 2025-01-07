@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.implementations.MultiGraph
 import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
@@ -47,7 +48,7 @@ class GraphToolWindowContent(
 
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
-        val background = colorsScheme.defaultBackground
+        val background = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
         graph.setAttribute(
@@ -57,7 +58,7 @@ class GraphToolWindowContent(
                 fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
             }
             node {
-            	size: 30px, 35px;
+            	size: 90px, 35px;
             	shape: box;
                 fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
             	stroke-mode: plain;
