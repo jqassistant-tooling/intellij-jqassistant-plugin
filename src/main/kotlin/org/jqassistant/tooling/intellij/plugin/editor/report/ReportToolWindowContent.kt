@@ -28,12 +28,12 @@ import org.jqassistant.tooling.intellij.plugin.editor.report.actions.FilterActio
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.LayoutSwitchAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.RefreshAction
 import org.jqassistant.tooling.intellij.plugin.editor.report.actions.SortingToggleAction
-import java.awt.BorderLayout
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.GroupingNode
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReferencableRuleTypeNode
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportCellRenderer
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportNode
 import org.jqassistant.tooling.intellij.plugin.editor.report.tree.ReportTreeModel
+import java.awt.BorderLayout
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JPanel
@@ -150,13 +150,13 @@ class ReportToolWindowContent(
                         treeClickListener(treePanel, event)
                     }
 
-                    override fun mousePressed(p0: java.awt.event.MouseEvent?) {}
+                    override fun mousePressed(p0: java.awt.event.MouseEvent?) = Unit
 
-                    override fun mouseReleased(p0: java.awt.event.MouseEvent?) {}
+                    override fun mouseReleased(p0: java.awt.event.MouseEvent?) = Unit
 
-                    override fun mouseEntered(p0: java.awt.event.MouseEvent?) {}
+                    override fun mouseEntered(p0: java.awt.event.MouseEvent?) = Unit
 
-                    override fun mouseExited(p0: java.awt.event.MouseEvent?) {}
+                    override fun mouseExited(p0: java.awt.event.MouseEvent?) = Unit
                 },
             )
 

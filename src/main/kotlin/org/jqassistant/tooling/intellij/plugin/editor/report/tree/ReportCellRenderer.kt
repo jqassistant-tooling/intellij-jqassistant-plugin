@@ -7,6 +7,7 @@ import org.jqassistant.schema.report.v2.ConceptType
 import org.jqassistant.schema.report.v2.ConstraintType
 import org.jqassistant.schema.report.v2.GroupType
 import org.jqassistant.schema.report.v2.StatusEnumType
+import javax.swing.Icon
 import javax.swing.JTree
 
 class ReportCellRenderer : ColoredTreeCellRenderer() {
@@ -37,14 +38,7 @@ class ReportCellRenderer : ColoredTreeCellRenderer() {
                     }
 
                     is ConstraintType -> {
-                        icon =
-                            when (rule.status) {
-                                StatusEnumType.SUCCESS -> AllIcons.RunConfigurations.TestPassed
-                                StatusEnumType.FAILURE -> AllIcons.RunConfigurations.TestFailed
-                                StatusEnumType.SKIPPED -> AllIcons.RunConfigurations.TestSkipped
-                                StatusEnumType.WARNING -> AllIcons.RunConfigurations.TestCustom
-                                null -> AllIcons.RunConfigurations.TestUnknown
-                            }
+                        icon = statusIcon(rule.status)
 
                         val text = rule.id
                         when (rule.severity.value) {
@@ -56,14 +50,7 @@ class ReportCellRenderer : ColoredTreeCellRenderer() {
                     }
 
                     is ConceptType -> {
-                        icon =
-                            when (rule.status) {
-                                StatusEnumType.SUCCESS -> AllIcons.RunConfigurations.TestPassed
-                                StatusEnumType.FAILURE -> AllIcons.RunConfigurations.TestFailed
-                                StatusEnumType.SKIPPED -> AllIcons.RunConfigurations.TestSkipped
-                                StatusEnumType.WARNING -> AllIcons.RunConfigurations.TestCustom
-                                null -> AllIcons.RunConfigurations.TestUnknown
-                            }
+                        icon = statusIcon(rule.status)
 
                         val text = rule.id
                         when (rule.severity.value) {
@@ -86,4 +73,13 @@ class ReportCellRenderer : ColoredTreeCellRenderer() {
             }
         }
     }
+
+    fun statusIcon(status: StatusEnumType?): Icon =
+        when (status) {
+            StatusEnumType.SUCCESS -> AllIcons.RunConfigurations.TestPassed
+            StatusEnumType.FAILURE -> AllIcons.RunConfigurations.TestFailed
+            StatusEnumType.SKIPPED -> AllIcons.RunConfigurations.TestSkipped
+            StatusEnumType.WARNING -> AllIcons.RunConfigurations.TestCustom
+            null -> AllIcons.RunConfigurations.TestUnknown
+        }
 }
