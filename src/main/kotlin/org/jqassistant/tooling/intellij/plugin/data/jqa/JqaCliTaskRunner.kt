@@ -66,7 +66,14 @@ class JqaCliTaskRunner(
         val task = taskClass.createInstance()
         val options = gatherOptions()
         val commandLine =
-            getCommandLine(arrayOf("-C", "C:\\Users\\Valentin\\IdeaProjects\\sig-metrics\\.jqassistant.yaml"), options)
+            getCommandLine(
+                arrayOf(
+                    "-C",
+                    ".jqassistant.yaml",
+                    // "pom.xml",
+                ),
+                options,
+            )
         val triple = prepareTask(task, commandLine, options) ?: return null
         val pluginRepository = triple.first
         val storeFactory = triple.second

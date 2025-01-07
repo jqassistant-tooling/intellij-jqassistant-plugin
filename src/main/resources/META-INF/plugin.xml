@@ -78,6 +78,12 @@
     </extensions>
 
     <actions>
+        <action id="DebugDornigeChanceJqaCli"
+                class="org.jqassistant.tooling.intellij.plugin.data.jqa.JqaCliAction"
+                text="Debug Dornige Chance JQA CLI"
+                description="Debugs the Dornige Chance JQA CLI">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="AddJqassistantYamlAction"
                 class="org.jqassistant.tooling.intellij.plugin.editor.templates.AddJqassistantYamlAction"
                 text="Add .jqassistant.yaml"
