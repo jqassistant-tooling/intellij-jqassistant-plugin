@@ -50,5 +50,7 @@ class OpenGraphAction : AnAction() {
                 component.concepts = ruleBase.includeConcept.toMutableList()
             }
         }
+
+        component.buildGraph()
     }
 }

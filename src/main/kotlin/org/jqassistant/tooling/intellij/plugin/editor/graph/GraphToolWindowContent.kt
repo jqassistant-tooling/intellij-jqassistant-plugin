@@ -22,9 +22,9 @@ class GraphToolWindowContent(
     var constraints = mutableListOf<ReferenceType>()
     var concepts = mutableListOf<ReferenceType>()
 
-    init {
+    val graph = MultiGraph("toolWindowGraph")
 
-        val graph = MultiGraph("embedded")
+    init {
 
         val G = graph.addNode("Graph")
         G.setAttribute("ui.label", "Graph")
@@ -47,13 +47,12 @@ class GraphToolWindowContent(
         System.setProperty("org.graphstream.ui", "swing")
         System.setProperty("sun.java2d.opengl", "True")
 
-        graph.setAttribute("ui.antialias")
-
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
         val background = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
+        graph.setAttribute("ui.antialias")
         graph.setAttribute(
             "ui.stylesheet",
             """
@@ -83,5 +82,65 @@ class GraphToolWindowContent(
         val view = viewer.addDefaultView(false) as DefaultView
 
         this.setContent(view)
+    }
+
+    fun buildGraph() {
+        graph.clear()
+
+        val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
+
+        val background = UIUtil.getPanelBackground()
+        val textColor = colorsScheme.defaultForeground
+
+        graph.setAttribute("ui.antialias")
+        graph.setAttribute(
+            "ui.stylesheet",
+            """
+            graph {
+                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
+            }
+            node {
+            	size: 90px, 35px;
+            	shape: box;
+                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
+            	stroke-mode: plain;
+                stroke-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+                text-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+            }
+            edge {
+                fill-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+            }
+            """.trimIndent(),
+        )
+
+        if (currentRule == null) return
+
+        val currentRuleId = currentRule!!.id.stringValue
+        val centerNode = graph.addNode(currentRuleId)
+        centerNode.setAttribute("ui.label", currentRuleId)
+
+        for (group in groups) {
+            val name = group.refType.value
+            val g = graph.addNode(group.refType.value)
+            g.setAttribute("ui.label", name)
+
+            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
+        }
+
+        for (concept in concepts) {
+            val name = concept.refType.value
+            val g = graph.addNode(concept.refType.value)
+            g.setAttribute("ui.label", name)
+
+            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
+        }
+
+        for (constraint in constraints) {
+            val name = constraint.refType.value
+            val g = graph.addNode(constraint.refType.value)
+            g.setAttribute("ui.label", name)
+
+            graph.addEdge("$currentRuleId->$name", currentRuleId, name, false)
+        }
     }
 }
