@@ -120,37 +120,45 @@ class GraphToolWindowContent(
         val rgbConstraint = "rgb(${constraintColor.red}, ${constraintColor.green}, ${constraintColor.blue})"
         val rgbGroup = "rgb(${groupColor.red}, ${groupColor.green}, ${groupColor.blue})"
 
+        val textSize: Int = 15
+        val textOffset = "0px, -${textSize / 2}px"
+
         return """
             graph {
                 fill-color: $rgbBackground;
-                padding: 50px;
+                padding: 200px;
             }
 
             node {
-                text-size: 15;
+                /* By using a mono font we can calculate the width */
+                text-font: "Noto Sans Mono";
+                text-size: $textSize;
                 text-color: $rgbText;
             }
 
             node.concept {
-                size-mode: fit;
-                padding: 10px, 5px;
+                /* size-mode: fit; */
+                /* padding: 10px, 5px; */
+                /* Only necessary for arrows */
+                shape: rounded-box;
+                fill-mode: none;
 
-                text-padding: 10px, 5px;
+                text-padding: 17px;
                 text-background-mode: rounded-box;
                 text-background-color: $rgbConcept;
             }
 
             node.constraint {
                 shape: circle;
-                size: 300px, 40px;
-                text-offset: 0px, -5px;
+                /* size: 300px, 40px; */
+                text-offset: $textOffset;
 
                 fill-color: $rgbConstraint;
             }
 
             node.group {
-                size: 200px, 60px;
-                text-offset: 0px, -5px;
+                /* size: 200px, 60px; */
+                text-offset: $textOffset;
                 shape: diamond;
 
                 fill-color: $rgbGroup;
@@ -180,9 +188,10 @@ class GraphToolWindowContent(
 
         if (currentRule == null) return
 
-        val currentRuleId = currentRule!!.id.stringValue
+        val currentRuleId = currentRule!!.id.stringValue!!
         val centerNode = graph.addNode(currentRuleId)
         centerNode.setAttribute("ui.label", currentRuleId)
+        centerNode.setAttribute("ui.style", "size: ${(currentRuleId.length * 10) + 10}px, 50px;")
 
         when (currentRule) {
             is Concept -> {
@@ -217,10 +226,11 @@ class GraphToolWindowContent(
                 centerNode.setAttribute("ui.class", "group", "center")
 
                 for (concept in currentRule.requiresConcept) {
-                    val name = concept.refType.value
+                    val name = concept.refType.value ?: "NULL"
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
                     n.setAttribute("ui.class", "requiresConcept", "concept")
+                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "requiresConcept")
@@ -232,30 +242,33 @@ class GraphToolWindowContent(
                 centerNode.setAttribute("ui.class", "group", "center")
 
                 for (group in currentRule.includeGroup) {
-                    val name = group.refType.value
+                    val name = group.refType.value ?: "NULL"
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
                     n.setAttribute("ui.class", "includeGroup", "group")
+                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeGroup")
                 }
 
                 for (concept in currentRule.includeConcept) {
-                    val name = concept.refType.value
+                    val name = concept.refType.value ?: "NULL"
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
                     n.setAttribute("ui.class", "includeConcept", "concept")
+                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConcept")
                 }
 
                 for (constraint in currentRule.includeConstraint) {
-                    val name = constraint.refType.value
+                    val name = constraint.refType.value ?: "NULL"
                     val n = graph.addNode(name)
                     n.setAttribute("ui.label", name)
                     n.setAttribute("ui.class", "includeConstraint", "constraint")
+                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConstraint")
