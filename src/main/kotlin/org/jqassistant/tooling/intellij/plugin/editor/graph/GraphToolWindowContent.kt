@@ -1,10 +1,13 @@
 package org.jqassistant.tooling.intellij.plugin.editor.graph
 
 import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColorUtil
+import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.implementations.MultiGraph
 import org.graphstream.ui.layout.Layouts
@@ -81,18 +84,27 @@ class GraphToolWindowContent(
         // false indicates "no JFrame".
         val view = viewer.addDefaultView(false) as DefaultView
 
-        this.setContent(view)
+        val splitter = OnePixelSplitter()
+        val textArea = JBTextArea()
+        textArea.text = stylesheet()
+
+        textArea.document.whenTextChanged { event ->
+            graph.removeAttribute("ui.stylesheet")
+            graph.setAttribute("ui.stylesheet", textArea.text)
+        }
+
+        splitter.firstComponent = textArea
+        splitter.secondComponent = view
+
+        this.setContent(splitter)
     }
 
-    fun buildGraph() {
-        graph.clear()
-
+    private fun stylesheet(): String {
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
         val backgroundColor = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
-        graph.setAttribute("ui.antialias")
         val rgbBackground = "rgb(${backgroundColor.red}, ${backgroundColor.green}, ${backgroundColor.blue})"
         val rgbText = "rgb(${textColor.red}, ${textColor.green}, ${textColor.blue})"
 
@@ -108,11 +120,10 @@ class GraphToolWindowContent(
         val rgbConstraint = "rgb(${constraintColor.red}, ${constraintColor.green}, ${constraintColor.blue})"
         val rgbGroup = "rgb(${groupColor.red}, ${groupColor.green}, ${groupColor.blue})"
 
-        graph.setAttribute(
-            "ui.stylesheet",
-            """
+        return """
             graph {
                 fill-color: $rgbBackground;
+                padding: 50px;
             }
 
             node {
@@ -131,9 +142,25 @@ class GraphToolWindowContent(
                 text-background-color: $rgbConcept;
             }
             node.constraint {
-                text-background-color: $rgbConstraint;
+                /* Custom shape for constraint */
+                text-background-mode: none;
+                size-mode: fit;
+                shape: circle;
+                fill-color: $rgbConstraint;
+                text-offset: 0px, -30px;
+                padding: 20px;
+
+                /* text-background-color: $rgbConstraint; */
             }
             node.group {
+                /* Custom shape for constraint */
+                text-background-mode: none;
+                size-mode: fit;
+                shape: diamond;
+                fill-color: $rgbGroup;
+                text-offset: 0px, -80px;
+                padding: 40px;
+
                 text-background-color: $rgbGroup;
             }
 
@@ -149,8 +176,14 @@ class GraphToolWindowContent(
                 text-alignment: along;
                 text-background-color: $rgbBackground;
             }
-            """.trimIndent(),
-        )
+            """.trimIndent()
+    }
+
+    fun buildGraph() {
+        graph.clear()
+
+        graph.setAttribute("ui.antialias")
+        graph.setAttribute("ui.stylesheet", stylesheet())
 
         if (currentRule == null) return
 
