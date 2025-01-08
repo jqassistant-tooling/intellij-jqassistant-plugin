@@ -127,46 +127,33 @@ class GraphToolWindowContent(
             }
 
             node {
-                /* For blob */
-                size: 20px;
-
-                fill-color: $rgbBackground;
-
                 text-size: 15;
                 text-color: $rgbText;
             }
+
             node.concept {
+                size-mode: fit;
+                padding: 10px, 5px;
+
                 text-padding: 10px, 5px;
                 text-background-mode: rounded-box;
                 text-background-color: $rgbConcept;
             }
-            node.constraint {
-                /* Custom shape for constraint */
-                /* text-offset: 0px, -30px; */
-                /* padding: 20px; */
-                /* size-mode: fit; */
-                /* text-background-color: $rgbConstraint; */
 
+            node.constraint {
+                shape: circle;
                 size: 300px, 40px;
                 text-offset: 0px, -5px;
-                shape: circle;
+
                 fill-color: $rgbConstraint;
-
             }
-            node.group {
-                /* Custom shape for constraint */
-                /* text-background-mode: none; */
-                /* size-mode: fit; */
-                /* size: 10px, 20px; */
-                /* text-offset: 0px, -80px; */
-                /* padding: 40px; */
 
+            node.group {
                 size: 200px, 60px;
                 text-offset: 0px, -5px;
                 shape: diamond;
-                fill-color: $rgbGroup;
 
-                /* text-background-color: $rgbGroup; */
+                fill-color: $rgbGroup;
             }
 
             edge {
