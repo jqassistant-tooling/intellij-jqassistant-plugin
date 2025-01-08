@@ -116,6 +116,9 @@ class GraphToolWindowContent(
             }
 
             node {
+                /* For blob */
+                size: 20px;
+
                 shape: rounded-box;
                 fill-color: $rgbBackground;
 
@@ -135,11 +138,13 @@ class GraphToolWindowContent(
             }
 
             edge {
+                shape: blob;
+
                 fill-color: $rgbText;
                 text-color: $rgbText;
 
                 text-size: 10;
-                text-padding: 20px;
+                text-padding: 5px;
                 text-background-mode: plain;
                 text-alignment: along;
                 text-background-color: $rgbBackground;
@@ -216,7 +221,7 @@ class GraphToolWindowContent(
                     n.setAttribute("ui.label", name)
                     n.setAttribute("ui.class", "includeConcept", "concept")
 
-                    val e = graph.addEdge("$currentRuleId->$name", name, currentRuleId, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConcept")
                 }
 
