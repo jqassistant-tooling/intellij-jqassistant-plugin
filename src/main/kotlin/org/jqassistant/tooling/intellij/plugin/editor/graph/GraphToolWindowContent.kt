@@ -130,38 +130,43 @@ class GraphToolWindowContent(
                 /* For blob */
                 size: 20px;
 
-                shape: rounded-box;
                 fill-color: $rgbBackground;
 
                 text-size: 15;
                 text-color: $rgbText;
-                text-padding: 10px, 5px;
-                text-background-mode: rounded-box;
             }
             node.concept {
+                text-padding: 10px, 5px;
+                text-background-mode: rounded-box;
                 text-background-color: $rgbConcept;
             }
             node.constraint {
                 /* Custom shape for constraint */
-                text-background-mode: none;
-                size-mode: fit;
+                /* text-offset: 0px, -30px; */
+                /* padding: 20px; */
+                /* size-mode: fit; */
+                /* text-background-color: $rgbConstraint; */
+
+                size: 300px, 40px;
+                text-offset: 0px, -5px;
                 shape: circle;
                 fill-color: $rgbConstraint;
-                text-offset: 0px, -30px;
-                padding: 20px;
 
-                /* text-background-color: $rgbConstraint; */
             }
             node.group {
                 /* Custom shape for constraint */
-                text-background-mode: none;
-                size-mode: fit;
+                /* text-background-mode: none; */
+                /* size-mode: fit; */
+                /* size: 10px, 20px; */
+                /* text-offset: 0px, -80px; */
+                /* padding: 40px; */
+
+                size: 200px, 60px;
+                text-offset: 0px, -5px;
                 shape: diamond;
                 fill-color: $rgbGroup;
-                text-offset: 0px, -80px;
-                padding: 40px;
 
-                text-background-color: $rgbGroup;
+                /* text-background-color: $rgbGroup; */
             }
 
             edge {
@@ -172,6 +177,7 @@ class GraphToolWindowContent(
 
                 text-size: 10;
                 text-padding: 5px;
+                text-offset: 0px, -5px;
                 text-background-mode: plain;
                 text-alignment: along;
                 text-background-color: $rgbBackground;
