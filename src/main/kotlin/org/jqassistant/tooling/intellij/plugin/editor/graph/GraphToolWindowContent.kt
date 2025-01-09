@@ -99,6 +99,7 @@ class GraphToolWindowContent(
         this.setContent(splitter)
     }
 
+    // Based on: https://graphstream-project.org/doc/Advanced-Concepts/GraphStream-CSS-Reference/
     private fun stylesheet(): String {
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
