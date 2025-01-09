@@ -46,6 +46,9 @@ dependencies {
         exclude(group = "org.neo4j.community")
     }
 
+    implementation(libs.gs.core)
+    implementation(libs.gs.ui.swing)
+
     testImplementation(libs.junit)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
