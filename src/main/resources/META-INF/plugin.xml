@@ -30,9 +30,8 @@
                 rootTagName="jqassistant-rules"
                 stubVersion="1"/>
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
-        <languageInjectionContributor
-            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlXmlInjector"
-            language="yaml"/>
+        <multiHostInjector
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlXmlInjector"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
@@ -57,12 +56,6 @@
                 text="Custom Rules File (my_rules.xml)"
                 description="Adds a custom rules file with a custom name">
             <add-to-group group-id="NewGroup" anchor="first"/>
-        </action>
-        <action id="JqaYamlConfigReader"
-                class="org.jqassistant.tooling.intellij.plugin.editor.config.JqaYamlConfigReader"
-                text="Extract YAML"
-                description="Extract Jqa yaml config from pom.xml">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
 

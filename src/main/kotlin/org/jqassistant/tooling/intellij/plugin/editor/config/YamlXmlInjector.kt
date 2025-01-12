@@ -1,52 +1,62 @@
 package org.jqassistant.tooling.intellij.plugin.editor.config
 
-import com.intellij.lang.injection.general.Injection
-import com.intellij.lang.injection.general.LanguageInjectionContributor
-import com.intellij.lang.injection.general.SimpleInjection
+import com.intellij.lang.injection.MultiHostInjector
+import com.intellij.lang.injection.MultiHostRegistrar
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.xml.XmlTag
 import org.jetbrains.yaml.YAMLLanguage
 
-class YamlXmlInjector : LanguageInjectionContributor {
-    override fun getInjection(context: PsiElement): Injection? {
-        val file = context.containingFile
-        if (file.name != "pom.xml") return null
+class YamlXmlInjector : MultiHostInjector {
+    override fun getLanguagesToInject(registrar: MultiHostRegistrar, context: PsiElement) {
+        println("NotDoneInjecting1")
+        if (isConfigPlace(context)) {
+            println("NotDoneInjecting2")
+            val file = context.containingFile as? XmlFile ?: return
+            val rootTag = file.rootTag ?: return
+            val yamlXmlTag = findYamlTag(rootTag)
+            if (yamlXmlTag != null) {
+                val yamlContent =
+                    yamlXmlTag.value.textElements
+                        .firstOrNull { it is PsiLanguageInjectionHost }
+                        ?.takeIf { it is PsiLanguageInjectionHost && it.isValidHost } as? PsiLanguageInjectionHost
+                        ?: return
+                println(yamlContent.text)
+                val yamlContentRange = yamlContent.textRange as TextRange
 
-        // Rekursive Suche nach dem <yaml>-Tag
-        val xmlTag = findYamlTag(file)
-        if (xmlTag != null) {
-            // Bereich des <yaml>-Tags (d.h. vom öffnenden bis zum schließenden Tag)
-            val textRange = xmlTag.textRange
-            // Die YAML-Sprache für die Injektion festlegen
-            val yamlLanguage = YAMLLanguage.INSTANCE
-            return SimpleInjection(yamlLanguage, "<yaml>", "</yaml>", null)
+                registrar
+                    .startInjecting(YAMLLanguage.INSTANCE)
+                    .addPlace(
+                        "<yaml>",
+                        "</yaml>",
+                        yamlContent,
+                        yamlContentRange,
+                    ).doneInjecting()
+                println("DoneInjecting")
+            }
         }
-        return null
     }
 
-    private fun findYamlTag(file: PsiFile): XmlTag? {
-        // Rekursive Suche nach dem <yaml>-Tag
-        return findYamlTagRecursive(file, file.firstChild)
+    override fun elementsToInjectIn(): List<Class<out PsiElement?>?> = listOf(XmlTag::class.java)
+
+    fun isConfigPlace(context: PsiElement): Boolean {
+        val psiFile = context.containingFile ?: return false
+        return psiFile.name == "pom.xml"
     }
 
-    private fun findYamlTagRecursive(
-        file: PsiFile,
-        element: PsiElement?,
-    ): XmlTag? {
-        if (element == null) return null
-
-        // Wenn das Element ein XML-Tag ist und den Namen "yaml" hat, zurückgeben
-        if (element is XmlTag && element.name == "yaml") {
-            return element
+    private fun findYamlTag(tag: XmlTag): XmlTag? {
+        if (tag.name == "yaml") {
+            return tag
         }
-
-        // Rekursiv in den Kind-Elementen nach dem <yaml>-Tag suchen
-        for (child in element.children) {
-            val result = findYamlTagRecursive(file, child)
-            if (result != null) return result
+        // Durchsuche die Kinder-Tags
+        for (subTag in tag.subTags) {
+            val found = findYamlTag(subTag)
+            if (found != null) {
+                return found
+            }
         }
-
         return null
     }
 }
