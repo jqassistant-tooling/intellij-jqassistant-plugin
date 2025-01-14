@@ -13,7 +13,8 @@ import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.expressions.UInjectionHost
-import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.resolveToUElementOfType
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
 /**
  * Injects soft references to jQA rules for integration tests written in
@@ -35,16 +36,20 @@ class UastItReferenceContributor : PsiReferenceContributor() {
 
 object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleIdentifierAnnotationPattern") {
     override fun accepts(t: UCallExpression, context: ProcessingContext?): Boolean {
-        val psiElm = t.sourcePsi ?: return false
-        val firstChild = psiElm.firstChild
+        /*
+        // This is twice as fast for some reason
+        val psiElement = t.sourcePsi ?: return false
+        val firstChild = psiElement.firstChild
         val methodReference = firstChild.reference ?: return false
         val methodElement = methodReference.resolve()
         val uMethodElement = methodElement.toUElement(UMethod::class.java) ?: return false
+         */
+
+        // Get the UMethod element of the method that is being called
+        val uMethodElement = t.resolveToUElementOfType<UMethod>() ?: return false
+        // Get the first method parameter
         val uParameter = uMethodElement.uastParameters.firstOrNull() ?: return false
         val uAnnotations = uParameter.uAnnotations
-        for (a in uAnnotations) {
-            println(a.qualifiedName)
-        }
 
         val hasAnnotation =
             uAnnotations.any { a ->
@@ -55,9 +60,20 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
                 // If annotations should still be recognised then remove this line
                 if (!qualifiedName.startsWith(annotationPackage)) return@any false
 
-                val annotationType = qualifiedName.removePrefix(annotationPackage)
+                val annotationTypeName = qualifiedName.removePrefix(annotationPackage)
+                val annotationType =
+                    when (annotationTypeName) {
+                        "ConceptId" -> JqaRuleType.CONCEPT
+                        "GroupId" -> JqaRuleType.GROUP
+                        "ConstraintId" -> JqaRuleType.CONSTRAINT
+                        // Unknown Annotation
+                        else -> return@any false
+                    }
 
-                arrayOf("ConceptId", "GroupId", "ConstraintId").contains(annotationType)
+                // Tell UastItReferenceProvider which kind of reference we are dealing with
+                context?.put("jQAAnnotationType", annotationType)
+
+                return true
             }
 
         return hasAnnotation
@@ -67,12 +83,14 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
 object UastItReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::class.java)) {
     override fun getReferencesByElement(element: UElement, context: ProcessingContext): Array<PsiReference> {
         val psi = element.sourcePsi ?: return emptyArray()
-        // println(element)
         val injectionHost = element as? UInjectionHost ?: return emptyArray()
         if (!injectionHost.isString) return emptyArray()
         val name = injectionHost.evaluateToString() ?: return emptyArray()
-        return arrayOf(
-            RuleReference(psi, name, true),
-        )
+
+        val ruleType = context.get("jQAAnnotationType") as? JqaRuleType ?: return emptyArray()
+
+        val ruleReference = SpecificRuleReference(psi, name, ruleType, true)
+
+        return arrayOf(ruleReference)
     }
 }

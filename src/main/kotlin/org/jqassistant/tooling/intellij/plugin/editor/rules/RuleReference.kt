@@ -10,7 +10,7 @@ import com.intellij.util.containers.map2Array
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
-class RuleReference(
+open class RuleReference(
     element: PsiElement,
     private val name: String,
     private val soft: Boolean = false,
@@ -32,4 +32,17 @@ class RuleReference(
     }
 
     override fun isSoft() = soft
+}
+
+class SpecificRuleReference(
+    element: PsiElement,
+    name: String,
+    private val jqaRuleType: JqaRuleType,
+    soft: Boolean = false,
+) : RuleReference(element, name, soft) {
+    override fun getVariants(): Array<Any> =
+        element.project
+            .service<JqaRuleIndexingService>()
+            .getAll(jqaRuleType)
+            .map2Array { it.name }
 }
