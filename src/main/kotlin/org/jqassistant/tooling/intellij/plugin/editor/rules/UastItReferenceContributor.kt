@@ -21,46 +21,53 @@ import org.jetbrains.uast.toUElement
  */
 class UastItReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
-        val patternCondition =
-            object : PatternCondition<UCallExpression>("as") {
-                override fun accepts(t: UCallExpression, context: ProcessingContext?): Boolean {
-                    val psiElm = t.sourcePsi ?: return false
-                    val firstChild = psiElm.firstChild
-                    val refElm = firstChild.reference ?: return false
-                    val resolved = refElm.resolve()
-                    val uElement = resolved.toUElement(UMethod::class.java) ?: return false
-                    val parameter = uElement.uastParameters.firstOrNull() ?: return false
-                    val annotations = parameter.uAnnotations
-                    val hasAnnotation = annotations.any { a -> a.qualifiedName == "ConceptId" }
-
-                    // val arg = t.valueArguments.firstOrNull() ?: return false
-                    // val annos = arg.uAnnotations
-
-                    return hasAnnotation
-                }
-            }
-
         registrar.registerUastReferenceProvider(
             injectionHostUExpression()
                 .callParameter(
                     0,
                     callExpression()
-                        .withMethodNames(
-                            listOf(
-                                "applyConcept",
-                                "executeGroup",
-                            ),
-                        ).with(patternCondition), // .withReceiver(uClass("com.buschmais.jqassistant.core.test.plugin.AbstractPluginIT")),
+                        .with(AnnotationPatternCondition),
                 ),
             UastItReferenceProvider,
         )
     }
 }
 
+object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleIdentifierAnnotationPattern") {
+    override fun accepts(t: UCallExpression, context: ProcessingContext?): Boolean {
+        val psiElm = t.sourcePsi ?: return false
+        val firstChild = psiElm.firstChild
+        val methodReference = firstChild.reference ?: return false
+        val methodElement = methodReference.resolve()
+        val uMethodElement = methodElement.toUElement(UMethod::class.java) ?: return false
+        val uParameter = uMethodElement.uastParameters.firstOrNull() ?: return false
+        val uAnnotations = uParameter.uAnnotations
+        for (a in uAnnotations) {
+            println(a.qualifiedName)
+        }
+
+        val hasAnnotation =
+            uAnnotations.any { a ->
+                val qualifiedName = a.qualifiedName ?: return@any false
+                val annotationPackage = "com.buschmais.jqassistant.core.rule.api.annotation."
+
+                // During index building the qualifiedName will actually be just "ConceptId"
+                // If annotations should still be recognised then remove this line
+                if (!qualifiedName.startsWith(annotationPackage)) return@any false
+
+                val annotationType = qualifiedName.removePrefix(annotationPackage)
+
+                arrayOf("ConceptId", "GroupId", "ConstraintId").contains(annotationType)
+            }
+
+        return hasAnnotation
+    }
+}
+
 object UastItReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::class.java)) {
     override fun getReferencesByElement(element: UElement, context: ProcessingContext): Array<PsiReference> {
         val psi = element.sourcePsi ?: return emptyArray()
-        println(element)
+        // println(element)
         val injectionHost = element as? UInjectionHost ?: return emptyArray()
         if (!injectionHost.isString) return emptyArray()
         val name = injectionHost.evaluateToString() ?: return emptyArray()
