@@ -13,6 +13,7 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 class RuleReference(
     element: PsiElement,
     private val name: String,
+    private val soft: Boolean = false,
 ) : PsiPolyVariantReferenceBase<PsiElement?>(element),
     PsiPolyVariantReference {
     // FIXME: Remove @OptIn if IntelliJ 2023.1 support is dropped.
@@ -29,4 +30,6 @@ class RuleReference(
                 definition.computeSource()?.let { PsiElementResolveResult(it, true) }
             }.toTypedArray()
     }
+
+    override fun isSoft() = soft
 }
