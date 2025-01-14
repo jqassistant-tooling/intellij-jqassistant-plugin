@@ -9,6 +9,7 @@ import com.intellij.ui.ColorUtil
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.UIUtil
+import org.graphstream.graph.Node
 import org.graphstream.graph.implementations.MultiGraph
 import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
@@ -93,7 +94,7 @@ class GraphToolWindowContent(
             graph.setAttribute("ui.stylesheet", textArea.text)
         }
 
-        splitter.firstComponent = textArea
+        // splitter.firstComponent = textArea
         splitter.secondComponent = view
 
         this.setContent(splitter)
@@ -138,13 +139,13 @@ class GraphToolWindowContent(
             }
 
             node.concept {
-                /* size-mode: fit; */
                 /* padding: 10px, 5px; */
                 /* Only necessary for arrows */
+                size-mode: fit;
                 shape: rounded-box;
                 fill-mode: none;
 
-                text-padding: 17px;
+                text-padding: ${textSize / 2}px;
                 text-background-mode: rounded-box;
                 text-background-color: $rgbConcept;
             }
@@ -181,6 +182,31 @@ class GraphToolWindowContent(
             """.trimIndent()
     }
 
+    private fun groupNode(name: String): Node {
+        val node = graph.addNode(name)
+        node.setAttribute("ui.label", name)
+        // Character width of 9px
+        // See: https://stackoverflow.com/a/56379770/18448953
+        node.setAttribute("ui.style", "size: ${(name.length * 10) + 90}px, 90px;")
+
+        return node
+    }
+
+    private fun conceptNode(name: String): Node {
+        val node = graph.addNode(name)
+        node.setAttribute("ui.label", name)
+
+        return node
+    }
+
+    private fun constraintNode(name: String): Node {
+        val node = graph.addNode(name)
+        node.setAttribute("ui.label", name)
+        node.setAttribute("ui.style", "size: ${(name.length * 10) + 15}px, 60px;")
+
+        return node
+    }
+
     fun buildGraph() {
         graph.clear()
 
@@ -190,20 +216,17 @@ class GraphToolWindowContent(
         if (currentRule == null) return
 
         val currentRuleId = currentRule!!.id.stringValue!!
-        val centerNode = graph.addNode(currentRuleId)
-        centerNode.setAttribute("ui.label", currentRuleId)
-        centerNode.setAttribute("ui.style", "size: ${(currentRuleId.length * 10) + 10}px, 50px;")
 
         when (currentRule) {
             is Concept -> {
                 // Multithreading
                 val currentRule = currentRule as? Concept ?: return
+                val centerNode = conceptNode(currentRuleId)
                 centerNode.setAttribute("ui.class", "concept", "center")
 
                 for (concept in currentRule.requiresConcept) {
-                    val name = concept.refType.value
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val name = concept.refType.value ?: "NULL"
+                    val n = conceptNode(name)
                     n.setAttribute("ui.class", "requiresConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
@@ -211,9 +234,8 @@ class GraphToolWindowContent(
                 }
 
                 for (concept in currentRule.providesConcept) {
-                    val name = concept.refType.value
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val name = concept.refType.value ?: "NULL"
+                    val n = conceptNode(name)
                     n.setAttribute("ui.class", "providesConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId<-$name", name, currentRuleId, true)
@@ -224,12 +246,12 @@ class GraphToolWindowContent(
             is Constraint -> {
                 // Multithreading
                 val currentRule = currentRule as? Constraint ?: return
-                centerNode.setAttribute("ui.class", "group", "center")
+                val centerNode = constraintNode(currentRuleId)
+                centerNode.setAttribute("ui.class", "constraint", "center")
 
                 for (concept in currentRule.requiresConcept) {
                     val name = concept.refType.value ?: "NULL"
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val n = conceptNode(name)
                     n.setAttribute("ui.class", "requiresConcept", "concept")
                     n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
@@ -240,14 +262,13 @@ class GraphToolWindowContent(
 
             is Group -> {
                 val currentRule = currentRule as? Group ?: return
+                val centerNode = groupNode(currentRuleId)
                 centerNode.setAttribute("ui.class", "group", "center")
 
                 for (group in currentRule.includeGroup) {
                     val name = group.refType.value ?: "NULL"
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val n = groupNode(name)
                     n.setAttribute("ui.class", "includeGroup", "group")
-                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeGroup")
@@ -255,10 +276,8 @@ class GraphToolWindowContent(
 
                 for (concept in currentRule.includeConcept) {
                     val name = concept.refType.value ?: "NULL"
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val n = conceptNode(name)
                     n.setAttribute("ui.class", "includeConcept", "concept")
-                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConcept")
@@ -266,10 +285,8 @@ class GraphToolWindowContent(
 
                 for (constraint in currentRule.includeConstraint) {
                     val name = constraint.refType.value ?: "NULL"
-                    val n = graph.addNode(name)
-                    n.setAttribute("ui.label", name)
+                    val n = constraintNode(name)
                     n.setAttribute("ui.class", "includeConstraint", "constraint")
-                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
 
                     val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
                     e.setAttribute("ui.label", "includeConstraint")
