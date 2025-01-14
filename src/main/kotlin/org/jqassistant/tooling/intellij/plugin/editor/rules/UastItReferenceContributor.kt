@@ -24,7 +24,9 @@ class UastItReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerUastReferenceProvider(
             injectionHostUExpression()
+                // .methodCallParameter might be more fitting
                 .callParameter(
+                    // TODO: Make this work on all parameters
                     0,
                     callExpression()
                         .with(AnnotationPatternCondition),
