@@ -53,12 +53,15 @@ class UastItReferenceContributor : PsiReferenceContributor() {
                 callPattern.accepts(call, processingContext) &&
                     call.kind in constructorOrMethodCall
             },
-            // .methodCallParameter might be more fitting
             UastItReferenceProvider,
         )
     }
 }
 
+/**
+ * Checks if a method call contains a correctly annotated parameter at the `annotatedParameterIndex`
+ * that is set in the current ProcessingContext
+ */
 object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleIdentifierAnnotationPattern") {
     override fun accepts(t: UCallExpression, context: ProcessingContext?): Boolean {
         /*
@@ -112,23 +115,16 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
 
 object UastItReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::class.java)) {
     override fun getReferencesByElement(element: UElement, context: ProcessingContext): Array<PsiReference> {
-        /*
-        val annotatedParameterLiterals = context.get("annotatedParameterLiterals") as List<UExpression>
-        val annotatedParameterIndex = context.get("annotatedParameterIndex") as Int
-        val matchingIndex = annotatedParameterLiterals.indexOfFirst { lit -> lit == element }
-        println("size: ${annotatedParameterLiterals.size}")
-        println("matchI: $matchingIndex")
-        println("bool: ${matchingIndex == annotatedParameterIndex}")
-         */
-
-        val psi = element.sourcePsi ?: return emptyArray()
+        val psiElement = element.sourcePsi ?: return emptyArray()
         val injectionHost = element as? UInjectionHost ?: return emptyArray()
         if (!injectionHost.isString) return emptyArray()
-        val name = injectionHost.evaluateToString() ?: return emptyArray()
+        val stringLiteralContent = injectionHost.evaluateToString() ?: return emptyArray()
 
-        val ruleType = context.get("jQAAnnotationType") as? JqaRuleType ?: return emptyArray()
+        // Get which type of annotation this parameter has
+        val annotatedRuleType = context.get("jQAAnnotationType") as? JqaRuleType ?: return emptyArray()
 
-        val ruleReference = SpecificRuleReference(psi, name, ruleType, true)
+        // A rule reference to all rules of this rule type
+        val ruleReference = SpecificRuleReference(psiElement, stringLiteralContent, annotatedRuleType, true)
 
         return arrayOf(ruleReference)
     }
