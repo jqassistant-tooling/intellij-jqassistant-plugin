@@ -10,6 +10,17 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+            serviceImplementation="org.jqassistant.tooling.intellij.plugin.settings.PluginSettings"/>
+        <projectConfigurable
+            parentId="tools"
+            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            displayName="jQAssistant Tooling"/>
+
+    </extensions>
+
     <extensionPoints>
         <extensionPoint name="jqaRuleIndexingStrategy"
                         dynamic="true"
