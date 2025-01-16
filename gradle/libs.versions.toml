@@ -2,11 +2,13 @@
 # libraries
 junit = "4.13.2"
 
-jqa-core-report = "2.5.0"
-jqa-core-schemata = "2.5.0"
+jqa-cli-application = "2.6.0-M3"
+jqa-core-report = "2.6.0-M3"
+jqa-core-runtime = "2.6.0-M3"
+jqa-core-schemata = "2.6.0-M3"
+jqa-maven = "2.6.0-M3"
+
 jqa-core-configuration = "2.0.0-RC1"
-jqa-core-runtime = "2.5.0"
-jqa-cli-application = "2.5.0"
 
 maven-bom = "3.9.9"
 
@@ -25,10 +27,12 @@ jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata
 jqa-core-configuration = { group = "com.buschmais.jqassistant.core", name = "configuration", version.ref = "jqa-core-configuration" }
 jqa-core-runtime = { group = "com.buschmais.jqassistant.core", name = "runtime", version.ref = "jqa-core-runtime" }
 jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa-cli-application" }
+jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa-maven" }
 
 maven-bom = { module = "org.apache.maven:maven-bom", version.ref = "maven-bom" }
 maven-core = { group = "org.apache.maven", name = "maven-core", version.ref = "maven-bom" }
 maven-compat = { group = "org.apache.maven", name = "maven-compat", version.ref = "maven-bom" }
+maven-model = { group = "org.apache.maven", name = "maven-model", version.ref = "maven-bom" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

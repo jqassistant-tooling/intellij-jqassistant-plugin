@@ -1,7 +1,7 @@
 package org.jqassistant.tooling.intellij.plugin.common
 
-import com.buschmais.jqassistant.core.plugin.api.PluginConfigurationReader
 import com.buschmais.jqassistant.core.rule.api.source.ClasspathRuleSource
+import com.buschmais.jqassistant.core.runtime.api.plugin.PluginConfigurationReader
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile

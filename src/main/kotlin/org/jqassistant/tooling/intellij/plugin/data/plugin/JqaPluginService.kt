@@ -1,8 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.data.plugin
 
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
-import com.buschmais.jqassistant.commandline.plugin.ArtifactProviderFactory
-import com.buschmais.jqassistant.core.runtime.api.configuration.ConfigurationMappingLoader
+import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
+import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
@@ -100,7 +100,7 @@ class JqaPluginService(
                 }
             }
 
-        val provider = ArtifactProviderFactory(userHome).create(config)
+        val provider = ArtifactProviderFactory.getArtifactProvider(config, userHome)
 
         val jars = provider.resolve(plugins)
 
