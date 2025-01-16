@@ -20,10 +20,11 @@ import org.jetbrains.uast.wrapULiteral
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
 /**
- * Injects soft references to jQA rules for integration tests written in
- * UAST languages (e.g. Kotlin, Java).
+ * Injects a soft [PsiReference] to jQA rules for method call parameters
+ * that have a rule identifier annotation (e.g. @ConceptId) in UAST
+ * languages (e.g. Kotlin, Java). These are often found in integration tests
  */
-class UastItReferenceContributor : PsiReferenceContributor() {
+class UastReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerUastReferenceProvider(
             injectionHostUExpression().filterWithContext { argumentExpression, processingContext ->
@@ -42,8 +43,6 @@ class UastItReferenceContributor : PsiReferenceContributor() {
                 // This should never happen
                 if (annotatedParameterIndex == -1) return@filterWithContext false
 
-                // Tell the Reference provider which parameters can be autocompleted
-                processingContext.put("annotatedParameterLiterals", argumentLiterals)
                 // Tell the AnnotationPatternCondition which of
                 // the parameters needs to have the annotation
                 processingContext.put("annotatedParameterIndex", annotatedParameterIndex)
@@ -53,26 +52,17 @@ class UastItReferenceContributor : PsiReferenceContributor() {
                 callPattern.accepts(call, processingContext) &&
                     call.kind in constructorOrMethodCall
             },
-            UastItReferenceProvider,
+            UastReferenceProvider,
         )
     }
 }
 
 /**
  * Checks if a method call contains a correctly annotated parameter at the `annotatedParameterIndex`
- * that is set in the current ProcessingContext
+ * that is set in the current [ProcessingContext]
  */
 object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleIdentifierAnnotationPattern") {
     override fun accepts(t: UCallExpression, context: ProcessingContext?): Boolean {
-        /*
-        // This is twice as fast for some reason
-        val psiElement = t.sourcePsi ?: return false
-        val firstChild = psiElement.firstChild
-        val methodReference = firstChild.reference ?: return false
-        val methodElement = methodReference.resolve()
-        val uMethodElement = methodElement.toUElement(UMethod::class.java) ?: return false
-         */
-
         // Get the UMethod element of the method that is being called
         val uMethodElement = t.resolveToUElementOfType<UMethod>() ?: return false
 
@@ -113,11 +103,20 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
     }
 }
 
-object UastItReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::class.java)) {
+/**
+ * Resolves the correct [PsiReference] for a given [UElement] (in this case a method call parameter)
+ * with the help of the `jQAAnnotationType` attribute set in the current [ProcessingContext]
+ */
+object UastReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::class.java)) {
     override fun getReferencesByElement(element: UElement, context: ProcessingContext): Array<PsiReference> {
+        // The string literal for which we want to suggest rules
         val psiElement = element.sourcePsi ?: return emptyArray()
         val injectionHost = element as? UInjectionHost ?: return emptyArray()
         if (!injectionHost.isString) return emptyArray()
+
+        // The text already typed by the user
+        // Note: this does not affect the output of `ruleReference.getVariants()`, the suggestions
+        // are filtered by IntelliJ itself
         val stringLiteralContent = injectionHost.evaluateToString() ?: return emptyArray()
 
         // Get which type of annotation this parameter has

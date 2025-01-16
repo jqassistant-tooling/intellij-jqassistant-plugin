@@ -2,6 +2,6 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Rule references in jQA integration tests -->
         <psi.referenceContributor language="UAST"
-                                  implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.UastItReferenceContributor"/>
+                                  implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.UastReferenceContributor"/>
     </extensions>
 </idea-plugin>
