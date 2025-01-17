@@ -28,7 +28,6 @@
         <extensionPoint name="jqaConfigFactory"
                         dynamic="true"
                         interface="org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigFactory"/>
-
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -71,7 +70,6 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
-
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
