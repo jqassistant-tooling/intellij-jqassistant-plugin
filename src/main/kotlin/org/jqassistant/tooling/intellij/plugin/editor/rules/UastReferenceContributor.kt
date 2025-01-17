@@ -21,6 +21,14 @@ import org.jetbrains.uast.getUCallExpression
 import org.jetbrains.uast.resolveToUElementOfType
 import org.jetbrains.uast.wrapULiteral
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
+import com.intellij.openapi.util.Key
+import com.intellij.patterns.uast.UExpressionPattern
+
+/*
+ * The index of the parameter with the correct annotation in the
+ * current method call
+ */
+val annotatedParameterIndexKey = Key.create<Int>("annotatedParameterIndex")
 
 /**
  * Injects a soft [PsiReference] to jQA rules for method call parameters
@@ -28,35 +36,40 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
  * languages (e.g. Kotlin, Java). These are often found in integration tests
  */
 class UastReferenceContributor : PsiReferenceContributor() {
+
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerUastReferenceProvider(
-            injectionHostUExpression().filterWithContext { argumentExpression, processingContext ->
-                val call =
-                    argumentExpression.uastParent.getUCallExpression(searchLimit = 2) ?: return@filterWithContext false
-
-                val constructorOrMethodCall = setOf(UastCallKind.CONSTRUCTOR_CALL, UastCallKind.METHOD_CALL)
-
-                // All possible literals of the function call
-                val argumentLiterals = call.valueArguments.map(::wrapULiteral)
-                // The literal we are currently checking
-                val searchingLiteral = wrapULiteral(argumentExpression)
-
-                // Get the index of the current parameter we are checking
-                val annotatedParameterIndex = argumentLiterals.indexOfFirst { lit -> lit == searchingLiteral }
-                // This should never happen
-                if (annotatedParameterIndex == -1) return@filterWithContext false
-
-                // Tell the AnnotationPatternCondition which of
-                // the parameters needs to have the annotation
-                processingContext.put("annotatedParameterIndex", annotatedParameterIndex)
-
-                // This checks if the current parameter has the annotation
-                val callPattern = callExpression().with(AnnotationPatternCondition)
-                callPattern.accepts(call, processingContext) &&
-                    call.kind in constructorOrMethodCall
-            },
+            annotatedParameterPattern(),
             UastReferenceProvider,
         )
+    }
+
+    private fun annotatedParameterPattern(): UExpressionPattern<*, *> {
+        return injectionHostUExpression().filterWithContext { argumentExpression, processingContext ->
+            val call =
+                argumentExpression.uastParent.getUCallExpression(searchLimit = 2) ?: return@filterWithContext false
+
+            val constructorOrMethodCall = setOf(UastCallKind.CONSTRUCTOR_CALL, UastCallKind.METHOD_CALL)
+
+            // All possible literals of the function call
+            val argumentLiterals = call.valueArguments.map(::wrapULiteral)
+            // The literal we are currently checking
+            val searchingLiteral = wrapULiteral(argumentExpression)
+
+            // Get the index of the current parameter we are checking
+            val annotatedParameterIndex = argumentLiterals.indexOfFirst { lit -> lit == searchingLiteral }
+            // This should never happen
+            if (annotatedParameterIndex == -1) return@filterWithContext false
+
+            // Tell the AnnotationPatternCondition which of
+            // the parameters needs to have the annotation
+            processingContext.put(annotatedParameterIndexKey, annotatedParameterIndex)
+
+            // This checks if the current parameter has the annotation
+            val callPattern = callExpression().with(AnnotationPatternCondition)
+            callPattern.accepts(call, processingContext) &&
+                call.kind in constructorOrMethodCall
+        }
     }
 }
 
@@ -70,7 +83,7 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
         val uMethodElement = t.resolveToUElementOfType<UMethod>() ?: return false
 
         // Get the index of the parameter we are currently checking
-        val annotatedParameterIndex = context?.get("annotatedParameterIndex") as Int? ?: 0
+        val annotatedParameterIndex = context?.get(annotatedParameterIndexKey) ?: 0
 
         // Get the parameter we are currently checking
         val uParameter = uMethodElement.uastParameters.getOrNull(annotatedParameterIndex) ?: return false
@@ -128,3 +141,4 @@ object UastReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::clas
         return arrayOf(ruleReference)
     }
 }
+
