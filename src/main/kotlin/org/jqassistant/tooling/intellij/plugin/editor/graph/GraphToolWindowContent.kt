@@ -1,5 +1,7 @@
 package org.jqassistant.tooling.intellij.plugin.editor.graph
 
+import com.buschmais.jqassistant.core.rule.api.model.Rule
+import com.buschmais.jqassistant.core.rule.api.model.RuleSet
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.project.Project
@@ -18,14 +20,11 @@ import org.graphstream.ui.view.Viewer
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Concept
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Constraint
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Group
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class GraphToolWindowContent(
     private val project: Project,
     private val toolWindow: ToolWindow,
 ) : SimpleToolWindowPanel(true) {
-    var currentRule: RuleBase? = null
-
     private val graph = MultiGraph("toolWindowGraph")
 
     init {
@@ -207,20 +206,17 @@ class GraphToolWindowContent(
         return node
     }
 
-    fun buildGraph() {
-        graph.clear()
+    /**
+     * Recursively builds up the dependency graph of a [RuleSet] starting at the
+     * provided [Rule]
+     */
+    fun buildGraph(centerRule: Rule, ruleSet: RuleSet) {
+        val currentRuleId = centerRule.id
 
-        graph.setAttribute("ui.antialias")
-        graph.setAttribute("ui.stylesheet", stylesheet())
-
-        if (currentRule == null) return
-
-        val currentRuleId = currentRule!!.id.stringValue!!
-
-        when (currentRule) {
+        when (centerRule) {
             is Concept -> {
                 // Multithreading
-                val currentRule = currentRule as? Concept ?: return
+                val currentRule = centerRule as? Concept ?: return
                 val centerNode = conceptNode(currentRuleId)
                 centerNode.setAttribute("ui.class", "concept", "center")
 
@@ -245,7 +241,7 @@ class GraphToolWindowContent(
 
             is Constraint -> {
                 // Multithreading
-                val currentRule = currentRule as? Constraint ?: return
+                val currentRule = centerRule as? Constraint ?: return
                 val centerNode = constraintNode(currentRuleId)
                 centerNode.setAttribute("ui.class", "constraint", "center")
 
@@ -261,7 +257,7 @@ class GraphToolWindowContent(
             }
 
             is Group -> {
-                val currentRule = currentRule as? Group ?: return
+                val currentRule = centerRule as? Group ?: return
                 val centerNode = groupNode(currentRuleId)
                 centerNode.setAttribute("ui.class", "group", "center")
 
@@ -293,5 +289,18 @@ class GraphToolWindowContent(
                 }
             }
         }
+    }
+
+    /**
+     * Replace the currently displayed graph with a new one that displays
+     * the given [Rule]
+     */
+    fun refreshGraph(centerRule: Rule, ruleSet: RuleSet) {
+        graph.clear()
+
+        graph.setAttribute("ui.antialias")
+        graph.setAttribute("ui.stylesheet", stylesheet())
+
+        buildGraph(centerRule, ruleSet)
     }
 }
