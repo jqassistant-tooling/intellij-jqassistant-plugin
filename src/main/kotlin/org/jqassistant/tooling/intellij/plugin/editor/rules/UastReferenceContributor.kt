@@ -3,7 +3,9 @@ package org.jqassistant.tooling.intellij.plugin.editor.rules
 import com.buschmais.jqassistant.core.rule.api.annotation.ConceptId
 import com.buschmais.jqassistant.core.rule.api.annotation.ConstraintId
 import com.buschmais.jqassistant.core.rule.api.annotation.GroupId
+import com.intellij.openapi.util.Key
 import com.intellij.patterns.PatternCondition
+import com.intellij.patterns.uast.UExpressionPattern
 import com.intellij.patterns.uast.callExpression
 import com.intellij.patterns.uast.injectionHostUExpression
 import com.intellij.psi.PsiReference
@@ -21,8 +23,6 @@ import org.jetbrains.uast.getUCallExpression
 import org.jetbrains.uast.resolveToUElementOfType
 import org.jetbrains.uast.wrapULiteral
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
-import com.intellij.openapi.util.Key
-import com.intellij.patterns.uast.UExpressionPattern
 
 /*
  * The index of the parameter with the correct annotation in the
@@ -31,12 +31,16 @@ import com.intellij.patterns.uast.UExpressionPattern
 val annotatedParameterIndexKey = Key.create<Int>("annotatedParameterIndex")
 
 /**
+ * Saves what kind of reference we are dealing with in the current [ProcessingContext]
+ */
+val jQAAnnotationTypeKey = Key.create<JqaRuleType>("jQAAnnotationType")
+
+/**
  * Injects a soft [PsiReference] to jQA rules for method call parameters
- * that have a rule identifier annotation (e.g. @ConceptId) in UAST
+ * that have a rule identifier annotation (e.g. [ConceptId]) in UAST
  * languages (e.g. Kotlin, Java). These are often found in integration tests
  */
 class UastReferenceContributor : PsiReferenceContributor() {
-
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         registrar.registerUastReferenceProvider(
             annotatedParameterPattern(),
@@ -107,7 +111,7 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
                     }
 
                 // Tell UastItReferenceProvider which kind of reference we are dealing with
-                context?.put("jQAAnnotationType", annotationType)
+                context?.put(jQAAnnotationTypeKey, annotationType)
 
                 return true
             }
@@ -133,7 +137,7 @@ object UastReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::clas
         val stringLiteralContent = injectionHost.evaluateToString() ?: return emptyArray()
 
         // Get which type of annotation this parameter has
-        val annotatedRuleType = context.get("jQAAnnotationType") as? JqaRuleType ?: return emptyArray()
+        val annotatedRuleType = context.get(jQAAnnotationTypeKey) ?: return emptyArray()
 
         // A rule reference to all rules of this rule type
         val ruleReference = SpecificRuleReference(psiElement, stringLiteralContent, annotatedRuleType, true)
@@ -141,4 +145,3 @@ object UastReferenceProvider : UastReferenceProvider(listOf(UInjectionHost::clas
         return arrayOf(ruleReference)
     }
 }
-
