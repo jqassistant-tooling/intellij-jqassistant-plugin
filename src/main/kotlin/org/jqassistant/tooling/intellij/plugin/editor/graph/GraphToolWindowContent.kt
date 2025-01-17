@@ -1,5 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.editor.graph
 
+import com.buschmais.jqassistant.core.rule.api.model.Concept
+import com.buschmais.jqassistant.core.rule.api.model.Constraint
+import com.buschmais.jqassistant.core.rule.api.model.Group
 import com.buschmais.jqassistant.core.rule.api.model.Rule
 import com.buschmais.jqassistant.core.rule.api.model.RuleSet
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -17,9 +20,7 @@ import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Concept
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Constraint
-import org.jqassistant.tooling.intellij.plugin.data.rules.xml.Group
+import org.jqassistant.tooling.intellij.plugin.common.findRuleById
 
 class GraphToolWindowContent(
     private val project: Project,
@@ -186,6 +187,7 @@ class GraphToolWindowContent(
         node.setAttribute("ui.label", name)
         // Character width of 9px
         // See: https://stackoverflow.com/a/56379770/18448953
+        node.setAttribute("ui.class", "group")
         node.setAttribute("ui.style", "size: ${(name.length * 10) + 90}px, 90px;")
 
         return node
@@ -194,6 +196,7 @@ class GraphToolWindowContent(
     private fun conceptNode(name: String): Node {
         val node = graph.addNode(name)
         node.setAttribute("ui.label", name)
+        node.setAttribute("ui.class", "concept")
 
         return node
     }
@@ -201,93 +204,96 @@ class GraphToolWindowContent(
     private fun constraintNode(name: String): Node {
         val node = graph.addNode(name)
         node.setAttribute("ui.label", name)
+        node.setAttribute("ui.class", "constraint")
         node.setAttribute("ui.style", "size: ${(name.length * 10) + 15}px, 60px;")
 
         return node
     }
 
+    private fun buildGraph(currentRuleId: String, ruleSet: RuleSet): Node? {
+        val rule = ruleSet.findRuleById(currentRuleId) ?: return null
+        return buildGraph(rule, ruleSet)
+    }
+
     /**
      * Recursively builds up the dependency graph of a [RuleSet] starting at the
-     * provided [Rule]
+     * provided [Rule]. The return value is the created center [Node] if one
+     * was created or already existing.
      */
-    fun buildGraph(centerRule: Rule, ruleSet: RuleSet) {
-        val currentRuleId = centerRule.id
+    private fun buildGraph(currentRule: Rule, ruleSet: RuleSet): Node? {
+        val currentRuleId = currentRule.id
 
-        when (centerRule) {
+        // Check if this node was already visited
+        val existingNode = graph.getNode(currentRuleId)
+        if (existingNode != null) return existingNode
+
+        return when (currentRule) {
             is Concept -> {
-                // Multithreading
-                val currentRule = centerRule as? Concept ?: return
-                val centerNode = conceptNode(currentRuleId)
-                centerNode.setAttribute("ui.class", "concept", "center")
+                val currentNode = conceptNode(currentRuleId)
 
-                for (concept in currentRule.requiresConcept) {
-                    val name = concept.refType.value ?: "NULL"
-                    val n = conceptNode(name)
-                    n.setAttribute("ui.class", "requiresConcept", "concept")
+                // TODO: Highlight that some relationships are optional
+                for (name in currentRule.requiresConcepts.keys) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "requiresConcept")
                 }
 
-                for (concept in currentRule.providesConcept) {
-                    val name = concept.refType.value ?: "NULL"
-                    val n = conceptNode(name)
-                    n.setAttribute("ui.class", "providesConcept", "concept")
+                for (name in currentRule.providedConcepts) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
+                    newNode.setAttribute("ui.class", "providesConcept", "concept")
 
-                    val e = graph.addEdge("$currentRuleId<-$name", name, currentRuleId, true)
+                    val e = graph.addEdge("$currentRuleId<-$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "providesConcept")
                 }
+
+                currentNode
             }
 
             is Constraint -> {
-                // Multithreading
-                val currentRule = centerRule as? Constraint ?: return
-                val centerNode = constraintNode(currentRuleId)
-                centerNode.setAttribute("ui.class", "constraint", "center")
+                val currentNode = constraintNode(currentRuleId)
+                currentNode.setAttribute("ui.class", "constraint", "center")
 
-                for (concept in currentRule.requiresConcept) {
-                    val name = concept.refType.value ?: "NULL"
-                    val n = conceptNode(name)
-                    n.setAttribute("ui.class", "requiresConcept", "concept")
-                    n.setAttribute("ui.style", "size: ${(name.length * 10) + 10}px, 50px;")
+                // TODO: Highlight that some relationships are optional
+                for (name in currentRule.requiresConcepts.keys) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "requiresConcept")
                 }
+
+                currentNode
             }
 
             is Group -> {
-                val currentRule = centerRule as? Group ?: return
-                val centerNode = groupNode(currentRuleId)
-                centerNode.setAttribute("ui.class", "group", "center")
+                val currentNode = groupNode(currentRuleId)
+                currentNode.setAttribute("ui.class", "group", "center")
 
-                for (group in currentRule.includeGroup) {
-                    val name = group.refType.value ?: "NULL"
-                    val n = groupNode(name)
-                    n.setAttribute("ui.class", "includeGroup", "group")
+                for (name in currentRule.groups.keys) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "includeGroup")
                 }
 
-                for (concept in currentRule.includeConcept) {
-                    val name = concept.refType.value ?: "NULL"
-                    val n = conceptNode(name)
-                    n.setAttribute("ui.class", "includeConcept", "concept")
+                for (name in currentRule.concepts.keys) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "includeConcept")
                 }
 
-                for (constraint in currentRule.includeConstraint) {
-                    val name = constraint.refType.value ?: "NULL"
-                    val n = constraintNode(name)
-                    n.setAttribute("ui.class", "includeConstraint", "constraint")
+                for (name in currentRule.constraints.keys) {
+                    val newNode = buildGraph(name, ruleSet) ?: continue
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentRuleId, name, true)
+                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                     e.setAttribute("ui.label", "includeConstraint")
                 }
+
+                currentNode
             }
+
+            else -> return null
         }
     }
 
