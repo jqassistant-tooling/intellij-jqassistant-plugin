@@ -112,6 +112,7 @@
     <extensions defaultExtensionNs="jqassistant">
         <jqaRuleIndexingStrategy
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
+        <jqaConfigFactory implementation="org.jqassistant.tooling.intellij.plugin.data.config.CliConfigFactory"/>
     </extensions>
 
     <actions>

@@ -11,12 +11,24 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
+import org.apache.commons.cli.DefaultParser
+import org.apache.commons.cli.Option
+import org.apache.commons.cli.Options
+import java.io.File
 import java.util.Optional
+import java.util.Properties
 
 enum class JqaDistribution {
     CLI,
     MAVEN,
 }
+
+data class CommandLineOptions(
+    val configurationLocations: List<String>,
+    val mavenSettings: Optional<File>,
+    val profiles: List<String>,
+    val properties: Properties,
+)
 
 @Service(Service.Level.PROJECT)
 class JqaConfigurationService(
@@ -72,6 +84,72 @@ class JqaConfigurationService(
      */
     var mavenOutputEncoding: String? = null
 
+    private fun gatherStandardOptions(): Options {
+        // Adapted from jQA
+        val options = Options()
+
+        options.addOption(
+            Option
+                .builder("C")
+                .longOpt("configurationLocations")
+                .desc("The list of configuration locations, i.e. YAML files and directories")
+                .hasArgs()
+                .valueSeparator(',')
+                .build(),
+        )
+        options.addOption(
+            Option
+                .builder("M")
+                .longOpt("mavenSettings")
+                .desc(
+                    "The location of a Maven settings.xml file to use for repository, proxy and mirror configurations.",
+                ).hasArg()
+                .valueSeparator(',')
+                .build(),
+        )
+        options.addOption(
+            Option
+                .builder("P")
+                .longOpt("profiles")
+                .desc("The configuration profiles to activate.")
+                .hasArgs()
+                .valueSeparator(',')
+                .build(),
+        )
+        options.addOption(
+            Option
+                .builder("D")
+                .desc("Additional configuration property.")
+                .hasArgs()
+                .valueSeparator('=')
+                .build(),
+        )
+
+        return options
+    }
+
+    fun parseCommandLine(args: String): CommandLineOptions {
+        // Adapted from jQA
+
+        val commandLine =
+            DefaultParser().parse(
+                gatherStandardOptions(),
+                args.split(" ").toTypedArray(),
+            )
+
+        val profiles = commandLine.getOptionValues("-profiles").filter { it.isNotEmpty() }
+        val locations = commandLine.getOptionValues("-configurationLocations").filter { it.isNotEmpty() }
+        val mavenSettings = Optional.ofNullable(commandLine.getOptionValue("-mavenSettings")?.let { File(it) })
+        val properties = commandLine.getOptionProperties("D")
+
+        return CommandLineOptions(
+            profiles = profiles,
+            mavenSettings = mavenSettings,
+            configurationLocations = locations,
+            properties = properties,
+        )
+    }
+
     init {
         jqaConfigFileProvider.addFileEventListener(configProvider)
 
@@ -105,7 +183,7 @@ class JqaConfigurationService(
             JqaConfigFactory.Util.EXTENSION_POINT.extensions
                 .firstOrNull { it.handlesDistribution(distribution) } ?: return null
 
-        return factory.createConfig(project) as CliConfiguration
+        return factory.assembleConfig(project) as CliConfiguration
     }
 
     /**
