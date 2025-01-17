@@ -1,5 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.editor.rules
 
+import com.buschmais.jqassistant.core.rule.api.annotation.ConceptId
+import com.buschmais.jqassistant.core.rule.api.annotation.ConstraintId
+import com.buschmais.jqassistant.core.rule.api.annotation.GroupId
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.uast.callExpression
 import com.intellij.patterns.uast.injectionHostUExpression
@@ -77,18 +80,15 @@ object AnnotationPatternCondition : PatternCondition<UCallExpression>("jQARuleId
         val hasAnnotation =
             uAnnotations.any { a ->
                 val qualifiedName = a.qualifiedName ?: return@any false
-                val annotationPackage = "com.buschmais.jqassistant.core.rule.api.annotation."
 
-                // During index building the qualifiedName will actually be just "ConceptId"
-                // If annotations should still be recognised then remove this line
-                if (!qualifiedName.startsWith(annotationPackage)) return@any false
-
-                val annotationTypeName = qualifiedName.removePrefix(annotationPackage)
+                // During index building the `qualifiedName` will actually be just "ConceptId"
+                // instead of the actual qualified name of the Annotation. Because of this
+                // the feature only works after indexing is done
                 val annotationType =
-                    when (annotationTypeName) {
-                        "ConceptId" -> JqaRuleType.CONCEPT
-                        "GroupId" -> JqaRuleType.GROUP
-                        "ConstraintId" -> JqaRuleType.CONSTRAINT
+                    when (qualifiedName) {
+                        ConceptId::class.qualifiedName -> JqaRuleType.CONCEPT
+                        GroupId::class.qualifiedName -> JqaRuleType.GROUP
+                        ConstraintId::class.qualifiedName -> JqaRuleType.CONSTRAINT
                         // Unknown Annotation
                         else -> return@any false
                     }
