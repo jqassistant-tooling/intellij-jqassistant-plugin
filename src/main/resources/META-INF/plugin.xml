@@ -8,12 +8,21 @@
     <depends>com.intellij.modules.json</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
 
+    <depends optional="true"
+             config-file="jqassistant-maven.xml">
+        org.jetbrains.idea.maven
+    </depends>
+
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensionPoints>
         <extensionPoint name="jqaRuleIndexingStrategy"
                         dynamic="true"
                         interface="org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategyFactory"/>
+        <extensionPoint name="jqaConfigFactory"
+                        dynamic="true"
+                        interface="org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigFactory"/>
+
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -47,9 +56,7 @@
                                               nameKey="org.jqassistant.tooling.intellij.inlay.name"
                                               descriptionKey="org.jqassistant.tooling.intellij.inlay.description"
                                               providerId="xml.org.jqassistant.tooling.intellij.plugin.editor.report.inlay.ReportSingularRuleResultDeclarativeInlayHintsProvider"/>
-    </extensions>
 
-    <extensions defaultExtensionNs="com.intellij">
         <lang.refactoringSupport
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleRefactoringSupportProvider"
             language="XML"

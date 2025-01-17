@@ -36,17 +36,21 @@ dependencies {
     implementation(libs.jqa.core.schemata) {
         exclude(group = "org.neo4j.community")
     }
-    implementation(libs.jqa.core.configuration) {
-        exclude(group = "org.neo4j.community")
-    }
     implementation(libs.jqa.core.runtime) {
         exclude(group = "org.neo4j.community")
     }
     implementation(libs.jqa.cli.application) {
         exclude(group = "org.neo4j.community")
     }
+    implementation(libs.jqa.maven.plugin) {
+        exclude(group = "org.neo4j.community")
+    }
 
     testImplementation(libs.junit)
+
+    implementation(libs.maven.core)
+    implementation(libs.maven.compat)
+    implementation(libs.maven.model)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {

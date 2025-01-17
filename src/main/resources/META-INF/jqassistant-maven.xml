@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="jqassistant">
+        <jqaConfigFactory implementation="org.jqassistant.tooling.intellij.plugin.data.config.MavenConfigFactory"/>
+    </extensions>
+</idea-plugin>
