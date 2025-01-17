@@ -1,13 +1,14 @@
 package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
-import com.buschmais.jqassistant.core.runtime.api.configuration.Configuration
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationBuilder
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
+import com.buschmais.jqassistant.scm.maven.AbstractRuleMojo
 import com.buschmais.jqassistant.scm.maven.configuration.source.EmptyConfigSource
 import com.buschmais.jqassistant.scm.maven.configuration.source.MavenProjectConfigSource
 import com.buschmais.jqassistant.scm.maven.configuration.source.MavenPropertiesConfigSource
 import com.buschmais.jqassistant.scm.maven.configuration.source.SettingsConfigSource
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import io.smallrye.config.PropertiesConfigSource
@@ -92,8 +93,9 @@ class MavenConfigFactory : JqaConfigFactory {
 
     override fun handlesDistribution(distribution: JqaDistribution) = distribution == JqaDistribution.MAVEN
 
-    override fun createConfig(project: Project): Configuration? =
-        withServiceLoader {
+    override fun assembleConfig(project: Project): FullArtifactConfiguration? =
+        // Use a class loader of the maven plugin, to pick up maven default plugins.
+        withServiceLoader<AbstractRuleMojo, _> {
             val configurationBuilder = ConfigurationBuilder("MojoConfigSource", 110)
 
             val mavenProjectManager = MavenProjectsManager.getInstance(project)
@@ -119,8 +121,13 @@ class MavenConfigFactory : JqaConfigFactory {
             val projectPropertiesConfigSource =
                 MavenPropertiesConfigSource(mavenProject.properties, "Maven Project Properties")
 
-            // val userPropertiesConfigSource: MavenPropertiesConfigSource = MavenPropertiesConfigSource(session.getUserProperties(), "Maven Session User Properties ")
-            // val systemPropertiesConfigSource: MavenPropertiesConfigSource = MavenPropertiesConfigSource( session.getSystemProperties(), "Maven Session System Properties")
+            val commandLineOptions =
+                project.service<JqaConfigurationService>().let {
+                    it.parseCommandLine(it.mavenParameters)
+                }
+
+            val userPropertiesConfigSource =
+                MavenPropertiesConfigSource(commandLineOptions.properties, "Maven Session User Properties ")
 
             val yamlConfiguration =
                 mavenConfig.yaml?.let { yaml ->
@@ -160,8 +167,7 @@ class MavenConfigFactory : JqaConfigFactory {
                     projectConfigSource,
                     settingsConfigSource,
                     projectPropertiesConfigSource,
-                    // userPropertiesConfigSource,
-                    // systemPropertiesConfigSource,
+                    userPropertiesConfigSource,
                     yamlConfiguration,
                     propertiesConfiguration,
                     defaultPathConfig,
@@ -173,6 +179,10 @@ class MavenConfigFactory : JqaConfigFactory {
             val builder =
                 ConfigurationMappingLoader
                     .builder(
+                        // Since [MavenConfiguration] doesn't implement [ArtifactResolverConfiguration] we can't use it
+                        // at the moment. This might lead to problems with custom repository setups configured in maven.
+                        // But it'll probably work since repository settings from the maven settings file are also
+                        // picked up by the CLI.
                         CliConfiguration::class.java,
                         mavenConfig.configurationLocations.toList(),
                     ).withUserHome(userHome)
@@ -183,6 +193,6 @@ class MavenConfigFactory : JqaConfigFactory {
                         mavenProject.activatedProfilesIds.enabledProfiles.toList(),
                     ).withIgnoreProperties(setOf("jqassistant.configuration.locations"))
                     .withWorkingDirectory(executionRootDirectory)
-            return@withServiceLoader builder.load(*configSources)
+            return@withServiceLoader FullArtifactConfigurationWrapper(builder.load(*configSources))
         }
 }
