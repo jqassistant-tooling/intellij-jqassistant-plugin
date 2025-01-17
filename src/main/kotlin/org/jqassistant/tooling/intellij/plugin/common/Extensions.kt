@@ -1,5 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.common
 
+import com.buschmais.jqassistant.core.rule.api.model.Rule
+import com.buschmais.jqassistant.core.rule.api.model.RuleSet
+
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -23,6 +26,7 @@ inline fun <T> withServiceLoader(block: () -> T, classLoader: ClassLoader?): T {
 
     val currentThread = Thread.currentThread()
     val originalClassLoader = currentThread.contextClassLoader
+    val pluginClassLoader = javaClass.classLoader
     return try {
         currentThread.contextClassLoader = classLoader
         block()
@@ -79,3 +83,21 @@ fun Project.notifyBalloon(message: String, type: NotificationType = Notification
         .createNotification(message, type)
         .notify(this)
 }
+
+/**
+ * Returns a concatenated list of all [Rule] elements in this [RuleSet]
+ */
+fun RuleSet.getAllRules(): List<Rule> {
+    val rules = mutableListOf<Rule>()
+    rules += groupsBucket.all
+    rules += conceptBucket.all
+    rules += constraintBucket.all
+
+    return rules
+}
+
+/**
+ * Returns the first [Rule] with the same id in this [RuleSet]
+ * if there ist any
+ */
+fun RuleSet.findRuleById(id: String): Rule? = getAllRules().find { r -> r.id == id }
