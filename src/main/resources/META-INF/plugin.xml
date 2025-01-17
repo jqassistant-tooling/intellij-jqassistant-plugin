@@ -8,6 +8,12 @@
     <depends>com.intellij.modules.json</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
 
+    <!-- Java or Kotlin is needed to enable UAST support
+     See: https://plugins.jetbrains.com/docs/intellij/uast.html#using-uast-in-plugins -->
+    <depends
+        optional="true"
+        config-file="jqassistant-uastReferenceContributor.xml">com.intellij.java</depends>
+
     <depends optional="true"
              config-file="jqassistant-maven.xml">
         org.jetbrains.idea.maven
@@ -22,7 +28,6 @@
         <extensionPoint name="jqaConfigFactory"
                         dynamic="true"
                         interface="org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigFactory"/>
-
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -65,7 +70,6 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
-
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
