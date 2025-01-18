@@ -6,7 +6,6 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
-import org.jetbrains.annotations.NonNls
 
 /*
  * Supports storing the application settings in a persistent way.
@@ -14,11 +13,18 @@ import org.jetbrains.annotations.NonNls
  * annotations define the name of the data and the filename where these persistent
  * application settings are stored.
  */
-@State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("JqaSettingsPlugin.xml")])
+@State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml")])
 internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
     internal class State {
-        var jqaHome: @NonNls String = ""
-        var prefetchEffectiveConfig: Boolean = false
+        var useCliDistro: Boolean = false
+        var cliExecRootDir: String = ""
+        var cliParams: String = ""
+        var useMavenDistro: Boolean = true
+        var mavenProjectFile: String = ""
+        var mavenAdditionalProps: String = ""
+        var mavenProjectDescription: String = ""
+        var mavenScriptSourceDir: String = ""
+        var mavenOutputEncoding: String = ""
     }
 
     private var myState = State()
