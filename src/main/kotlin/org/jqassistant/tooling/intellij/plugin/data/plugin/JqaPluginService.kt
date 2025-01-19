@@ -2,10 +2,14 @@ package org.jqassistant.tooling.intellij.plugin.data.plugin
 
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
 import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
+import com.buschmais.jqassistant.core.runtime.api.bootstrap.PluginRepositoryFactory
+import com.buschmais.jqassistant.core.runtime.api.bootstrap.RuleProvider
+import com.buschmais.jqassistant.core.runtime.api.plugin.PluginRepository
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
@@ -13,6 +17,8 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import io.smallrye.config.SysPropConfigSource
 import org.jqassistant.tooling.intellij.plugin.common.PluginUtil
+import org.jqassistant.tooling.intellij.plugin.common.withServiceLoader
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.io.File
 import kotlin.reflect.jvm.jvmName
 
@@ -86,6 +92,27 @@ class JqaPluginService(
      */
     @Synchronized
     fun synchronizePlugins() {
+        withServiceLoader {
+            val otherConfig = project.service<JqaConfigurationService>().getConfiguration() ?: return@withServiceLoader
+
+            val artifactProvider =
+                ArtifactProviderFactory.getArtifactProvider(otherConfig, File(System.getProperty("user.home")))
+
+            val pluginRepository: PluginRepository =
+                PluginRepositoryFactory.getPluginRepository(
+                    otherConfig,
+                    javaClass.classLoader,
+                    artifactProvider,
+                )
+
+            // Default directories are handled through the config, since the plugin needs to make them absolute based on the maven project.
+            val ruleProvider = RuleProvider.create(otherConfig, "", pluginRepository)
+
+            println(ruleProvider.ruleSources)
+            println(ruleProvider.availableRules)
+            println(ruleProvider.effectiveRules)
+        }
+
         val config =
             getJqaConfiguration() ?: return thisLogger().error("Problem constructing jQA-Config for plugin sync.")
 

@@ -1,16 +1,21 @@
 package org.jqassistant.tooling.intellij.plugin.data.config
 
-import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
+import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
+import com.buschmais.jqassistant.core.rule.api.executor.CollectRulesVisitor
 import com.buschmais.jqassistant.core.rule.api.model.ConceptBucket
 import com.buschmais.jqassistant.core.rule.api.model.ConstraintBucket
 import com.buschmais.jqassistant.core.rule.api.model.GroupsBucket
-import com.buschmais.jqassistant.core.rule.api.model.RuleSelection
 import com.buschmais.jqassistant.core.rule.api.model.RuleSet
+import com.buschmais.jqassistant.core.runtime.api.bootstrap.PluginRepositoryFactory
+import com.buschmais.jqassistant.core.runtime.api.bootstrap.RuleProvider
+import com.buschmais.jqassistant.core.runtime.api.plugin.PluginRepository
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
+import com.intellij.util.messages.Topic
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.Options
@@ -30,11 +35,38 @@ data class CommandLineOptions(
     val properties: Properties,
 )
 
+/**
+ * Allows to listen to config synchronization.
+ *
+ * Can be used to derive cached values from the resolved jQA Config during the sync. At the point when
+ * listeners are notified, it is guaranteed that methods of [JqaConfigurationService]
+ * will yield results that fit the config.
+ */
+interface JqaSyncListener {
+    companion object {
+        val TOPIC = Topic.create("jQA Sync Listener", JqaSyncListener::class.java)
+    }
+
+    fun synchronize(config: FullArtifactConfiguration?)
+}
+
 @Service(Service.Level.PROJECT)
 class JqaConfigurationService(
     val project: Project,
 ) {
     private val jqaConfigFileProvider = JqaConfigFileProvider(project)
+
+    class State {
+        var dirty = false
+
+        var effectiveConfiguration: FullArtifactConfiguration? = null
+        var availableRuleSources: List<VirtualFile> = emptyList()
+        var availableRules: RuleSet? = null
+        var effectiveRules: CollectRulesVisitor? = null
+    }
+
+    @Volatile
+    private var state = State()
 
     @Deprecated("Don't use for new stuff as this contains the old maven effective config logic.")
     val configProvider = JqaEffectiveConfigProvider(project, jqaConfigFileProvider)
@@ -166,6 +198,36 @@ class JqaConfigurationService(
             }
     }
 
+    fun synchronize() {
+        val distribution = this.distribution ?: return
+
+        val factory =
+            JqaConfigFactory.Util.EXTENSION_POINT.extensions
+                .firstOrNull { it.handlesDistribution(distribution) } ?: return
+
+        val config = factory.assembleConfig(project)
+
+        val artifactProvider =
+            ArtifactProviderFactory.getArtifactProvider(config, File(System.getProperty("user.home")))
+
+        val pluginRepository: PluginRepository =
+            PluginRepositoryFactory.getPluginRepository(
+                config,
+                javaClass.classLoader,
+                artifactProvider,
+            )
+
+        // Default directories are handled through the config, since the plugin needs to make them absolute based on the maven project.
+        val ruleProvider = RuleProvider.create(config, "", pluginRepository)
+
+        state.effectiveConfiguration = config
+        state.availableRuleSources = ruleProvider.ruleSources.mapNotNull { VfsUtil.findFileByURL(it.url) }
+        state.availableRules = ruleProvider.availableRules
+        state.effectiveRules = ruleProvider.effectiveRules
+
+        project.messageBus.syncPublisher(JqaSyncListener.TOPIC).synchronize(config)
+    }
+
     /**
      * Adds a listener that is notified when a config file changes.
      */
@@ -173,25 +235,14 @@ class JqaConfigurationService(
         jqaConfigFileProvider.addFileEventListener(listener)
     }
 
-    /**
-     * Returns the active configuration of the jQA Project.
-     */
-    fun getConfiguration(): CliConfiguration? {
-        val distribution = this.distribution ?: return null
-
-        val factory =
-            JqaConfigFactory.Util.EXTENSION_POINT.extensions
-                .firstOrNull { it.handlesDistribution(distribution) } ?: return null
-
-        return factory.assembleConfig(project) as CliConfiguration
-    }
+    fun getConfiguration(): FullArtifactConfiguration? = state.effectiveConfiguration
 
     /**
      * Get the rules currently available to jQA. This is very different to the rule index, which includes all rules
      * everywhere and disregards jQA config semantics.
      */
     fun getAvailableRules(): RuleSet =
-        object : RuleSet {
+        state.availableRules ?: object : RuleSet {
             override fun getConceptBucket(): ConceptBucket = ConceptBucket()
 
             override fun getProvidedConcepts(): MutableMap<String, MutableSet<String>> = mutableMapOf()
@@ -206,22 +257,17 @@ class JqaConfigurationService(
     /**
      * Get all files which are scanned by jQA for available rules.
      */
-    fun getAvailableRuleSources(): List<VirtualFile> = emptyList()
+    fun getAvailableRuleSources(): List<VirtualFile> = state.availableRuleSources
 
     /**
      * Get the currently effective rules.
      */
-    fun getEffectiveRules(): RuleSelection =
-        RuleSelection.select(
-            getAvailableRules(),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-        )
+    fun getEffectiveRules(): CollectRulesVisitor? = state.effectiveRules
 
     /**
      * Whether the maven distribution is technically supported in the current IDE setup.
      */
-    fun isMavenDistributionSupported(): Boolean = true
+    fun isMavenDistributionSupported(): Boolean =
+        JqaConfigFactory.Util.EXTENSION_POINT.extensions
+            .any { it.handlesDistribution(JqaDistribution.MAVEN) }
 }
