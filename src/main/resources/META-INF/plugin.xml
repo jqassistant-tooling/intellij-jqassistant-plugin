@@ -106,6 +106,7 @@
         <annotator
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
             language="yaml"/>
+        
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
