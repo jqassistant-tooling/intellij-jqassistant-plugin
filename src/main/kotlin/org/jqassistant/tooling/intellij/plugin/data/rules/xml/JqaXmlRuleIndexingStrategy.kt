@@ -1,5 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 
+import com.buschmais.jqassistant.core.rule.api.filter.RuleFilter
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -30,8 +31,26 @@ class JqaXmlRuleIndexingStrategy(
             )
         }
 
-    override fun resolve(identifier: String): List<JqaRuleDefinition> {
+    private fun resolvePattern(identifier: String): List<JqaRuleDefinition> {
         val res = mutableListOf<JqaRuleDefinition>()
+
+        FileBasedIndex.getInstance().processAllKeys(
+            NameIndex.Util.NAME,
+            { key ->
+                if (RuleFilter.matches(key, identifier)) {
+                    res.addAll(resolveExact(key))
+                }
+                true
+            },
+            project,
+        )
+
+        return res
+    }
+
+    private fun resolveExact(identifier: String): List<JqaRuleDefinition> {
+        val res = mutableListOf<JqaRuleDefinition>()
+
         FileBasedIndex
             .getInstance()
             .processValues(
@@ -73,4 +92,11 @@ class JqaXmlRuleIndexingStrategy(
             )
         return res
     }
+
+    override fun resolve(identifier: String): List<JqaRuleDefinition> =
+        if ("*" in identifier || "?" in identifier) {
+            resolvePattern(identifier)
+        } else {
+            resolveExact(identifier)
+        }
 }
