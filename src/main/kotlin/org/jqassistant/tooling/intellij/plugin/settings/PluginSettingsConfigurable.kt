@@ -29,35 +29,34 @@ internal class PluginSettingsConfigurable(
 
     override fun isModified(): Boolean {
         val state: PluginSettings.State =
-            Objects.requireNonNull(PluginSettings.instance.getState())
+            Objects.requireNonNull(PluginSettings.getInstance(project).getState())
         var isModified = false
-        isModified = isModified || mySettingsComponent?.isCliSelected != state.useCliDistro
+        isModified = isModified || mySettingsComponent?.myDistribution != state.distribution
         isModified = isModified || mySettingsComponent?.myCliExecRootDir != state.cliExecRootDir
         isModified = isModified || mySettingsComponent?.myCliParams != state.cliParams
-        isModified = isModified || mySettingsComponent?.isMavenSelected != state.useMavenDistro
         isModified = isModified || mySettingsComponent?.myMavenProjectFile != state.mavenProjectFile
         isModified = isModified || mySettingsComponent?.myAdditionalMavenProperties != state.mavenAdditionalProps
         isModified = isModified || mySettingsComponent?.myMavenProjectDescription != state.mavenProjectDescription
         isModified = isModified || mySettingsComponent?.myMavenScriptSourceDir != state.mavenScriptSourceDir
         isModified = isModified || mySettingsComponent?.myMavenOutputEncoding != state.mavenOutputEncoding
+        if (isModified) mySettingsComponent?.validateState()
         return isModified
     }
 
     override fun apply() {
         val state: PluginSettings.State =
-            Objects.requireNonNull(PluginSettings.instance.getState())
+            Objects.requireNonNull(PluginSettings.getInstance(project).getState())
         if (mySettingsComponent == null) {
-            return
+            throw ConfigurationException("Couldn't apply settings")
         }
         // TODO add checks for files
         if (!mySettingsComponent?.validateState()!!) {
             throw ConfigurationException("Invalid settings")
         }
 
-        state.useCliDistro = mySettingsComponent!!.isCliSelected
+        state.distribution = mySettingsComponent!!.myDistribution
         state.cliExecRootDir = mySettingsComponent!!.myCliExecRootDir
         state.cliParams = mySettingsComponent!!.myCliParams
-        state.useMavenDistro = mySettingsComponent!!.isMavenSelected
         state.mavenProjectFile = mySettingsComponent!!.myMavenProjectFile
         state.mavenAdditionalProps = mySettingsComponent!!.myAdditionalMavenProperties
         state.mavenProjectDescription = mySettingsComponent!!.myMavenProjectDescription
@@ -67,12 +66,11 @@ internal class PluginSettingsConfigurable(
 
     override fun reset() {
         val state: PluginSettings.State =
-            Objects.requireNonNull(PluginSettings.instance.getState())
+            Objects.requireNonNull(PluginSettings.getInstance(project).getState())
 
-        mySettingsComponent?.isCliSelected = state.useCliDistro
+        mySettingsComponent?.myDistribution = state.distribution
         mySettingsComponent?.myCliExecRootDir = state.cliExecRootDir
         mySettingsComponent?.myCliParams = state.cliParams
-        mySettingsComponent?.isMavenSelected = state.useMavenDistro
         mySettingsComponent?.myMavenProjectFile = state.mavenProjectFile
         mySettingsComponent?.myAdditionalMavenProperties = state.mavenAdditionalProps
         mySettingsComponent?.myMavenProjectDescription = state.mavenProjectDescription

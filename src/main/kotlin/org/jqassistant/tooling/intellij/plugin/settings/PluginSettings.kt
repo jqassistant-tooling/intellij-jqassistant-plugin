@@ -1,11 +1,13 @@
 // Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jqassistant.tooling.intellij.plugin.settings
 
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 
 /*
  * Supports storing the application settings in a persistent way.
@@ -13,13 +15,19 @@ import com.intellij.openapi.components.service
  * annotations define the name of the data and the filename where these persistent
  * application settings are stored.
  */
+
+enum class JqaDistribution {
+    CLI,
+    MAVEN,
+}
+
+@Service(Service.Level.PROJECT)
 @State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml")])
 internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
-    internal class State {
-        var useCliDistro: Boolean = false
+    internal class State : BaseState() {
+        var distribution by enum(JqaDistribution.CLI)
         var cliExecRootDir: String = ""
         var cliParams: String = ""
-        var useMavenDistro: Boolean = true
         var mavenProjectFile: String = ""
         var mavenAdditionalProps: String = ""
         var mavenProjectDescription: String = ""
@@ -36,8 +44,8 @@ internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
     }
 
     companion object {
-        val instance: PluginSettings
-            get() = ApplicationManager.getApplication().service<PluginSettings>()
+        fun getInstance(project: Project): PluginSettings = project.service<PluginSettings>()
+
         const val DISPLAY_NAME = "jQAssistant Tooling"
     }
 }

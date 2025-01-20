@@ -2,15 +2,19 @@
 package org.jqassistant.tooling.intellij.plugin.settings
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.util.io.toCanonicalPath
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
-import org.jqassistant.tooling.intellij.plugin.common.FileValidator
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
@@ -28,8 +32,10 @@ class PluginSettingsComponent(
     // Misc
     private val mavenOrCliButtonGroup = ButtonGroup()
     val panel: JPanel
+    private val baseFile = LocalFileSystem.getInstance().findFileByPath(project.basePath ?: "")
 
     // Labels
+    private val labelBasePath = JLabel("Base path: ${baseFile?.path}/").apply { isEnabled = false }
     private val labelCliExecRootDir = JLabel("Cli execution root:")
     private val labelCliParams = JLabel("Additional Cli parameters:")
     private val labelMavenWarning = JLabel()
@@ -38,45 +44,52 @@ class PluginSettingsComponent(
 
     // Cli components
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
-    private val cliExecRootDir = TextFieldWithBrowseButton()
+    private val cliExecRootDir =
+        MyTextFieldWithBrowseButton().apply {
+            isEditable = false
+            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            addActionListener {
+                FileChooser.chooseFile(descriptor, project, baseFile) {
+                    text = toRelativePath(it)
+                }
+            }
+        }
     private val cliParams = JBTextField()
 
     // Maven components
     private val radioBtnMaven = JRadioButton("Use Maven Distribution")
-    private val mavenProjectFile = TextFieldWithBrowseButton()
+    private val mavenProjectFile =
+        MyTextFieldWithBrowseButton().apply {
+            isEditable = false
+            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            addActionListener {
+                FileChooser.chooseFile(descriptor, project, baseFile) {
+                    text = toRelativePath(it)
+                }
+            }
+        }
     private val mavenAdditionalProps = JBTextField()
 
     // Advanced settings
     private var mavenProjectDescription = JBTextField()
-    private var mavenScriptSourceDir = TextFieldWithBrowseButton()
+    private var mavenScriptSourceDir =
+        MyTextFieldWithBrowseButton().apply {
+            isOptional = true
+            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            addActionListener {
+                FileChooser.chooseFile(descriptor, project, baseFile) {
+                    text = toRelativePath(it)
+                }
+            }
+        }
     private var mavenOutputEncoding = JBTextField()
 
     init {
+
         mavenOrCliButtonGroup.add(radioBtnCli)
         mavenOrCliButtonGroup.add(radioBtnMaven)
         radioBtnCli.addActionListener(RadioButtonActionListener())
         radioBtnMaven.addActionListener(RadioButtonActionListener())
-
-        cliExecRootDir.addBrowseFolderListener(
-            "Search Directory",
-            "Select CLI execution root",
-            project,
-            FileChooserDescriptor(true, true, false, false, false, false),
-        )
-
-        mavenProjectFile.addBrowseFolderListener(
-            "Search Directory",
-            "Select Maven project",
-            project,
-            FileChooserDescriptor(true, false, false, false, false, false),
-        )
-
-        mavenScriptSourceDir.addBrowseFolderListener(
-            "Search Directory",
-            "Select Maven script source",
-            project,
-            FileChooserDescriptor(false, true, false, false, false, false),
-        )
 
         // TODO maven module not available?
         labelMavenWarning.text = "Warning: Test Warning - Maven module not found"
@@ -86,7 +99,8 @@ class PluginSettingsComponent(
         panel =
             FormBuilder
                 .createFormBuilder()
-                .addComponent(radioBtnCli, 1)
+                .addComponent(labelBasePath, 1)
+                .addComponent(radioBtnCli, 10)
                 .setFormLeftIndent(15)
                 .addLabeledComponent(labelCliExecRootDir, cliExecRootDir, 10, false)
                 .addLabeledComponent(labelCliParams, cliParams, 10, false)
@@ -109,10 +123,19 @@ class PluginSettingsComponent(
     val preferredFocusedComponent: JComponent
         get() = mavenAdditionalProps
 
-    var isCliSelected: Boolean
-        get() = radioBtnCli.isSelected
+    var myDistribution: JqaDistribution
+        get() =
+            if (radioBtnCli.isSelected) {
+                JqaDistribution.CLI
+            } else {
+                JqaDistribution.MAVEN
+            }
         set(newStatus) {
-            radioBtnCli.isSelected = newStatus
+            if (newStatus == JqaDistribution.CLI) {
+                radioBtnCli.isSelected = true
+            } else {
+                radioBtnMaven.isSelected = true
+            }
             updateEnabledComponents()
         }
 
@@ -127,13 +150,6 @@ class PluginSettingsComponent(
         get() = cliParams.text
         set(newStatus) {
             cliParams.text = newStatus
-        }
-
-    var isMavenSelected: Boolean
-        get() = radioBtnMaven.isSelected
-        set(newStatus) {
-            radioBtnMaven.isSelected = newStatus
-            updateEnabledComponents()
         }
 
     var myMavenProjectFile: String
@@ -186,24 +202,20 @@ class PluginSettingsComponent(
         labelMavenWarning.isEnabled = useMaven
         labelMavenProjectFile.isEnabled = useMaven
         labelMavenAdditionalProps.isEnabled = useMaven
+        validateState()
     }
 
     fun validateState(): Boolean {
         val state = AtomicBoolean(true)
-        val cliSelected = isCliSelected
-        val mavenSelected = isMavenSelected
-        if (cliSelected && mavenSelected) {
-            state.set(false)
-        }
-
         val browsingFields = listOf(cliExecRootDir, mavenProjectFile, mavenScriptSourceDir)
         val futures =
             browsingFields.map { field ->
                 ApplicationManager
                     .getApplication()
                     .executeOnPooledThread {
-                        // TODO check for file OR Folder (not both)
-                        if (field.isEnabled && !FileValidator.validateFileOrDirectory(field.text)) {
+                        if (field.isEnabled &&
+                            !field.validatePath(baseFile?.path ?: "")
+                        ) {
                             showFileOrDirectoryError(field)
                             state.set(false)
                         } else {
@@ -211,18 +223,35 @@ class PluginSettingsComponent(
                         }
                     }
             }
-        // Wait for tasks
+
+        // Make IntelliJ wait for tasks
         futures.forEach { it.get() }
         return state.get()
     }
 
-    private fun showFileOrDirectoryError(field: TextFieldWithBrowseButton) {
-        // TODO show error message
+    private fun toRelativePath(absolute: VirtualFile): String {
+        val base = File(baseFile?.path.toString()).toPath()
+        val myAbsolute = File(absolute.path).toPath()
+        return base.relativize(myAbsolute).toCanonicalPath()
+    }
+
+    private fun showFileOrDirectoryError(field: MyTextFieldWithBrowseButton) {
+        val isChooseFiles = field.fileChooserDescriptor?.isChooseFiles
+        val isChooseFolders = field.fileChooserDescriptor?.isChooseFolders
+        val message =
+            if (isChooseFiles == true && isChooseFolders == true) {
+                "Invalid file or directory"
+            } else if (isChooseFiles == true) {
+                "Invalid file"
+            } else {
+                "Invalid directory"
+            }
+
         val font = field.font
         field.border =
             BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(JBColor.RED),
-                "Invalid file or directory",
+                message,
                 0,
                 0,
                 font,
