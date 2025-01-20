@@ -43,7 +43,7 @@ class PluginSettingsComponent(
     private val labelMavenAdditionalProps = JLabel("Additional Maven parameters:")
     private val labelAdvancedSettings = JLabel("Advanced settings:")
 
-    // Cli components
+    // CLI components
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
     private val labelCliExecRootDir = JLabel("Execution root:")
     private val cliExecRootDir =
@@ -95,15 +95,18 @@ class PluginSettingsComponent(
 
     init {
 
+        // RadioGroup
         mavenOrCliButtonGroup.add(radioBtnCli)
         mavenOrCliButtonGroup.add(radioBtnMaven)
         radioBtnCli.addActionListener(RadioButtonActionListener())
         radioBtnMaven.addActionListener(RadioButtonActionListener())
 
-        // TODO maven module not available?
+        // TODO check if maven module is not available
         labelMavenWarning.text = "Warning: Test Warning - Maven module not found"
         labelMavenWarning.foreground = JBColor.YELLOW
         labelMavenWarning.isVisible = false // false removes and acts like "gone"
+
+        // Build Form
         panel =
             FormBuilder
                 .createFormBuilder()
@@ -200,12 +203,6 @@ class PluginSettingsComponent(
             mavenOutputEncoding.text = newText
         }
 
-    private inner class RadioButtonActionListener : ActionListener {
-        override fun actionPerformed(e: ActionEvent) {
-            updateEnabledComponents()
-        }
-    }
-
     private fun updateEnabledComponents() {
         val useCli = radioBtnCli.isSelected
         val useMaven = radioBtnMaven.isSelected
@@ -277,5 +274,11 @@ class PluginSettingsComponent(
 
     private fun hideDirectoryError(field: TextFieldWithBrowseButton) {
         field.border = BorderFactory.createEmptyBorder()
+    }
+
+    private inner class RadioButtonActionListener : ActionListener {
+        override fun actionPerformed(e: ActionEvent) {
+            updateEnabledComponents()
+        }
     }
 }
