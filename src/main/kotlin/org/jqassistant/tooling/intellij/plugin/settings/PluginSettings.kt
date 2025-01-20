@@ -26,13 +26,13 @@ enum class JqaDistribution {
 internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
     internal class State : BaseState() {
         var distribution by enum(JqaDistribution.CLI)
-        var cliExecRootDir: String = ""
-        var cliParams: String = ""
-        var mavenProjectFile: String = ""
-        var mavenAdditionalProps: String = ""
-        var mavenProjectDescription: String = ""
-        var mavenScriptSourceDir: String = ""
-        var mavenOutputEncoding: String = ""
+        var cliExecRootDir by string()
+        var cliParams by string()
+        var mavenProjectFile by string()
+        var mavenAdditionalProps by string()
+        var mavenProjectDescription by string()
+        var mavenScriptSourceDir by string()
+        var mavenOutputEncoding by string()
     }
 
     private var myState = State()

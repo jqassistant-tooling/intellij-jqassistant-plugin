@@ -50,10 +50,13 @@ class PluginSettingsComponent(
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
     private val labelCliExecRootDir = JLabel("Execution root:")
     private val cliExecRootDir =
-        MyTextFieldWithBrowseButton().apply {
+        MyTextFieldWithBrowseButton(
+            FileChooserDescriptorFactory
+                .createSingleFolderDescriptor()
+                .withRoots(baseFile)
+                .withTreeRootVisible(true),
+        ).apply {
             setEmptyState(leaveEmptyDefaultText)
-            val descriptor =
-                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(it)
@@ -66,12 +69,15 @@ class PluginSettingsComponent(
     // Maven components
     private val radioBtnMaven = JRadioButton("Use Maven Distribution")
     private val mavenProjectFile =
-        MyTextFieldWithBrowseButton().apply {
+        MyTextFieldWithBrowseButton(
+            FileChooserDescriptorFactory
+                .createSingleFileDescriptor("xml")
+                .withRoots(baseFile)
+                .withTreeRootVisible(true),
+        ).apply {
             setEmptyState(leaveEmptyDefaultText)
-            val descriptor =
-                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
-                FileChooser.chooseFile(descriptor, project, baseFile) {
+                FileChooser.chooseFile(this.descriptor, project, baseFile) {
                     text = toRelativePath(it)
                 }
             }
@@ -81,10 +87,13 @@ class PluginSettingsComponent(
     // Advanced settings
     private var mavenProjectDescription = JBTextField()
     private var mavenScriptSourceDir =
-        MyTextFieldWithBrowseButton().apply {
+        MyTextFieldWithBrowseButton(
+            FileChooserDescriptorFactory
+                .createSingleFolderDescriptor()
+                .withRoots(baseFile)
+                .withTreeRootVisible(true),
+        ).apply {
             setEmptyState(leaveEmptyDefaultText)
-            val descriptor =
-                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(it)
@@ -250,12 +259,12 @@ class PluginSettingsComponent(
     }
 
     private fun showFileOrDirectoryError(field: MyTextFieldWithBrowseButton) {
-        val isChooseFiles = field.fileChooserDescriptor?.isChooseFiles
-        val isChooseFolders = field.fileChooserDescriptor?.isChooseFolders
+        val isChooseFiles = field.descriptor.isChooseFiles
+        val isChooseFolders = field.descriptor.isChooseFolders
         val message =
-            if (isChooseFiles == true && isChooseFolders == true) {
+            if (isChooseFiles && isChooseFolders) {
                 "Invalid file or directory"
-            } else if (isChooseFiles == true) {
+            } else if (isChooseFiles) {
                 "Invalid file"
             } else {
                 "Invalid directory"

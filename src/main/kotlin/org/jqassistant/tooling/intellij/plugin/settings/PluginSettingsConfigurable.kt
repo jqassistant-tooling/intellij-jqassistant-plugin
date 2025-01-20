@@ -49,7 +49,7 @@ internal class PluginSettingsConfigurable(
         if (mySettingsComponent == null) {
             throw ConfigurationException("Couldn't apply settings")
         }
-        // TODO add checks for files
+
         if (!mySettingsComponent?.validateState()!!) {
             throw ConfigurationException("Invalid settings")
         }
@@ -69,13 +69,13 @@ internal class PluginSettingsConfigurable(
             Objects.requireNonNull(PluginSettings.getInstance(project).getState())
 
         mySettingsComponent?.myDistribution = state.distribution
-        mySettingsComponent?.myCliExecRootDir = state.cliExecRootDir
-        mySettingsComponent?.myCliParams = state.cliParams
-        mySettingsComponent?.myMavenProjectFile = state.mavenProjectFile
-        mySettingsComponent?.myAdditionalMavenProperties = state.mavenAdditionalProps
-        mySettingsComponent?.myMavenProjectDescription = state.mavenProjectDescription
-        mySettingsComponent?.myMavenScriptSourceDir = state.mavenScriptSourceDir
-        mySettingsComponent?.myMavenOutputEncoding = state.mavenOutputEncoding
+        mySettingsComponent?.myCliExecRootDir = state.cliExecRootDir ?: ""
+        mySettingsComponent?.myCliParams = state.cliParams ?: ""
+        mySettingsComponent?.myMavenProjectFile = state.mavenProjectFile ?: ""
+        mySettingsComponent?.myAdditionalMavenProperties = state.mavenAdditionalProps ?: ""
+        mySettingsComponent?.myMavenProjectDescription = state.mavenProjectDescription ?: ""
+        mySettingsComponent?.myMavenScriptSourceDir = state.mavenScriptSourceDir ?: ""
+        mySettingsComponent?.myMavenOutputEncoding = state.mavenOutputEncoding ?: ""
     }
 
     override fun disposeUIResources() {
