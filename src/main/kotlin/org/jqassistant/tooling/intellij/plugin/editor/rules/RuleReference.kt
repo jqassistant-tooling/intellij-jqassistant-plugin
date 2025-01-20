@@ -12,7 +12,7 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
 class RuleReference(
     element: PsiElement,
-    private val name: String,
+    val name: String,
     private val jqaRuleType: JqaRuleType? = null,
     private val soft: Boolean = false,
 ) : PsiPolyVariantReferenceBase<PsiElement?>(element),
