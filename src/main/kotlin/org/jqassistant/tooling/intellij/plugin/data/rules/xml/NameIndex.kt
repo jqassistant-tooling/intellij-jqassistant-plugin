@@ -20,7 +20,7 @@ import com.intellij.util.xml.DomManager
 class NameIndex : FileBasedIndexExtension<String, Collection<Int>>() {
     object Util {
         val NAME = ID.create<String, Collection<Int>>("jqassistant.rules.xml.NameIndex")
-        const val VERSION = 3
+        const val VERSION = 4
     }
 
     override fun getName(): ID<String, Collection<Int>> = Util.NAME
@@ -54,4 +54,7 @@ class NameIndex : FileBasedIndexExtension<String, Collection<Int>>() {
     override fun getInputFilter(): FileBasedIndex.InputFilter = DefaultFileTypeSpecificInputFilter(XmlFileType.INSTANCE)
 
     override fun dependsOnFileContent(): Boolean = true
+
+    // Required for IntelliJ to filter keys by project when using [FileBasedIndex::getAllKeys].
+    override fun traceKeyHashToVirtualFileMapping(): Boolean = true
 }

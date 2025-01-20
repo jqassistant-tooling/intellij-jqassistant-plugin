@@ -25,7 +25,7 @@ class EffectiveConfigToolWindow(
     }
 
     private val myToolBar = EffectiveConfigToolBar(this)
-    private val bannerPanel = OutdatedConfigBannerPanel(project, RefreshAction(this))
+    private val bannerPanel = OutdatedConfigBannerPanel(RefreshAction(this))
     private val loadingPanel = LoadingPanel()
     private var currentProgressIndicator: ProgressIndicator? = null
     private val editorFactory = EditorFactory.getInstance()

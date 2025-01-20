@@ -1,9 +1,10 @@
 package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 
+import com.buschmais.jqassistant.core.rule.api.filter.RuleFilter
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.AstLoadingFilter
@@ -30,8 +31,26 @@ class JqaXmlRuleIndexingStrategy(
             )
         }
 
-    override fun resolve(identifier: String): List<JqaRuleDefinition> {
+    private fun resolvePattern(identifier: String): List<JqaRuleDefinition> {
         val res = mutableListOf<JqaRuleDefinition>()
+
+        FileBasedIndex.getInstance().processAllKeys(
+            NameIndex.Util.NAME,
+            { key ->
+                if (RuleFilter.matches(key, identifier)) {
+                    res.addAll(resolveExact(key))
+                }
+                true
+            },
+            project,
+        )
+
+        return res
+    }
+
+    private fun resolveExact(identifier: String): List<JqaRuleDefinition> {
+        val res = mutableListOf<JqaRuleDefinition>()
+
         FileBasedIndex
             .getInstance()
             .processValues(
@@ -69,8 +88,15 @@ class JqaXmlRuleIndexingStrategy(
                     true
                 },
                 // Search the whole project.
-                GlobalSearchScope.projectScope(project),
+                ProjectScope.getAllScope(project),
             )
         return res
     }
+
+    override fun resolve(identifier: String): List<JqaRuleDefinition> =
+        if ("*" in identifier || "?" in identifier) {
+            resolvePattern(identifier)
+        } else {
+            resolveExact(identifier)
+        }
 }
