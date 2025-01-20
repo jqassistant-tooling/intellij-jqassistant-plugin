@@ -22,14 +22,48 @@ class JqaXmlRuleIndexingStrategy(
         override fun create(project: Project): JqaXmlRuleIndexingStrategy = JqaXmlRuleIndexingStrategy(project)
     }
 
-    // TODO: Use a separate type based index and support the [type] filter.
-    override fun getAll(type: JqaRuleType): List<JqaRuleDefinition> =
-        FileBasedIndex.getInstance().getAllKeys(NameIndex.Util.NAME, project).map { name ->
-            ValueBasedJqaRuleDefinition(
-                name,
-                type,
-            )
-        }
+    override fun getAll(type: JqaRuleType?): List<JqaRuleDefinition> {
+        val res = mutableListOf<JqaRuleDefinition>()
+
+        FileBasedIndex.getInstance().processAllKeys(
+            NameIndex.Util.NAME,
+            { ruleId ->
+                val typeSet = mutableSetOf<JqaRuleType>()
+                FileBasedIndex.getInstance().processValues(
+                    NameIndex.Util.NAME,
+                    ruleId,
+                    null,
+                    { _, declarations ->
+                        for (declaration in declarations) {
+                            typeSet.add(declaration.type)
+                        }
+
+                        // If the ruleId has more than one type (user error, but we handle it) and the filter type is one
+                        // of them, we don't need to continue since the ruleId will be included and the type will be `null`
+                        // in all cases.
+                        !(typeSet.size > 1 && (type == null || type in typeSet))
+                    },
+                    ProjectScope.getAllScope(project),
+                )
+
+                if (type == null || type in typeSet) {
+                    res.add(
+                        ValueBasedJqaRuleDefinition(
+                            ruleId,
+                            // If we don't know the type for sure we leave it empty.
+                            if (typeSet.size == 1) typeSet.single() else null,
+                        ),
+                    )
+                }
+
+                // Searching all keys so we need to continue.
+                true
+            },
+            project,
+        )
+
+        return res
+    }
 
     private fun resolvePattern(identifier: String): List<JqaRuleDefinition> {
         val res = mutableListOf<JqaRuleDefinition>()
@@ -61,24 +95,26 @@ class JqaXmlRuleIndexingStrategy(
                 { file, values ->
                     val psiManager = PsiManager.getInstance(project)
                     val psiFile = psiManager.findFile(file)
-                    val psiElements =
-                        AstLoadingFilter.forceAllowTreeLoading<List<PsiElement>, Throwable>(psiFile) {
-                            values.mapNotNull { value ->
-                                val token = psiFile?.findElementAt(value)
-                                PsiTreeUtil.getParentOfType(
-                                    token,
-                                    XmlAttributeValue::class.java,
-                                    false,
-                                )
+                    val references =
+                        AstLoadingFilter.forceAllowTreeLoading<List<Pair<PsiElement, JqaRuleType>>, Throwable>(
+                            psiFile,
+                        ) {
+                            values.mapNotNull { (offset, type) ->
+                                val token = psiFile?.findElementAt(offset)
+                                PsiTreeUtil
+                                    .getParentOfType(
+                                        token,
+                                        XmlAttributeValue::class.java,
+                                        false,
+                                    )?.let { Pair(it, type) }
                             }
                         }
 
                     res.addAll(
-                        psiElements.map { psiElement ->
+                        references.map { (psiElement, type) ->
                             ValueBasedJqaRuleDefinition(
                                 identifier,
-                                // TODO: Extract correct type
-                                JqaRuleType.CONCEPT,
+                                type,
                                 psiElement,
                             )
                         },

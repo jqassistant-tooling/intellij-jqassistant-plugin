@@ -17,7 +17,7 @@ enum class JqaRuleType {
  */
 abstract class JqaRuleDefinition(
     val name: String,
-    val type: JqaRuleType,
+    val type: JqaRuleType?,
 ) {
     abstract fun computeSource(): PsiElement?
 }
@@ -27,7 +27,7 @@ abstract class JqaRuleDefinition(
  */
 class ValueBasedJqaRuleDefinition(
     name: String,
-    type: JqaRuleType,
+    type: JqaRuleType?,
     private val element: PsiElement? = null,
 ) : JqaRuleDefinition(name, type) {
     override fun computeSource(): PsiElement? = element
