@@ -17,28 +17,36 @@ import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationServi
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 
 class FindUnusedAnnotator : Annotator {
-    companion object {
-        private const val PROCESS_TITLE = "Command line tool: Effective Configuration"
-    }
-
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        val result: Boolean
         val project = element.project
         val manager = DomManager.getDomManager(project)
         val tag = element as? XmlTag?
         val domElement = manager.getDomElement(tag)
 
-        // Check if element is rule element
+        // Get id value of RuleBase Element
         if (domElement !is RuleBase) return
-
-        // Check if element has a reference path from main parent group
-        val id: PsiElement = tag?.getAttribute("id")?.valueElement?.navigationElement ?: element
-        val configService = project.service<JqaConfigurationService>()
-        val config = configService.configProvider.getStoredConfig()
-        val newConfig =
-            if (config.isValid) {
-                config
-            } else {
-                /* Should get the current config (but we will do that via jqa tools soon)
+        val idElement: PsiElement = tag?.getAttribute("id")?.valueElement?.navigationElement ?: element
+        val idValue = tag?.getAttributeValue("id")
+        if (false) { // / with config service
+            val configService = element.project.service<JqaConfigurationService>()
+            val ruleSet = configService.getEffectiveRules()
+            val allIDs =
+                mutableListOf<String>().apply {
+                    addAll(ruleSet.groupIds)
+                    addAll(ruleSet.conceptIds)
+                    addAll(ruleSet.constraintIds)
+                }
+            result = allIDs.contains(idValue)
+        } else {
+            // Check if element has a reference path from main parent group
+            val configService = project.service<JqaConfigurationService>()
+            val config = configService.configProvider.getStoredConfig()
+            val newConfig =
+                if (config.isValid) {
+                    config
+                } else {
+                    /* Should get the current config (but we will do that via jqa tools soon)
                 ProgressManager.getInstance().run(
                     object : Task.Backgroundable(project, PROCESS_TITLE) {
                         override fun run(indicator: ProgressIndicator) {
@@ -47,15 +55,16 @@ class FindUnusedAnnotator : Annotator {
                         }
                     },
                 )*/
-                config
-            }
+                    config
+                }
 
-        val strippedConfig = config.configString.substringAfter("groups:\n")
-        val regex = Regex("""-\s*(\w+:\w+)\s*""")
-        val matchResult = regex.find(strippedConfig)
-        val matchedWord = matchResult?.groupValues?.get(1) ?: ""
+            val strippedConfig = config.configString.substringAfter("groups:\n")
+            val regex = Regex("""-\s*(\w+:\w+)\s*""")
+            val matchResult = regex.find(strippedConfig)
+            val matchedWord = matchResult?.groupValues?.get(1) ?: ""
 
-        val result = searchBaseReferenceRecursive(id, matchedWord)
+            result = searchBaseReferenceRecursive(idElement, matchedWord)
+        }
 
         if (!result) {
             holder
@@ -95,6 +104,4 @@ class FindUnusedAnnotator : Annotator {
         }
         return result
     }
-
-    private fun findBaseJqaGroup(): PsiElement? = null
 }
