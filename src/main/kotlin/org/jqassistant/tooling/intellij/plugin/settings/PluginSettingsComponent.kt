@@ -47,7 +47,8 @@ class PluginSettingsComponent(
     private val cliExecRootDir =
         MyTextFieldWithBrowseButton().apply {
             isEditable = false
-            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            val descriptor =
+                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(it)
@@ -61,7 +62,8 @@ class PluginSettingsComponent(
     private val mavenProjectFile =
         MyTextFieldWithBrowseButton().apply {
             isEditable = false
-            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            val descriptor =
+                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(it)
@@ -74,8 +76,9 @@ class PluginSettingsComponent(
     private var mavenProjectDescription = JBTextField()
     private var mavenScriptSourceDir =
         MyTextFieldWithBrowseButton().apply {
-            isOptional = true
-            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile)
+            isEditable = false
+            val descriptor =
+                FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(it)
@@ -94,15 +97,14 @@ class PluginSettingsComponent(
         // TODO maven module not available?
         labelMavenWarning.text = "Warning: Test Warning - Maven module not found"
         labelMavenWarning.foreground = JBColor.YELLOW
-        labelMavenWarning.isVisible = true // false removes and acts like "gone"
-
+        labelMavenWarning.isVisible = false // false removes and acts like "gone"
         panel =
             FormBuilder
                 .createFormBuilder()
                 .addComponent(labelBasePath, 1)
                 .addComponent(radioBtnCli, 10)
                 .setFormLeftIndent(15)
-                .addLabeledComponent(labelCliExecRootDir, cliExecRootDir, 10, false)
+                .addLabeledComponent(labelCliExecRootDir, mavenProjectFile, 10, false)
                 .addLabeledComponent(labelCliParams, cliParams, 10, false)
                 .setFormLeftIndent(1)
                 .addComponent(radioBtnMaven, 10)

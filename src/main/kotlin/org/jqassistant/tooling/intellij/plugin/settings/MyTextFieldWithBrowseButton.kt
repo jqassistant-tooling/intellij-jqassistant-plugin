@@ -8,7 +8,7 @@ import org.jqassistant.tooling.intellij.plugin.common.FileValidator
 import javax.swing.JTextField
 
 class MyTextFieldWithBrowseButton : TextFieldWithBrowseButton() {
-    var isOptional = false
+    var isOptional = true
     var fileChooserDescriptor: FileChooserDescriptor? = null
 
     fun validatePath(basePath: String): Boolean {
