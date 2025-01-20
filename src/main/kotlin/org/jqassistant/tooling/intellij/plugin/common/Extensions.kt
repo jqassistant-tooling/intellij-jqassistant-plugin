@@ -1,5 +1,8 @@
 package org.jqassistant.tooling.intellij.plugin.common
 
+import com.buschmais.jqassistant.core.rule.api.model.Rule
+import com.buschmais.jqassistant.core.rule.api.model.RuleSet
+
 fun <K, V> Iterable<Pair<K, V>>.toMutableMap(): MutableMap<K, V> {
     val res = mutableMapOf<K, V>()
     return associateTo(res) { it }
@@ -23,3 +26,21 @@ fun <T, B : Any> B.withServiceLoader(block: () -> T): T {
         currentThread.contextClassLoader = originalClassLoader
     }
 }
+
+/**
+ * Returns a concatenated list of all [Rule] elements in this [RuleSet]
+ */
+fun RuleSet.getAllRules(): List<Rule> {
+    val rules = mutableListOf<Rule>()
+    rules += groupsBucket.all
+    rules += conceptBucket.all
+    rules += constraintBucket.all
+
+    return rules
+}
+
+/**
+ * Returns the first [Rule] with the same id in this [RuleSet]
+ * if there ist any
+ */
+fun RuleSet.findRuleById(id: String): Rule? = getAllRules().find { r -> r.id == id }
