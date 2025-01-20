@@ -25,7 +25,7 @@ interface JqaRuleIndexingStrategyFactory {
  * One [JqaRuleIndexingStrategy] might use as many indexes as necessary under the hood.
  */
 interface JqaRuleIndexingStrategy {
-    fun getAll(type: JqaRuleType): List<JqaRuleDefinition>
+    fun getAll(type: JqaRuleType?): List<JqaRuleDefinition>
 
     fun resolve(identifier: String): List<JqaRuleDefinition>
 

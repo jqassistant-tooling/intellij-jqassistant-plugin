@@ -47,17 +47,17 @@ object UastReferenceProvider : UastInjectionHostReferenceProvider() {
         for (owner in annotationContext.allItems()) {
             if (owner.hasAnnotation(GroupId::class.qualifiedName!!)) {
                 return arrayOf(
-                    SpecificRuleReference(host, stringLiteralContent, JqaRuleType.GROUP, true),
+                    RuleReference(host, stringLiteralContent, JqaRuleType.GROUP, true),
                 )
             }
             if (owner.hasAnnotation(ConceptId::class.qualifiedName!!)) {
                 return arrayOf(
-                    SpecificRuleReference(host, stringLiteralContent, JqaRuleType.CONCEPT, true),
+                    RuleReference(host, stringLiteralContent, JqaRuleType.CONCEPT, true),
                 )
             }
             if (owner.hasAnnotation(ConstraintId::class.qualifiedName!!)) {
                 return arrayOf(
-                    SpecificRuleReference(host, stringLiteralContent, JqaRuleType.CONSTRAINT, true),
+                    RuleReference(host, stringLiteralContent, JqaRuleType.CONSTRAINT, true),
                 )
             }
         }
