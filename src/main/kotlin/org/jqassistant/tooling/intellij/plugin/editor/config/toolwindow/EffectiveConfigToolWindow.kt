@@ -66,20 +66,32 @@ class EffectiveConfigToolWindow(
             object : Task.Backgroundable(project, PROCESS_TITLE) {
                 override fun run(indicator: ProgressIndicator) {
                     currentProgressIndicator?.cancel()
-                    var configString =
-                        if (config.isValid && !forceRefresh) {
-                            config.configString
-                        } else {
-                            currentProgressIndicator = indicator
-                            val newConfig = configService.configProvider.getCurrentConfig()
-                            newConfig.configString
-                        }
 
-                    if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
-                        if (configString.isEmpty()) {
-                            configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                    // TODO use new ConfigService
+                    if (false) {
+                        var config = configService.getConfiguration().toString()
+                        if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
+                            if (config.isEmpty()) {
+                                config += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                            }
+                            setEditorContent(config)
                         }
-                        setEditorContent(configString)
+                    } else {
+                        var configString =
+                            if (config.isValid && !forceRefresh) {
+                                config.configString
+                            } else {
+                                currentProgressIndicator = indicator
+                                val newConfig = configService.configProvider.getCurrentConfig()
+                                newConfig.configString
+                            }
+
+                        if (currentProgressIndicator == null || !currentProgressIndicator!!.isCanceled) {
+                            if (configString.isEmpty()) {
+                                configString += "$GOAL_UNSUCCESSFUL: \"$JQA_EFFECTIVE_CONFIG_GOAL\""
+                            }
+                            setEditorContent(configString)
+                        }
                     }
                 }
             },
