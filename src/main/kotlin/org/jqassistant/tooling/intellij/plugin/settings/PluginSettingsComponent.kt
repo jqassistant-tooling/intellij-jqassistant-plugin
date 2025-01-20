@@ -6,6 +6,7 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.ui.setEmptyState
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,17 +37,17 @@ class PluginSettingsComponent(
 
     // Labels
     private val labelBasePath = JLabel("Base path: ${baseFile?.path}/").apply { isEnabled = false }
-    private val labelCliExecRootDir = JLabel("Cli execution root:")
-    private val labelCliParams = JLabel("Additional Cli parameters:")
     private val labelMavenWarning = JLabel()
     private val labelMavenProjectFile = JLabel("Maven project file (f.e. pom.xml):")
     private val labelMavenAdditionalProps = JLabel("Additional Maven parameters:")
+    private val labelAdvancedSettings = JLabel("Advanced settings")
 
     // Cli components
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
+    private val labelCliExecRootDir = JLabel("Execution root:")
     private val cliExecRootDir =
         MyTextFieldWithBrowseButton().apply {
-            isEditable = false
+            setEmptyState("Leave empty for default values")
             val descriptor =
                 FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
@@ -55,13 +56,14 @@ class PluginSettingsComponent(
                 }
             }
         }
+    private val labelCliParams = JLabel("Additional parameters:")
     private val cliParams = JBTextField()
 
     // Maven components
     private val radioBtnMaven = JRadioButton("Use Maven Distribution")
     private val mavenProjectFile =
         MyTextFieldWithBrowseButton().apply {
-            isEditable = false
+            setEmptyState("Leave empty for default values")
             val descriptor =
                 FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
@@ -76,7 +78,7 @@ class PluginSettingsComponent(
     private var mavenProjectDescription = JBTextField()
     private var mavenScriptSourceDir =
         MyTextFieldWithBrowseButton().apply {
-            isEditable = false
+            setEmptyState("Leave empty for default values")
             val descriptor =
                 FileChooserDescriptorFactory.createSingleFileDescriptor().withRoots(baseFile).withTreeRootVisible(true)
             addActionListener {
@@ -85,7 +87,10 @@ class PluginSettingsComponent(
                 }
             }
         }
-    private var mavenOutputEncoding = JBTextField()
+    private var mavenOutputEncoding =
+        JBTextField().apply {
+            setEmptyState("Leave empty for default values")
+        }
 
     init {
 
@@ -104,20 +109,27 @@ class PluginSettingsComponent(
                 .addComponent(labelBasePath, 1)
                 .addComponent(radioBtnCli, 10)
                 .setFormLeftIndent(15)
-                .addLabeledComponent(labelCliExecRootDir, mavenProjectFile, 10, false)
+                .addLabeledComponent(labelCliExecRootDir, cliExecRootDir, 10, false)
+                .addTooltip("The execution root of the cli distribution")
                 .addLabeledComponent(labelCliParams, cliParams, 10, false)
+                .addTooltip("Additional parameters for the cli distribution")
                 .setFormLeftIndent(1)
                 .addComponent(radioBtnMaven, 10)
                 .setFormLeftIndent(15)
                 .addComponent(labelMavenWarning, 10)
                 .addLabeledComponent(labelMavenProjectFile, mavenProjectFile, 10, false)
+                .addTooltip("The file that defines the maven project")
                 .addLabeledComponent(labelMavenAdditionalProps, mavenAdditionalProps, 10, false)
+                .addTooltip("Additional parameters for the maven distribution")
                 .setFormLeftIndent(1)
                 .addSeparator()
-                .addTooltip("Advanced settings")
+                .addComponent(labelAdvancedSettings)
                 .addLabeledComponent("Maven project description:", mavenProjectDescription, 10, false)
+                .addTooltip("Overrides description text of the maven project usually found in pom.xml")
                 .addLabeledComponent("Maven script source directory:", mavenScriptSourceDir, 10, false)
+                .addTooltip("The source directory where maven expects your project files")
                 .addLabeledComponent("Maven output encoding:", mavenOutputEncoding, 10, false)
+                .addTooltip("The character encoding scheme used for reading and writing files")
                 .addComponentFillVertically(JPanel(), 0)
                 .panel
     }
