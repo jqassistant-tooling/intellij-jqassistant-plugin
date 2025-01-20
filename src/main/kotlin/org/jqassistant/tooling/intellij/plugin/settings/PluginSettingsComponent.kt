@@ -2,6 +2,7 @@
 package org.jqassistant.tooling.intellij.plugin.settings
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -13,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
@@ -35,6 +37,7 @@ class PluginSettingsComponent(
     val panel: JPanel
     private val baseFile = LocalFileSystem.getInstance().findFileByPath(project.basePath ?: "")
     private val leaveEmptyDefaultText = "use default"
+    private val configService = project.service<JqaConfigurationService>()
 
     // Labels
     private val labelBasePath = JLabel("Base path: ${baseFile?.path}/").apply { isEnabled = false }
@@ -94,17 +97,15 @@ class PluginSettingsComponent(
         }
 
     init {
-
         // RadioGroup
         mavenOrCliButtonGroup.add(radioBtnCli)
         mavenOrCliButtonGroup.add(radioBtnMaven)
         radioBtnCli.addActionListener(RadioButtonActionListener())
         radioBtnMaven.addActionListener(RadioButtonActionListener())
 
-        // TODO check if maven module is not available
-        labelMavenWarning.text = "Warning: Test Warning - Maven module not found"
-        labelMavenWarning.foreground = JBColor.YELLOW
-        labelMavenWarning.isVisible = false // false removes and acts like "gone"
+        labelMavenWarning.text = "Warning: Maven module not found"
+        labelMavenWarning.foreground = JBColor.RED
+        labelMavenWarning.isVisible = !configService.isMavenDistributionSupported()
 
         // Build Form
         panel =
