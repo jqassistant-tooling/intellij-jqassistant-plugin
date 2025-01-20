@@ -69,9 +69,17 @@ interface Constraint :
     ExecutableRuleType,
     DomElement
 
+/**
+ * Xml tag, that contains content in the Cypher query language.
+ */
+interface CypherType : DomElement
+
 interface ExecutableRuleType : DomElement {
     @get:SubTagList("requiresConcept")
     val requiresConcept: List<ConceptType>
+
+    @get:SubTagList("cypher")
+    val cypher: List<CypherType>
 }
 
 interface GroupType : DomElement {
