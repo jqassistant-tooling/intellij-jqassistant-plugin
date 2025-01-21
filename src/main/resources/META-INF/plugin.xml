@@ -70,6 +70,8 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+        <multiHostInjector
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlPomXmlInjector"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
@@ -99,6 +101,12 @@
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
                 class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
+        <action id="VirtualFileExtractor"
+                class="org.jqassistant.tooling.intellij.plugin.editor.config.VirtualFileExtractor"
+                text="Extract jqassistant YAML"
+                description="Extract the YAML configuration from the jqassistant plugin in pom.xml">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
     </actions>
 
     <applicationListeners>
