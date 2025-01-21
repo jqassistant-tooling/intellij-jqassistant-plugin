@@ -18,12 +18,18 @@ internal class ReportToolWindowFactory :
     private fun loadToolWindowContent(project: Project, toolWindow: ToolWindow, forceReload: Boolean = false) {
         val reportProviderService = project.service<ReportProviderService>()
 
-        for ((baseDir, report) in reportProviderService.getReports(forceReload)) {
+        for ((reportFile, report) in reportProviderService.getReports(forceReload)) {
             val toolWindowContent = ReportToolWindowContent(project, toolWindow, report)
+
+            // sig-metrics/target/jqassistant/jqassistant-report.xml
+            // -> sig-metrics
+            val moduleDirectory = reportFile.parent.parent.parent
 
             // Add individual tabs for every base directory in the current project that contains a report xml file
             val content =
-                ContentFactory.getInstance().createContent(toolWindowContent.toolWindowPanel, baseDir.name, false)
+                ContentFactory
+                    .getInstance()
+                    .createContent(toolWindowContent.toolWindowPanel, moduleDirectory.name, false)
             toolWindow.contentManager.addContent(content)
         }
     }
