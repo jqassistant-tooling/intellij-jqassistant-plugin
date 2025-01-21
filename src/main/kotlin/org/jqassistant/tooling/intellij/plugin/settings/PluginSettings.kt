@@ -10,7 +10,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
 
-/*
+/**
  * Supports storing the application settings in a persistent way.
  * The {@link com.intellij.openapi.components.State State} and {@link Storage}
  * annotations define the name of the data and the filename where these persistent
