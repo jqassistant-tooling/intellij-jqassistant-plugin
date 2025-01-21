@@ -1,15 +1,14 @@
 // Based on Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jqassistant.tooling.intellij.plugin.settings
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.setEmptyState
-import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBTextField
@@ -18,8 +17,6 @@ import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationServi
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
 import javax.swing.JComponent
@@ -37,13 +34,12 @@ class PluginSettingsComponent(
     private val mavenOrCliButtonGroup = ButtonGroup()
     val panel: JPanel
     private val baseFile = LocalFileSystem.getInstance().findFileByPath(project.basePath ?: "")
-    private val leaveEmptyDefaultText = "use default"
-    private val configService = project.service<JqaConfigurationService>()
+    private val emptyDefaultText = "use default"
 
     // Labels
-    private val labelBasePath = JLabel("Base path: ${baseFile?.path}/").apply { isEnabled = false }
+    private val labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
     private val labelMavenWarning = JLabel()
-    private val labelMavenProjectFile = JLabel("Maven project file (f.e. pom.xml):")
+    private val labelMavenProjectFile = JLabel("Maven project file:")
     private val labelMavenAdditionalProps = JLabel("Additional Maven parameters:")
     private val labelAdvancedSettings = JLabel("Advanced settings:")
 
@@ -51,16 +47,16 @@ class PluginSettingsComponent(
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
     private val labelCliExecRootDir = JLabel("Execution root:")
     private val cliExecRootDir =
-        MyTextFieldWithBrowseButton(
+        ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState(leaveEmptyDefaultText)
+            setEmptyState("use project root")
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(it)
+                    text = toRelativePath(baseFile!!, it)
                 }
             }
         }
@@ -70,16 +66,16 @@ class PluginSettingsComponent(
     // Maven components
     private val radioBtnMaven = JRadioButton("Use Maven Distribution")
     private val mavenProjectFile =
-        MyTextFieldWithBrowseButton(
+        ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFileDescriptor("xml")
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState(leaveEmptyDefaultText)
+            setEmptyState("use default jQA Maven Plugin")
             addActionListener {
                 FileChooser.chooseFile(this.descriptor, project, baseFile) {
-                    text = toRelativePath(it)
+                    text = toRelativePath(baseFile!!, it)
                 }
             }
         }
@@ -88,22 +84,22 @@ class PluginSettingsComponent(
     // Advanced settings
     private var mavenProjectDescription = JBTextField()
     private var mavenScriptSourceDir =
-        MyTextFieldWithBrowseButton(
+        ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState(leaveEmptyDefaultText)
+            setEmptyState(emptyDefaultText)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(it)
+                    text = toRelativePath(baseFile!!, it)
                 }
             }
         }
     private var mavenOutputEncoding =
         JBTextField().apply {
-            setEmptyState(leaveEmptyDefaultText)
+            setEmptyState(emptyDefaultText)
         }
 
     init {
@@ -115,7 +111,10 @@ class PluginSettingsComponent(
 
         labelMavenWarning.text = "Warning: Maven module not found"
         labelMavenWarning.foreground = JBColor.RED
-        labelMavenWarning.isVisible = !configService.isMavenDistributionSupported()
+        labelMavenWarning.isVisible =
+            !project
+                .service<JqaConfigurationService>()
+                .isMavenDistributionSupported()
 
         // Build Form
         panel =
@@ -133,7 +132,7 @@ class PluginSettingsComponent(
                 .setFormLeftIndent(25)
                 .addComponent(labelMavenWarning, 10)
                 .addLabeledComponent(labelMavenProjectFile, mavenProjectFile, 10, false)
-                .addTooltip("The file that defines the maven project")
+                .addTooltip("Select project with jQA Maven Plugin")
                 .addLabeledComponent(labelMavenAdditionalProps, mavenAdditionalProps, 10, false)
                 .addTooltip("Additional parameters for the maven distribution")
                 .setFormLeftIndent(1)
@@ -160,14 +159,11 @@ class PluginSettingsComponent(
             } else {
                 JqaDistribution.MAVEN
             }
-        set(newStatus) {
-            if (newStatus == JqaDistribution.CLI) {
-                radioBtnCli.isSelected = true
-            } else {
-                radioBtnMaven.isSelected = true
-            }
-            updateEnabledComponents()
-        }
+        set(newStatus) =
+            when (newStatus) {
+                JqaDistribution.CLI -> radioBtnCli.isSelected = true
+                JqaDistribution.MAVEN -> radioBtnMaven.isSelected = true
+            }.also { updateEnabledComponents() }
 
     var myCliExecRootDir: String
         get() = cliExecRootDir.text
@@ -230,36 +226,27 @@ class PluginSettingsComponent(
     }
 
     fun validateState(): Boolean {
-        val state = AtomicBoolean(true)
-        val browsingFields = listOf(cliExecRootDir, mavenProjectFile, mavenScriptSourceDir)
-        val futures =
-            browsingFields.map { field ->
-                ApplicationManager
-                    .getApplication()
-                    .executeOnPooledThread {
-                        if (field.isEnabled &&
-                            !field.validatePath(baseFile?.path ?: "")
-                        ) {
-                            showFileOrDirectoryError(field)
-                            state.set(false)
-                        } else {
-                            hideDirectoryError(field)
-                        }
-                    }
+        var state = true
+        val fields = listOf(cliExecRootDir, mavenProjectFile, mavenScriptSourceDir)
+        fields.forEach { field ->
+            if (field.isEnabled &&
+                !field.validateRelativePath(baseFile)
+            ) {
+                showFileOrDirectoryError(field)
+                state = false
+            } else {
+                hideDirectoryError(field)
             }
+        }
 
         // Make IntelliJ wait for tasks
-        futures.forEach { it.get() }
-        return state.get()
+        return state
     }
 
-    private fun toRelativePath(absolute: VirtualFile): String {
-        val base = File(baseFile?.path.toString()).toPath()
-        val myAbsolute = File(absolute.path).toPath()
-        return base.relativize(myAbsolute).toCanonicalPath()
-    }
+    private fun toRelativePath(base: VirtualFile, child: VirtualFile): String =
+        VfsUtil.findRelativePath(base, child, '/') ?: ""
 
-    private fun showFileOrDirectoryError(field: MyTextFieldWithBrowseButton) {
+    private fun showFileOrDirectoryError(field: ValidatorTextFieldWithBrowseButton) {
         val isChooseFiles = field.descriptor.isChooseFiles
         val isChooseFolders = field.descriptor.isChooseFolders
         val message =

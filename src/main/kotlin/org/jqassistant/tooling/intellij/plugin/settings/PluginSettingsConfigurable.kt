@@ -15,8 +15,6 @@ internal class PluginSettingsConfigurable(
 ) : Configurable {
     private var mySettingsComponent: PluginSettingsComponent? = null
 
-    // A default constructor with no arguments is required because
-    // this implementation is registered as an applicationConfigurable
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String = PluginSettings.DISPLAY_NAME
 

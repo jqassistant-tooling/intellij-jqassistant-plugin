@@ -3,6 +3,7 @@ package org.jqassistant.tooling.intellij.plugin.settings
 
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.RoamingType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -18,7 +19,10 @@ import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
  */
 
 @Service(Service.Level.PROJECT)
-@State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml", roamingType = RoamingType.PER_OS)])
+@State(
+    name = "jqassistant.JqaPluginSettings",
+    storages = [Storage("jqaPluginSettings.xml", roamingType = RoamingType.PER_OS)],
+)
 internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
     internal class State : BaseState() {
         var distribution by enum(JqaDistribution.CLI)
