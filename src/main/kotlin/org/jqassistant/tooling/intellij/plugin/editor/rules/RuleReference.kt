@@ -5,12 +5,31 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
-import com.intellij.psi.ResolveResult
 import com.intellij.util.containers.map2Array
 import org.jqassistant.tooling.intellij.plugin.common.WildcardUtil
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
+/**
+ * Resolve result that also contains the jQA rule type.
+ *
+ * Language dependent annotators can use this information to provide quick fixes.
+ */
+class JqaResolveResult(
+    element: PsiElement,
+    filterType: JqaRuleType?,
+    val type: JqaRuleType?,
+) : PsiElementResolveResult(
+        element,
+        filterType == type,
+    )
+
+/**
+ * Reference to a jQA rule, optionally accompanied by an expected rule type.
+ *
+ * The reference is supposed to be language independent and thus is safe to be injected as soft reference where needed.
+ * This has been successfully tested with Yaml, Xml, Java and Kotlin.
+ */
 class RuleReference(
     element: PsiElement,
     val name: String,
@@ -24,7 +43,7 @@ class RuleReference(
             .getAll(jqaRuleType)
             .map2Array { it.name }
 
-    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
+    override fun multiResolve(incompleteCode: Boolean): Array<JqaResolveResult> {
         val results =
             if (WildcardUtil.looksLikeWildcard(name)) {
                 // For wildcards, we filter during resolution to only show the fitting type.
@@ -38,7 +57,7 @@ class RuleReference(
 
         return results
             .mapNotNull { definition ->
-                definition.computeSource()?.let { PsiElementResolveResult(it, definition.type == jqaRuleType) }
+                definition.computeSource()?.let { JqaResolveResult(it, jqaRuleType, definition.type) }
             }.toTypedArray()
     }
 
