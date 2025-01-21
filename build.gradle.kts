@@ -47,6 +47,7 @@ dependencies {
     }
 
     testImplementation(libs.junit)
+    testImplementation("junit:junit:4.13.2")
 
     implementation(libs.maven.core)
     implementation(libs.maven.compat)
