@@ -85,6 +85,14 @@
                          key="inspection.rule.xml.validity.display.name"
                          groupKey="inspections.group.name"
         />
+
+        <psi.referenceContributor
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigReferenceContributor"
+            language="yaml"/>
+
+        <annotator
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
+            language="yaml"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
