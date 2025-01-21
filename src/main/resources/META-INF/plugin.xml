@@ -78,6 +78,13 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleDomInspection"
+                         key="inspection.rule.xml.validity.display.name"
+                         groupKey="inspections.group.name"
+        />
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
