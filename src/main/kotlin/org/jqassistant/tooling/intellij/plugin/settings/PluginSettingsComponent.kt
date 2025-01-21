@@ -34,7 +34,6 @@ class PluginSettingsComponent(
     private val mavenOrCliButtonGroup = ButtonGroup()
     val panel: JPanel
     private val baseFile = LocalFileSystem.getInstance().findFileByPath(project.basePath ?: "")
-    private val emptyDefaultText = "use default"
 
     // Labels
     private val labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
@@ -90,17 +89,13 @@ class PluginSettingsComponent(
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState(emptyDefaultText)
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(baseFile!!, it)
                 }
             }
         }
-    private var mavenOutputEncoding =
-        JBTextField().apply {
-            setEmptyState(emptyDefaultText)
-        }
+    private var mavenOutputEncoding = JBTextField()
 
     init {
         // RadioGroup
