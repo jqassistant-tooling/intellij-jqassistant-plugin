@@ -20,6 +20,13 @@
         org.jetbrains.idea.maven
     </depends>
 
+    <depends
+        optional="true"
+        config-file="jqassistant-graphdb.xml"
+    >
+        com.albertoventurini.jetbrains.graphdbplugin
+    </depends>
+
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensionPoints>
