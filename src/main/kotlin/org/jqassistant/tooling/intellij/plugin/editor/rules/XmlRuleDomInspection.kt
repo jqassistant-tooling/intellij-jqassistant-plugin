@@ -8,6 +8,7 @@ import com.intellij.util.xml.DomElement
 import com.intellij.util.xml.highlighting.BasicDomElementsInspection
 import com.intellij.util.xml.highlighting.DomElementAnnotationHolder
 import com.intellij.util.xml.highlighting.DomHighlightingHelper
+import org.jqassistant.tooling.intellij.plugin.common.WildcardUtil
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqassistantRules
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
@@ -29,11 +30,11 @@ class XmlRuleDomInspection : BasicDomElementsInspection<JqassistantRules>(Jqassi
     private fun checkWildcard(element: RuleBase, holder: DomElementAnnotationHolder, helper: DomHighlightingHelper) {
         val id = element.id.stringValue ?: return
 
-        if ("*" in id || "?" in id) {
+        if (WildcardUtil.looksLikeWildcard(id)) {
             holder.createProblem(
                 element.id,
                 MessageBundle.message("id.contains.wildcard.characters"),
-                XmlChangeAttributeValueIntentionFix(id.replace("*", "").replace("?", "")),
+                XmlChangeAttributeValueIntentionFix(WildcardUtil.stripWildcard(id)),
             )
         }
     }
