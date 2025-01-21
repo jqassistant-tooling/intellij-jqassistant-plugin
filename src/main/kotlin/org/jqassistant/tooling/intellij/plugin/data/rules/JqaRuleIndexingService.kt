@@ -38,7 +38,7 @@ class JqaRuleIndexingService(
         }
     }
 
-    fun getAll(type: JqaRuleType): List<JqaRuleDefinition> = indexes.flatMap { it.getAll(type) }
+    fun getAll(type: JqaRuleType? = null): List<JqaRuleDefinition> = indexes.flatMap { it.getAll(type) }
 
     fun resolve(identifier: String): List<JqaRuleDefinition> = indexes.flatMap { it.resolve(identifier) }
 
