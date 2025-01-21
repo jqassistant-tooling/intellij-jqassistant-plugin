@@ -40,7 +40,7 @@ class PluginSettingsComponent(
     private val labelMavenWarning = JLabel()
     private val labelMavenProjectFile = JLabel("Maven project file:")
     private val labelMavenAdditionalProps = JLabel("Additional Maven parameters:")
-    private val labelAdvancedSettings = JLabel("Advanced settings:")
+    private val labelAdvancedSettings = JLabel("Advanced Settings:")
 
     // CLI components
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
@@ -52,7 +52,7 @@ class PluginSettingsComponent(
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState("use project root")
+            setEmptyState("Use project root")
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
                     text = toRelativePath(baseFile!!, it)
@@ -71,7 +71,7 @@ class PluginSettingsComponent(
                 .withRoots(baseFile)
                 .withTreeRootVisible(true),
         ).apply {
-            setEmptyState("use default jQA Maven Plugin")
+            setEmptyState("Use default jQA Maven Plugin")
             addActionListener {
                 FileChooser.chooseFile(this.descriptor, project, baseFile) {
                     text = toRelativePath(baseFile!!, it)

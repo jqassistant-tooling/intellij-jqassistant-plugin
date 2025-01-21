@@ -30,13 +30,17 @@ internal class PluginSettingsConfigurable(
             Objects.requireNonNull(PluginSettings.getInstance(project).getState())
         var isModified = false
         isModified = isModified || mySettingsComponent?.myDistribution != state.distribution
-        isModified = isModified || mySettingsComponent?.myCliExecRootDir != state.cliExecRootDir
-        isModified = isModified || mySettingsComponent?.myCliParams != state.cliParams
-        isModified = isModified || mySettingsComponent?.myMavenProjectFile != state.mavenProjectFile
-        isModified = isModified || mySettingsComponent?.myAdditionalMavenProperties != state.mavenAdditionalProps
-        isModified = isModified || mySettingsComponent?.myMavenProjectDescription != state.mavenProjectDescription
-        isModified = isModified || mySettingsComponent?.myMavenScriptSourceDir != state.mavenScriptSourceDir
-        isModified = isModified || mySettingsComponent?.myMavenOutputEncoding != state.mavenOutputEncoding
+        isModified = isModified || mySettingsComponent?.myCliExecRootDir != (state.cliExecRootDir ?: "")
+        isModified = isModified || mySettingsComponent?.myCliParams != (state.cliParams ?: "")
+        isModified = isModified || mySettingsComponent?.myMavenProjectFile != (state.mavenProjectFile ?: "")
+        isModified =
+            isModified ||
+            mySettingsComponent?.myAdditionalMavenProperties != (state.mavenAdditionalProps ?: "")
+        isModified =
+            isModified ||
+            mySettingsComponent?.myMavenProjectDescription != (state.mavenProjectDescription ?: "")
+        isModified = isModified || mySettingsComponent?.myMavenScriptSourceDir != (state.mavenScriptSourceDir ?: "")
+        isModified = isModified || mySettingsComponent?.myMavenOutputEncoding != (state.mavenOutputEncoding ?: "")
         if (isModified) mySettingsComponent?.validateState()
         return isModified
     }
