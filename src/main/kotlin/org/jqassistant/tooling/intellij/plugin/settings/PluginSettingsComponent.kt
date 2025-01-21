@@ -15,6 +15,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File

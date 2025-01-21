@@ -2,8 +2,10 @@ package org.jqassistant.tooling.intellij.plugin.settings
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import org.jqassistant.tooling.intellij.plugin.common.FileValidator
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.isFile
 import java.awt.event.ActionListener
+import java.io.File
 
 class MyTextFieldWithBrowseButton(
     val descriptor: FileChooserDescriptor,
@@ -11,15 +13,17 @@ class MyTextFieldWithBrowseButton(
 ) : TextFieldWithBrowseButton() {
     fun validatePath(basePath: String): Boolean {
         var result = true
-        val path = "$basePath/$text"
+        val file = File(basePath, text)
+        val localFileSystem = LocalFileSystem.getInstance()
+        val virtualFile = localFileSystem.findFileByIoFile(file)
         if (text.isEmpty()) {
             result = isOptional
         } else if (this.descriptor.isChooseFiles && this.descriptor.isChooseFolders) {
-            result = FileValidator.isValidFileOrDirectory(path)
+            result = virtualFile?.exists() ?: false
         } else if (this.descriptor.isChooseFiles) {
-            result = FileValidator.isValidFile(path)
+            result = virtualFile?.isFile ?: false
         } else if (this.descriptor.isChooseFolders) {
-            result = FileValidator.isValidDirectory(path)
+            result = virtualFile?.isDirectory ?: false
         }
         return result
     }

@@ -8,6 +8,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
 
 /*
  * Supports storing the application settings in a persistent way.
@@ -15,11 +16,6 @@ import com.intellij.openapi.project.Project
  * annotations define the name of the data and the filename where these persistent
  * application settings are stored.
  */
-
-enum class JqaDistribution {
-    CLI,
-    MAVEN,
-}
 
 @Service(Service.Level.PROJECT)
 @State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml")])
