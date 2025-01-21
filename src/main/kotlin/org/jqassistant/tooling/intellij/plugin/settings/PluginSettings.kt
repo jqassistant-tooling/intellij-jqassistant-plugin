@@ -18,7 +18,7 @@ import org.jqassistant.tooling.intellij.plugin.data.config.JqaDistribution
  */
 
 @Service(Service.Level.PROJECT)
-@State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml")])
+@State(name = "org.intellij.sdk.settings.JqaPluginSettings", storages = [Storage("jqaPluginSettings.xml", roamingType = RoamingType.PER_OS)])
 internal class PluginSettings : PersistentStateComponent<PluginSettings.State> {
     internal class State : BaseState() {
         var distribution by enum(JqaDistribution.CLI)
