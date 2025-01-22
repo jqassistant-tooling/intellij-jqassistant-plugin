@@ -1,5 +1,6 @@
 package org.jqassistant.tooling.intellij.plugin.editor.graph
 
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -8,8 +9,10 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.pom.PomTargetPsiElement
 import com.intellij.util.xml.DomTarget
 import org.jqassistant.tooling.intellij.plugin.common.findRuleById
+import org.jqassistant.tooling.intellij.plugin.common.notifyBalloon
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
+import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 
 class OpenGraphAction : AnAction() {
     companion object {
@@ -32,7 +35,14 @@ class OpenGraphAction : AnAction() {
         val configurationService = project.service<JqaConfigurationService>()
         val ruleSet = configurationService.getAvailableRules()
 
-        val currentRule = ruleBase.id.stringValue?.let { ruleSet.findRuleById(it) } ?: return
+        val currentRule = ruleBase.id.stringValue?.let { ruleSet.findRuleById(it) }
+        if (currentRule == null) {
+            project.notifyBalloon(
+                MessageBundle.message("graph.rule.not.found", ruleBase.id.stringValue ?: "null"),
+                NotificationType.ERROR,
+            )
+            return
+        }
 
         component.refreshGraph(currentRule, ruleSet)
     }
