@@ -6,13 +6,10 @@ import com.buschmais.jqassistant.core.rule.api.model.Group
 import com.buschmais.jqassistant.core.rule.api.model.Rule
 import com.buschmais.jqassistant.core.rule.api.model.RuleSet
 import com.intellij.openapi.editor.colors.EditorColorsManager
-import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColorUtil
-import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.Node
 import org.graphstream.graph.implementations.MultiGraph
@@ -29,30 +26,12 @@ class GraphToolWindowContent(
     private val graph = MultiGraph("toolWindowGraph")
 
     init {
-
-        val g = graph.addNode("Graph")
-        g.setAttribute("ui.label", "Graph")
-        g.setAttribute("xy", 1, 3)
-
-        val v = graph.addNode("Viewer")
-        v.setAttribute("ui.label", "V")
-        v.setAttribute("xy", 3, 3)
-
-        val p1 = graph.addNode("GtoV")
-        p1.setAttribute("ui.label", "P1")
-        val p2 = graph.addNode("VtoG")
-        p2.setAttribute("ui.label", "P2")
-
-        graph.addEdge("G->GtoV", "Graph", "GtoV", true)
-        graph.addEdge("GtoV->V", "GtoV", "Viewer", true)
-        graph.addEdge("VtoG<-V", "Viewer", "VtoG", true)
-        graph.addEdge("G<-VtoG", "VtoG", "Graph", true)
-
         System.setProperty("org.graphstream.ui", "swing")
         System.setProperty("sun.java2d.opengl", "True")
 
         val colorsScheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
 
+        // Initial graph that displays help text
         val background = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
@@ -64,20 +43,15 @@ class GraphToolWindowContent(
                 fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
             }
             node {
-            	size: 90px, 35px;
-            	shape: box;
-                fill-color: rgb(${background.red}, ${background.green}, ${background.blue});
-            	stroke-mode: plain;
-                stroke-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
+                fill-mode: none;
+                text-size: 20;
                 text-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
-            }
-            edge {
-                fill-color: rgb(${textColor.red}, ${textColor.green}, ${textColor.blue});
             }
             """.trimIndent(),
         )
 
         val viewer = SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
+        graph.addNode("help-text").setAttribute("ui.label", "Use the the \"Open Rule Graph\" right click action")
 
         val layout = Layouts.newLayoutAlgorithm()
         viewer.enableAutoLayout(layout)
@@ -85,19 +59,7 @@ class GraphToolWindowContent(
         // false indicates "no JFrame".
         val view = viewer.addDefaultView(false) as DefaultView
 
-        val splitter = OnePixelSplitter()
-        val textArea = JBTextArea()
-        textArea.text = stylesheet()
-
-        textArea.document.whenTextChanged { event ->
-            graph.removeAttribute("ui.stylesheet")
-            graph.setAttribute("ui.stylesheet", textArea.text)
-        }
-
-        // splitter.firstComponent = textArea
-        splitter.secondComponent = view
-
-        this.setContent(splitter)
+        this.setContent(view)
     }
 
     // Based on: https://graphstream-project.org/doc/Advanced-Concepts/GraphStream-CSS-Reference/
