@@ -12,14 +12,30 @@
      See: https://plugins.jetbrains.com/docs/intellij/uast.html#using-uast-in-plugins -->
     <depends
         optional="true"
-        config-file="jqassistant-uastReferenceContributor.xml">com.intellij.java</depends>
+        config-file="jqassistant-uastReferenceContributor.xml">com.intellij.java
+    </depends>
 
     <depends optional="true"
              config-file="jqassistant-maven.xml">
         org.jetbrains.idea.maven
     </depends>
 
+    <depends
+        optional="true"
+        config-file="jqassistant-graphdb.xml">
+        com.albertoventurini.jetbrains.graphdbplugin
+    </depends>
+
     <resource-bundle>messages.MyBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable
+            parentId="tools"
+            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            displayName="jQAssistant Tooling"/>
+
+    </extensions>
 
     <extensionPoints>
         <extensionPoint name="jqaRuleIndexingStrategy"
@@ -31,6 +47,10 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="jqassistant.NotificationBalloon"
+                           displayType="BALLOON"
+                           key="jqassistant.balloon.group"/>
+
         <toolWindow
             factoryClass="org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow.EffectiveConfigToolWindowFactory"
             id="Effective Configuration"
@@ -47,7 +67,7 @@
         <dom.fileMetaData
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleDescription"
             rootTagName="jqassistant-rules"
-            stubVersion="1"/>
+            stubVersion="2"/>
         <fileBasedIndex implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.NameIndex"/>
         <additionalLibraryRootsProvider
             implementation="org.jqassistant.tooling.intellij.plugin.data.plugin.JqaPluginRootsProvider"/>
@@ -70,6 +90,21 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleDomInspection"
+                         key="inspection.rule.xml.validity.display.name"
+                         groupKey="inspections.group.name"
+        />
+
+        <psi.referenceContributor
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigReferenceContributor"
+            language="yaml"/>
+
+        <annotator
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
+            language="yaml"/>
         <annotator language="XML"
                    implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.annotator.FindUnusedAnnotator"/>
     </extensions>
@@ -82,6 +117,7 @@
     <extensions defaultExtensionNs="jqassistant">
         <jqaRuleIndexingStrategy
             implementation="org.jqassistant.tooling.intellij.plugin.data.rules.xml.JqaXmlRuleIndexingStrategy$Factory"/>
+        <jqaConfigFactory implementation="org.jqassistant.tooling.intellij.plugin.data.config.CliConfigFactory"/>
     </extensions>
 
     <actions>
@@ -101,6 +137,8 @@
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
                 class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
+        <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
+                class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
 
     <applicationListeners>

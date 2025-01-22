@@ -33,9 +33,9 @@ class FindUnusedAnnotator : Annotator {
             val ruleSet = configService.getEffectiveRules()
             val allIDs =
                 mutableListOf<String>().apply {
-                    addAll(ruleSet.groupIds)
-                    addAll(ruleSet.conceptIds)
-                    addAll(ruleSet.constraintIds)
+                    addAll(ruleSet?.groups?.map { it.id } ?: emptyList())
+                    addAll(ruleSet?.concepts?.map { it.key.id } ?: emptyList())
+                    addAll(ruleSet?.constraints?.map { it.key.id } ?: emptyList())
                 }
             result = allIDs.contains(idValue)
         } else {

@@ -1,18 +1,17 @@
 package org.jqassistant.tooling.intellij.plugin.data.plugin
 
-import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
 import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
-import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import io.smallrye.config.SysPropConfigSource
 import org.jqassistant.tooling.intellij.plugin.common.PluginUtil
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import java.io.File
 import kotlin.reflect.jvm.jvmName
 
@@ -87,7 +86,8 @@ class JqaPluginService(
     @Synchronized
     fun synchronizePlugins() {
         val config =
-            getJqaConfiguration() ?: return thisLogger().error("Problem constructing jQA-Config for plugin sync.")
+            project.service<JqaConfigurationService>().getConfiguration()
+                ?: return thisLogger().error("Problem constructing jQA-Config for plugin sync.")
 
         // TODO: Figure out builtin plugins.
         val plugins =
@@ -136,18 +136,5 @@ class JqaPluginService(
                 )
             }
         }
-    }
-
-    // TODO: Replace with configuration service that handles maven and everything config related.
-    private fun getJqaConfiguration(): CliConfiguration? {
-        val workingDirectory = project.basePath?.let { File(it) } ?: return null
-
-        return ConfigurationMappingLoader
-            .builder(CliConfiguration::class.java, listOf(".jqassistant.yaml"))
-            .withUserHome(userHome)
-            .withWorkingDirectory(workingDirectory)
-            .withEnvVariables()
-            .withClasspath()
-            .load(SysPropConfigSource())
     }
 }

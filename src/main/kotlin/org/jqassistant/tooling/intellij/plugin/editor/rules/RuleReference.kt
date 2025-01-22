@@ -10,17 +10,17 @@ import com.intellij.util.containers.map2Array
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingService
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
 
-open class RuleReference(
+class RuleReference(
     element: PsiElement,
-    private val name: String,
+    val name: String,
+    private val jqaRuleType: JqaRuleType? = null,
     private val soft: Boolean = false,
 ) : PsiPolyVariantReferenceBase<PsiElement?>(element),
     PsiPolyVariantReference {
-    // FIXME: Remove @OptIn if IntelliJ 2023.1 support is dropped.
-    @OptIn(ExperimentalStdlibApi::class)
     override fun getVariants(): Array<Any> =
-        JqaRuleType.entries
-            .flatMap { element.project.service<JqaRuleIndexingService>().getAll(it) }
+        element.project
+            .service<JqaRuleIndexingService>()
+            .getAll(jqaRuleType)
             .map2Array { it.name }
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
@@ -32,17 +32,4 @@ open class RuleReference(
     }
 
     override fun isSoft() = soft
-}
-
-class SpecificRuleReference(
-    element: PsiElement,
-    name: String,
-    private val jqaRuleType: JqaRuleType,
-    soft: Boolean = false,
-) : RuleReference(element, name, soft) {
-    override fun getVariants(): Array<Any> =
-        element.project
-            .service<JqaRuleIndexingService>()
-            .getAll(jqaRuleType)
-            .map2Array { it.name }
 }
