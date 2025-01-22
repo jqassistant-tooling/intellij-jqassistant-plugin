@@ -2,7 +2,6 @@ package org.jqassistant.tooling.intellij.plugin.common
 
 import com.buschmais.jqassistant.core.rule.api.model.Rule
 import com.buschmais.jqassistant.core.rule.api.model.RuleSet
-
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -26,7 +25,7 @@ inline fun <T> withServiceLoader(block: () -> T, classLoader: ClassLoader?): T {
 
     val currentThread = Thread.currentThread()
     val originalClassLoader = currentThread.contextClassLoader
-    val pluginClassLoader = javaClass.classLoader
+
     return try {
         currentThread.contextClassLoader = classLoader
         block()
