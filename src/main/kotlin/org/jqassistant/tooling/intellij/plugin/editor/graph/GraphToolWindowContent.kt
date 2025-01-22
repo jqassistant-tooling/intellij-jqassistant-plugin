@@ -13,7 +13,7 @@ import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.Node
 import org.graphstream.graph.implementations.MultiGraph
-import org.graphstream.ui.layout.Layouts
+import org.graphstream.ui.layout.HierarchicalLayout
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
@@ -53,7 +53,7 @@ class GraphToolWindowContent(
         val viewer = SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
         graph.addNode("help-text").setAttribute("ui.label", "Use the the \"Open Rule Graph\" right click action")
 
-        val layout = Layouts.newLayoutAlgorithm()
+        val layout = HierarchicalLayout()
         viewer.enableAutoLayout(layout)
 
         // false indicates "no JFrame".

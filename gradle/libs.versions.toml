@@ -32,6 +32,7 @@ jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "applica
 jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa-maven" }
 
 gs-core = { group = "org.graphstream", name = "gs-core", version.ref = "graphstream" }
+gs-algo = { group = "org.graphstream", name = "gs-algo", version.ref = "graphstream" }
 gs-ui-swing = { group = "org.graphstream", name = "gs-ui-swing", version.ref = "graphstream" }
 
 maven-bom = { module = "org.apache.maven:maven-bom", version.ref = "maven-bom" }

@@ -47,6 +47,7 @@ dependencies {
     }
 
     implementation(libs.gs.core)
+    implementation(libs.gs.algo)
     implementation(libs.gs.ui.swing)
 
     testImplementation(libs.junit)
