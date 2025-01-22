@@ -47,7 +47,9 @@ dependencies {
     }
 
     implementation(libs.gs.core)
-    implementation(libs.gs.algo)
+    implementation(libs.gs.algo) {
+        exclude(group = "xml-apis")
+    }
     implementation(libs.gs.ui.swing)
 
     testImplementation(libs.junit)
