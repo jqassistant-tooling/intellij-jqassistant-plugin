@@ -1,5 +1,10 @@
 package org.jqassistant.tooling.intellij.plugin.common
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -52,4 +57,25 @@ inline fun <reified Loader : Any, T> Loader.withServiceLoader(block: () -> T): T
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     return withServiceLoader(block, Loader::class.java.classLoader)
+}
+
+object MyVfsUtil {
+    /**
+     * Tries to resolve a path as relative to a project.
+     *
+     * Since projects in IntelliJ aren't strictly mappable to the file system, this method might return null for complex project setups.
+     */
+    fun findFileRelativeToProject(project: Project, relativePath: String?): VirtualFile? {
+        val base = project.guessProjectDir() ?: return null
+        if (relativePath.isNullOrBlank()) return base
+        return base.findFileByRelativePath(relativePath) ?: base
+    }
+}
+
+fun Project.notifyBalloon(message: String, type: NotificationType = NotificationType.INFORMATION) {
+    NotificationGroupManager
+        .getInstance()
+        .getNotificationGroup("jqassistant.NotificationBalloon")
+        .createNotification(message, type)
+        .notify(this)
 }

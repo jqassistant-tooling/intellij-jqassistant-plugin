@@ -48,6 +48,10 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="jqassistant.NotificationBalloon"
+                           displayType="BALLOON"
+                           key="jqassistant.balloon.group"/>
+
         <toolWindow
             factoryClass="org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow.EffectiveConfigToolWindowFactory"
             id="Effective Configuration"
@@ -132,6 +136,8 @@
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
                 class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
+        <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
+                class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
 
     <applicationListeners>

@@ -5,9 +5,9 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.setEmptyState
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
@@ -33,7 +33,9 @@ class PluginSettingsComponent(
     // Misc
     private val mavenOrCliButtonGroup = ButtonGroup()
     val panel: JPanel
-    private val baseFile = LocalFileSystem.getInstance().findFileByPath(project.basePath ?: "")
+
+    // TODO: Find a proper solution for project root paths.
+    private val baseFile = project.guessProjectDir()
 
     // Labels
     private val labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
@@ -234,7 +236,6 @@ class PluginSettingsComponent(
             }
         }
 
-        // Make IntelliJ wait for tasks
         return state
     }
 
