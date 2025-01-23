@@ -15,6 +15,7 @@ import com.intellij.util.containers.addIfNotNull
 import com.intellij.util.xml.DomManager
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
+import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 
 class FindUnusedAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -23,54 +24,25 @@ class FindUnusedAnnotator : Annotator {
         val manager = DomManager.getDomManager(project)
         val tag = element as? XmlTag?
         val domElement = manager.getDomElement(tag)
-
-        // Get id value of RuleBase Element
         if (domElement !is RuleBase) return
-        val idElement: PsiElement = tag?.getAttribute("id")?.valueElement?.navigationElement ?: element
         val idValue = tag?.getAttributeValue("id")
-        if (false) { // / with config service
-            val configService = element.project.service<JqaConfigurationService>()
-            val ruleSet = configService.getEffectiveRules()
-            val allIDs =
-                mutableListOf<String>().apply {
-                    addAll(ruleSet?.groups?.map { it.id } ?: emptyList())
-                    addAll(ruleSet?.concepts?.map { it.key.id } ?: emptyList())
-                    addAll(ruleSet?.constraints?.map { it.key.id } ?: emptyList())
-                }
-            result = allIDs.contains(idValue)
-        } else {
-            // Check if element has a reference path from main parent group
-            val configService = project.service<JqaConfigurationService>()
-            val config = configService.configProvider.getStoredConfig()
-            val newConfig =
-                if (config.isValid) {
-                    config
-                } else {
-                    /* Should get the current config (but we will do that via jqa tools soon)
-                ProgressManager.getInstance().run(
-                    object : Task.Backgroundable(project, PROCESS_TITLE) {
-                        override fun run(indicator: ProgressIndicator) {
-                            val newConfig = configService.configProvider.getCurrentConfig()
-                            invokeHolder(element, id, holder, newConfig)
-                        }
-                    },
-                )*/
-                    config
-                }
 
-            val strippedConfig = config.configString.substringAfter("groups:\n")
-            val regex = Regex("""-\s*(\w+:\w+)\s*""")
-            val matchResult = regex.find(strippedConfig)
-            val matchedWord = matchResult?.groupValues?.get(1) ?: ""
-
-            result = searchBaseReferenceRecursive(idElement, matchedWord)
-        }
+        // Compare with ruleSet
+        val configService = element.project.service<JqaConfigurationService>()
+        val ruleSet = configService.getEffectiveRules()
+        val allIDs =
+            mutableListOf<String>().apply {
+                addAll(ruleSet?.groups?.map { it.id } ?: emptyList())
+                addAll(ruleSet?.concepts?.map { it.key.id } ?: emptyList())
+                addAll(ruleSet?.constraints?.map { it.key.id } ?: emptyList())
+            }
+        result = allIDs.contains(idValue)
 
         if (!result) {
             holder
                 .newAnnotation(
                     com.intellij.lang.annotation.HighlightSeverity.WARNING,
-                    "This Ruleset has no active references, it is inactive",
+                    MessageBundle.message("annotator.inactive.rule"),
                 ).range(element)
                 .create()
         }
