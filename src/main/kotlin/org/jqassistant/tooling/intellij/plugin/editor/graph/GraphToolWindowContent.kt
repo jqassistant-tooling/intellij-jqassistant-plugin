@@ -13,7 +13,7 @@ import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.Node
 import org.graphstream.graph.implementations.MultiGraph
-import org.graphstream.ui.layout.HierarchicalLayout
+import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
@@ -53,13 +53,20 @@ class GraphToolWindowContent(
         val viewer = SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
         graph.addNode("help-text").setAttribute("ui.label", "Use the the \"Open Rule Graph\" right click action")
 
-        val layout = HierarchicalLayout()
+        val layout = Layouts.newLayoutAlgorithm()
         viewer.enableAutoLayout(layout)
 
         // false indicates "no JFrame".
         val view = viewer.addDefaultView(false) as DefaultView
 
         this.setContent(view)
+    }
+
+    companion object {
+        const val FONT_SIZE: Int = 10
+
+        // Should be 2/3 of FONT_SIZE rounded up
+        const val CHARACTER_WIDTH: Int = ((FONT_SIZE * 2) / 3) + 1
     }
 
     // Based on: https://graphstream-project.org/doc/Advanced-Concepts/GraphStream-CSS-Reference/
@@ -84,8 +91,7 @@ class GraphToolWindowContent(
         val rgbConstraint = "rgb(${constraintColor.red}, ${constraintColor.green}, ${constraintColor.blue})"
         val rgbGroup = "rgb(${groupColor.red}, ${groupColor.green}, ${groupColor.blue})"
 
-        val textSize: Int = 15
-        val textOffset = "0px, -${textSize / 2}px"
+        val textOffset = "0px, -${FONT_SIZE / 2}px"
 
         return """
             graph {
@@ -96,34 +102,27 @@ class GraphToolWindowContent(
             node {
                 /* By using a mono font we can calculate the width */
                 text-font: "Noto Sans Mono";
-                text-size: $textSize;
+                text-size: $FONT_SIZE;
                 text-color: $rgbText;
             }
 
             node.concept {
-                /* padding: 10px, 5px; */
-                /* Only necessary for arrows */
-                size-mode: fit;
-                shape: rounded-box;
-                fill-mode: none;
+                shape: box;
+                text-offset: $textOffset;
 
-                text-padding: ${textSize / 2}px;
-                text-background-mode: rounded-box;
-                text-background-color: $rgbConcept;
+                fill-color: $rgbConcept;
             }
 
             node.constraint {
                 shape: circle;
-                /* size: 300px, 40px; */
                 text-offset: $textOffset;
 
                 fill-color: $rgbConstraint;
             }
 
             node.group {
-                /* size: 200px, 60px; */
-                text-offset: $textOffset;
                 shape: diamond;
+                text-offset: $textOffset;
 
                 fill-color: $rgbGroup;
             }
@@ -147,10 +146,13 @@ class GraphToolWindowContent(
     private fun groupNode(name: String): Node {
         val node = graph.addNode(name)
         node.setAttribute("ui.label", name)
-        // Character width of 9px
-        // See: https://stackoverflow.com/a/56379770/18448953
         node.setAttribute("ui.class", "group")
-        node.setAttribute("ui.style", "size: ${(name.length * 10) + 90}px, 90px;")
+
+        // Character width of 9px for 15px font -> 2/3 of font size
+        // See: https://stackoverflow.com/a/56379770/18448953
+        val width: Int = ((name.length + 9) * CHARACTER_WIDTH)
+        val height: Int = FONT_SIZE * 6
+        node.setAttribute("ui.style", "size: ${width}px, ${height}px;")
 
         return node
     }
@@ -160,6 +162,10 @@ class GraphToolWindowContent(
         node.setAttribute("ui.label", name)
         node.setAttribute("ui.class", "concept")
 
+        val width: Int = ((name.length) * CHARACTER_WIDTH)
+        val height: Int = FONT_SIZE * 2
+        node.setAttribute("ui.style", "size: ${width}px, ${height}px;")
+
         return node
     }
 
@@ -167,7 +173,10 @@ class GraphToolWindowContent(
         val node = graph.addNode(name)
         node.setAttribute("ui.label", name)
         node.setAttribute("ui.class", "constraint")
-        node.setAttribute("ui.style", "size: ${(name.length * 10) + 15}px, 60px;")
+
+        val width: Int = ((name.length + 2) * CHARACTER_WIDTH)
+        val height: Int = FONT_SIZE * 4
+        node.setAttribute("ui.style", "size: ${width}px, ${height}px;")
 
         return node
     }
@@ -189,6 +198,8 @@ class GraphToolWindowContent(
         val existingNode = graph.getNode(currentRuleId)
         if (existingNode != null) return existingNode
 
+        val layoutWeight = 10000
+
         return when (currentRule) {
             is Concept -> {
                 val currentNode = conceptNode(currentRuleId)
@@ -198,7 +209,8 @@ class GraphToolWindowContent(
                     val newNode = buildGraph(name, ruleSet) ?: continue
 
                     val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "requiresConcept")
+
+                    e.setAttribute("ui.label", "requires")
                 }
 
                 for (name in currentRule.providedConcepts) {
@@ -206,7 +218,7 @@ class GraphToolWindowContent(
                     newNode.setAttribute("ui.class", "providesConcept", "concept")
 
                     val e = graph.addEdge("$currentRuleId<-$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "providesConcept")
+                    e.setAttribute("ui.label", "provides")
                 }
 
                 currentNode
@@ -221,7 +233,7 @@ class GraphToolWindowContent(
                     val newNode = buildGraph(name, ruleSet) ?: continue
 
                     val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "requiresConcept")
+                    e.setAttribute("ui.label", "requires")
                 }
 
                 currentNode
@@ -235,21 +247,22 @@ class GraphToolWindowContent(
                     val newNode = buildGraph(name, ruleSet) ?: continue
 
                     val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "includeGroup")
+                    e.setAttribute("ui.label", "include")
+                    // e.setAttribute("layout.weight", 5)
                 }
 
                 for (name in currentRule.concepts.keys) {
                     val newNode = buildGraph(name, ruleSet) ?: continue
 
                     val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "includeConcept")
+                    e.setAttribute("ui.label", "include")
                 }
 
                 for (name in currentRule.constraints.keys) {
                     val newNode = buildGraph(name, ruleSet) ?: continue
 
                     val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "includeConstraint")
+                    e.setAttribute("ui.label", "include")
                 }
 
                 currentNode
@@ -270,5 +283,11 @@ class GraphToolWindowContent(
         graph.setAttribute("ui.stylesheet", stylesheet())
 
         buildGraph(centerRule, ruleSet)
+        for (node in graph.nodes()) {
+            node.setAttribute("layout.weight", 10)
+        }
+        for (edge in graph.edges()) {
+            edge.setAttribute("layout.weight", 2)
+        }
     }
 }
