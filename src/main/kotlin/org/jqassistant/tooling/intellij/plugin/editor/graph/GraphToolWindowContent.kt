@@ -130,6 +130,13 @@ class GraphToolWindowContent(
                 fill-color: $rgbGroup;
             }
 
+            /* Outline the centerNode */
+            node.centerNode {
+                stroke-width: ${CHARACTER_WIDTH / 2}px;
+                stroke-mode: plain;
+                stroke-color: green;
+            }
+
             edge {
                 shape: blob;
 
@@ -282,7 +289,6 @@ class GraphToolWindowContent(
      */
     fun refreshGraph(centerRule: Rule, ruleSet: RuleSet) {
         ruleGraph.clear()
-
         // Build rule graph
         for (rule in ruleSet.getAllRules()) {
             buildGraph(rule, ruleSet)
@@ -302,40 +308,35 @@ class GraphToolWindowContent(
         // Avoids a reassignment to displayGraph
         Graphs.mergeIn(displayGraph, ruleGraph)
 
+        // Mark the center node with a border
         val centerNode = displayGraph.getNode(centerRule.id)
+        when (val existingClasses = centerNode.getAttribute("ui.class")) {
+            is String ->
+                centerNode.setAttribute("ui.class", existingClasses, "centerNode")
 
+            is Array<*> ->
+                centerNode.setAttribute("ui.class", *existingClasses, "centerNode")
+        }
+
+        // Search for all nodes and edges that are up to 2 degrees distant
         val directNeighbours =
-            centerNode.enteringEdges().map { e -> e.sourceNode }.toList() +
-                centerNode
-                    .leavingEdges()
-                    .map { e -> e.targetNode }
-                    .toList()
+            centerNode.edges().toList().flatMap { e -> listOf(e.sourceNode, e.targetNode) }
 
         val secondDegreeNeighbours =
-            directNeighbours.flatMap { node ->
-                node.enteringEdges().map { e -> e.sourceNode }.toList() +
-                    centerNode
-                        .leavingEdges()
-                        .map { e -> e.targetNode }
-                        .toList()
-            }
+            directNeighbours
+                .flatMap { n -> n.edges().toList().flatMap { e -> listOf(e.sourceNode, e.targetNode) } }
+                .toSet()
+
+        val displayedNodes = mutableSetOf<Node>(centerNode)
+        displayedNodes.addAll(directNeighbours + secondDegreeNeighbours)
+        val displayedNodeIds = displayedNodes.map { node -> node.id }
 
         val directNeighbourEdges = centerNode.edges().toList()
         val secondDegreeNeighbourEdges =
             directNeighbours.flatMap { node -> node.edges().toList() }
-        val displayedEdges = directNeighbourEdges + secondDegreeNeighbourEdges
+        val displayedEdges = (directNeighbourEdges + secondDegreeNeighbourEdges).toSet()
         val displayedEdgeIds = displayedEdges.map { edge -> edge.id }
 
-        val displayedNodes = mutableSetOf<Node>(centerNode)
-        displayedNodes.addAll(directNeighbours)
-        displayedNodes.addAll(secondDegreeNeighbours)
-        val displayedNodeIds = displayedNodes.map { node -> node.id }
-
-        for (node in displayedNodes) {
-            println(node.id)
-        }
-
-        // displayedNodes.addAll(centerNode.neighborNodes().flatMap { node -> node.neighborNodes() }.toList())
         for (edge in ruleGraph.edges()) {
             if (edge == null) continue
             if (edge.id in displayedEdgeIds) continue
