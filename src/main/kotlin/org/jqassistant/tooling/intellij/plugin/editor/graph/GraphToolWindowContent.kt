@@ -12,18 +12,21 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.UIUtil
 import org.graphstream.graph.Node
-import org.graphstream.graph.implementations.MultiGraph
+import org.graphstream.graph.implementations.Graphs
+import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.ui.layout.Layouts
 import org.graphstream.ui.swing_viewer.DefaultView
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.view.Viewer
 import org.jqassistant.tooling.intellij.plugin.common.findRuleById
+import org.jqassistant.tooling.intellij.plugin.common.getAllRules
 
 class GraphToolWindowContent(
     private val project: Project,
     private val toolWindow: ToolWindow,
 ) : SimpleToolWindowPanel(true) {
-    private val graph = MultiGraph("toolWindowGraph")
+    private val displayGraph = SingleGraph("displayGraph", false, false)
+    private val ruleGraph = SingleGraph("ruleGraph", false, false)
 
     init {
         System.setProperty("org.graphstream.ui", "swing")
@@ -35,8 +38,8 @@ class GraphToolWindowContent(
         val background = UIUtil.getPanelBackground()
         val textColor = colorsScheme.defaultForeground
 
-        graph.setAttribute("ui.antialias")
-        graph.setAttribute(
+        displayGraph.setAttribute("ui.antialias")
+        displayGraph.setAttribute(
             "ui.stylesheet",
             """
             graph {
@@ -50,8 +53,8 @@ class GraphToolWindowContent(
             """.trimIndent(),
         )
 
-        val viewer = SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
-        graph.addNode("help-text").setAttribute("ui.label", "Use the the \"Open Rule Graph\" right click action")
+        val viewer = SwingViewer(displayGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
+        displayGraph.addNode("help-text").setAttribute("ui.label", "Use the the \"Open Rule Graph\" right click action")
 
         val layout = Layouts.newLayoutAlgorithm()
         viewer.enableAutoLayout(layout)
@@ -144,7 +147,7 @@ class GraphToolWindowContent(
     }
 
     private fun groupNode(name: String): Node {
-        val node = graph.addNode(name)
+        val node = ruleGraph.addNode(name)
         node.setAttribute("ui.label", name)
         node.setAttribute("ui.class", "group")
 
@@ -158,7 +161,7 @@ class GraphToolWindowContent(
     }
 
     private fun conceptNode(name: String): Node {
-        val node = graph.addNode(name)
+        val node = ruleGraph.addNode(name)
         node.setAttribute("ui.label", name)
         node.setAttribute("ui.class", "concept")
 
@@ -170,7 +173,7 @@ class GraphToolWindowContent(
     }
 
     private fun constraintNode(name: String): Node {
-        val node = graph.addNode(name)
+        val node = ruleGraph.addNode(name)
         node.setAttribute("ui.label", name)
         node.setAttribute("ui.class", "constraint")
 
@@ -195,81 +198,82 @@ class GraphToolWindowContent(
         val currentRuleId = currentRule.id
 
         // Check if this node was already visited
-        val existingNode = graph.getNode(currentRuleId)
+        val existingNode = ruleGraph.getNode(currentRuleId)
         if (existingNode != null) return existingNode
 
-        val layoutWeight = 10000
+        val currentNode =
+            when (currentRule) {
+                is Concept -> {
+                    val currentNode = conceptNode(currentRuleId)
 
-        return when (currentRule) {
-            is Concept -> {
-                val currentNode = conceptNode(currentRuleId)
+                    // TODO: Highlight that some relationships are optional
+                    for (name in currentRule.requiresConcepts.keys) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
 
-                // TODO: Highlight that some relationships are optional
-                for (name in currentRule.requiresConcepts.keys) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
+                        val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
 
-                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "requires")
+                    }
 
-                    e.setAttribute("ui.label", "requires")
+                    for (name in currentRule.providedConcepts) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
+                        newNode.setAttribute("ui.class", "providesConcept", "concept")
+
+                        val e = ruleGraph.addEdge("$currentRuleId<-$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "provides")
+                    }
+
+                    currentNode
                 }
 
-                for (name in currentRule.providedConcepts) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
-                    newNode.setAttribute("ui.class", "providesConcept", "concept")
+                is Constraint -> {
+                    val currentNode = constraintNode(currentRuleId)
+                    currentNode.setAttribute("ui.class", "constraint", "center")
 
-                    val e = graph.addEdge("$currentRuleId<-$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "provides")
+                    // TODO: Highlight that some relationships are optional
+                    for (name in currentRule.requiresConcepts.keys) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
+
+                        val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "requires")
+                    }
+
+                    currentNode
                 }
 
-                currentNode
+                is Group -> {
+                    val currentNode = groupNode(currentRuleId)
+                    currentNode.setAttribute("ui.class", "group", "center")
+
+                    for (name in currentRule.groups.keys) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
+
+                        val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "include")
+                        // e.setAttribute("layout.weight", 5)
+                    }
+
+                    for (name in currentRule.concepts.keys) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
+
+                        val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "include")
+                    }
+
+                    for (name in currentRule.constraints.keys) {
+                        val newNode = buildGraph(name, ruleSet) ?: continue
+
+                        val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
+                        e.setAttribute("ui.label", "include")
+                    }
+
+                    currentNode
+                }
+
+                else -> return null
             }
 
-            is Constraint -> {
-                val currentNode = constraintNode(currentRuleId)
-                currentNode.setAttribute("ui.class", "constraint", "center")
-
-                // TODO: Highlight that some relationships are optional
-                for (name in currentRule.requiresConcepts.keys) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
-
-                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "requires")
-                }
-
-                currentNode
-            }
-
-            is Group -> {
-                val currentNode = groupNode(currentRuleId)
-                currentNode.setAttribute("ui.class", "group", "center")
-
-                for (name in currentRule.groups.keys) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
-
-                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "include")
-                    // e.setAttribute("layout.weight", 5)
-                }
-
-                for (name in currentRule.concepts.keys) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
-
-                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "include")
-                }
-
-                for (name in currentRule.constraints.keys) {
-                    val newNode = buildGraph(name, ruleSet) ?: continue
-
-                    val e = graph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
-                    e.setAttribute("ui.label", "include")
-                }
-
-                currentNode
-            }
-
-            else -> return null
-        }
+        return currentNode
     }
 
     /**
@@ -277,17 +281,74 @@ class GraphToolWindowContent(
      * the given [Rule]
      */
     fun refreshGraph(centerRule: Rule, ruleSet: RuleSet) {
-        graph.clear()
+        ruleGraph.clear()
 
-        graph.setAttribute("ui.antialias")
-        graph.setAttribute("ui.stylesheet", stylesheet())
+        // Build rule graph
+        for (rule in ruleSet.getAllRules()) {
+            buildGraph(rule, ruleSet)
+        }
 
-        buildGraph(centerRule, ruleSet)
-        for (node in graph.nodes()) {
+        // Set weights for layout
+        for (node in ruleGraph.nodes()) {
             node.setAttribute("layout.weight", 10)
         }
-        for (edge in graph.edges()) {
+
+        for (edge in ruleGraph.edges()) {
             edge.setAttribute("layout.weight", 2)
         }
+
+        // Build display graph
+        displayGraph.clear()
+        // Avoids a reassignment to displayGraph
+        Graphs.mergeIn(displayGraph, ruleGraph)
+
+        val centerNode = displayGraph.getNode(centerRule.id)
+
+        val directNeighbours =
+            centerNode.enteringEdges().map { e -> e.sourceNode }.toList() +
+                centerNode
+                    .leavingEdges()
+                    .map { e -> e.targetNode }
+                    .toList()
+
+        val secondDegreeNeighbours =
+            directNeighbours.flatMap { node ->
+                node.enteringEdges().map { e -> e.sourceNode }.toList() +
+                    centerNode
+                        .leavingEdges()
+                        .map { e -> e.targetNode }
+                        .toList()
+            }
+
+        val directNeighbourEdges = centerNode.edges().toList()
+        val secondDegreeNeighbourEdges =
+            directNeighbours.flatMap { node -> node.edges().toList() }
+        val displayedEdges = directNeighbourEdges + secondDegreeNeighbourEdges
+        val displayedEdgeIds = displayedEdges.map { edge -> edge.id }
+
+        val displayedNodes = mutableSetOf<Node>(centerNode)
+        displayedNodes.addAll(directNeighbours)
+        displayedNodes.addAll(secondDegreeNeighbours)
+        val displayedNodeIds = displayedNodes.map { node -> node.id }
+
+        for (node in displayedNodes) {
+            println(node.id)
+        }
+
+        // displayedNodes.addAll(centerNode.neighborNodes().flatMap { node -> node.neighborNodes() }.toList())
+        for (edge in ruleGraph.edges()) {
+            if (edge == null) continue
+            if (edge.id in displayedEdgeIds) continue
+            displayGraph.removeEdge(edge.id)
+        }
+
+        for (node in ruleGraph.nodes()) {
+            if (node == null) continue
+            if (node.id in displayedNodeIds) continue
+            displayGraph.removeNode(node.id)
+        }
+
+        displayGraph.setAttribute("ui.antialias")
+        displayGraph.setAttribute("ui.stylesheet", stylesheet())
     }
 }
