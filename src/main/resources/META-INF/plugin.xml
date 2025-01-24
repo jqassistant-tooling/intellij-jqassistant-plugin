@@ -106,6 +106,9 @@
         <annotator
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
             language="yaml"/>
+
+        <postStartupActivity
+            implementation="org.jqassistant.tooling.intellij.plugin.data.config.AutoSyncConfigProjectActivity"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
