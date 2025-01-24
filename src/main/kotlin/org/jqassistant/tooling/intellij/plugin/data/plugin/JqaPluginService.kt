@@ -4,14 +4,17 @@ import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsListener
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jqassistant.tooling.intellij.plugin.common.PluginUtil
-import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
+import org.jqassistant.tooling.intellij.plugin.data.config.FullArtifactConfiguration
+import org.jqassistant.tooling.intellij.plugin.data.config.JqaSyncListener
+import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 import java.io.File
 import kotlin.reflect.jvm.jvmName
 
@@ -60,7 +63,7 @@ class JqaPlugin(
 @Service(Service.Level.PROJECT)
 class JqaPluginService(
     private val project: Project,
-) {
+) : JqaSyncListener {
     private val userHome = File(System.getProperty("user.home"))
 
     private data class PluginCache(
@@ -76,19 +79,20 @@ class JqaPluginService(
 
     val pluginJars: List<JqaPlugin> get() = cache.pluginJars
 
+    init {
+        // Listen for configuration updates
+        project.messageBus.connect().subscribe(JqaSyncListener.TOPIC, this)
+    }
+
     /**
-     * Synchronizes jQA-Plugins based on the current configuration.
+     * Synchronizes jQA-Plugins based on the provided configuration.
      *
      * This methods might install plugins from the internet if they
      * are not present so it should be called from background threads,
      * and with a progress indicator if possible.
      */
     @Synchronized
-    fun synchronizePlugins() {
-        val config =
-            project.service<JqaConfigurationService>().getConfiguration()
-                ?: return thisLogger().error("Problem constructing jQA-Config for plugin sync.")
-
+    fun synchronizePlugins(config: FullArtifactConfiguration) {
         // TODO: Figure out builtin plugins.
         val plugins =
             (config.defaultPlugins() + config.plugins()).filter {
@@ -136,5 +140,17 @@ class JqaPluginService(
                 )
             }
         }
+    }
+
+    /**
+     * Listener for configuration updates from [JqaSyncListener]
+     */
+    override fun synchronize(config: FullArtifactConfiguration?) {
+        if (config == null) return
+
+        // Queue a plugin synchronisation in background
+        object : Task.Backgroundable(project, MessageBundle.message("synchronizing.jqa.plugins")) {
+            override fun run(indicator: ProgressIndicator) = synchronizePlugins(config)
+        }.queue()
     }
 }
