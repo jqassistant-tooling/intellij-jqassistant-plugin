@@ -105,8 +105,6 @@
         <annotator
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
             language="yaml"/>
-        <annotator language="XML"
-                   implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.annotator.FindUnusedAnnotator"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
