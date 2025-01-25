@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <languageInjectionContributor
+            language="XML"
+            implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleCypherEmbedding"/>
+    </extensions>
+</idea-plugin>

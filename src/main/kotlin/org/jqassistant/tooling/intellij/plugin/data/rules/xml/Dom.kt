@@ -8,7 +8,10 @@ import com.intellij.util.xml.NameValue
 import com.intellij.util.xml.Referencing
 import com.intellij.util.xml.Stubbed
 import com.intellij.util.xml.SubTagList
-import org.jqassistant.tooling.intellij.plugin.editor.rules.XmlRuleReferenceConverter
+import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleType
+import org.jqassistant.tooling.intellij.plugin.editor.rules.XmlConceptReferenceConverter
+import org.jqassistant.tooling.intellij.plugin.editor.rules.XmlConstraintReferenceConverter
+import org.jqassistant.tooling.intellij.plugin.editor.rules.XmlGroupReferenceConverter
 
 @Stubbed
 interface JqassistantRules : DomElement {
@@ -22,12 +25,20 @@ interface JqassistantRules : DomElement {
     val constraints: List<Constraint>
 }
 
-interface RuleBase : DomElement {
+sealed interface RuleBase : DomElement {
     @get:Stubbed
     @get:Attribute("id")
     @get:NameValue(referencable = true)
     val id: GenericAttributeValue<String>
 }
+
+// Needs to be an extension function since IntelliJ does some magic with the interfaces.
+fun RuleBase.getType(): JqaRuleType =
+    when (this) {
+        is Group -> JqaRuleType.GROUP
+        is Concept -> JqaRuleType.CONCEPT
+        is Constraint -> JqaRuleType.CONSTRAINT
+    }
 
 @Stubbed
 interface Group :
@@ -37,19 +48,19 @@ interface Group :
     val includeConcept: List<IncludedConceptType>
 
     @get:SubTagList("includeConstraint")
-    val includeConstraint: List<IncludedReferenceType>
+    val includeConstraint: List<ConstraintType>
 
     @get:SubTagList("includeGroup")
-    val includeGroup: List<IncludedReferenceType>
+    val includeGroup: List<GroupType>
 }
 
 @Stubbed
 interface Concept :
     RuleBase,
-    DomElement,
-    ExecutableRuleType {
+    ExecutableRuleType,
+    DomElement {
     @get:SubTagList("providesConcept")
-    val providesConcept: List<ReferenceType>
+    val providesConcept: List<ConceptType>
 }
 
 @Stubbed
@@ -58,36 +69,42 @@ interface Constraint :
     ExecutableRuleType,
     DomElement
 
+/**
+ * Xml tag, that contains content in the Cypher query language.
+ */
+interface CypherType : DomElement
+
 interface ExecutableRuleType : DomElement {
     @get:SubTagList("requiresConcept")
-    val requiresConcept: List<OptionalReferenceType>
+    val requiresConcept: List<ConceptType>
+
+    @get:SubTagList("cypher")
+    val cypher: List<CypherType>
 }
 
-interface ReferenceType : DomElement {
+interface GroupType : DomElement {
     @get:Attribute("refId")
-    @get:Referencing(XmlRuleReferenceConverter::class, soft = false)
+    @get:Referencing(XmlGroupReferenceConverter::class, soft = false)
     val refType: GenericAttributeValue<String>
 }
 
-interface OptionalReferenceType :
-    DomElement,
-    ReferenceType {
-    @get:Attribute("optional")
-    val optional: GenericAttributeValue<Boolean>
+interface ConstraintType : DomElement {
+    @get:Attribute("refId")
+    @get:Referencing(XmlConstraintReferenceConverter::class, soft = false)
+    val refType: GenericAttributeValue<String>
 }
 
-interface IncludedReferenceType :
-    DomElement,
-    ReferenceType {
-    @get:Attribute("severity")
-    val severity: GenericAttributeValue<String>
+interface ConceptType : DomElement {
+    @get:Attribute("refId")
+    @get:Referencing(XmlConceptReferenceConverter::class, soft = false)
+    val refType: GenericAttributeValue<String>
 }
 
 interface IncludedConceptType :
     DomElement,
-    IncludedReferenceType {
+    ConceptType {
     @get:SubTagList("providesConcept")
-    val providesConcept: List<ReferenceType>
+    val providesConcept: List<ConceptType>
 }
 
 class JqaXmlRuleDescription :
