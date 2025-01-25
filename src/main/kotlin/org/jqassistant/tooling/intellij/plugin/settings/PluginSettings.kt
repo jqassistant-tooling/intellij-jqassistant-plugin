@@ -28,7 +28,7 @@ internal class PluginSettings : SimplePersistentStateComponent<PluginSettings.St
         /**
          * The distribution of this jQA project.
          */
-        var distribution by enum(JqaDistribution.CLI)
+        var distribution by enum(JqaDistribution.MAVEN)
 
         /**
          * Execution root for the cli distribution.
