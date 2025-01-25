@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.pom.PomTargetPsiElement
+import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.xml.DomTarget
 import org.jqassistant.tooling.intellij.plugin.common.findRuleById
 import org.jqassistant.tooling.intellij.plugin.common.notifyBalloon
@@ -20,13 +21,33 @@ class OpenGraphAction : AnAction() {
     }
 
     override fun actionPerformed(event: AnActionEvent) {
-        val currentElement = event.getData(CommonDataKeys.PSI_ELEMENT) ?: return
-        val domElement = currentElement as? PomTargetPsiElement ?: return
-
-        val target = domElement.target as? DomTarget ?: return
-        val ruleBase = target.domElement as? RuleBase ?: return
-
         val project = event.project ?: return
+
+        fun invalidRuleNotification() {
+            project.notifyBalloon(
+                MessageBundle.message("graph.invalid.selection"),
+                NotificationType.ERROR,
+            )
+        }
+
+        val currentElement = event.getData(CommonDataKeys.PSI_ELEMENT) ?: return invalidRuleNotification()
+
+        val ruleId =
+            when (currentElement) {
+                is XmlAttributeValue -> {
+                    currentElement.value
+                }
+
+                is PomTargetPsiElement -> {
+                    val target = currentElement.target as? DomTarget ?: return invalidRuleNotification()
+                    val ruleBase = target.domElement as? RuleBase ?: return invalidRuleNotification()
+
+                    ruleBase.id.stringValue ?: return invalidRuleNotification()
+                }
+
+                else -> return invalidRuleNotification()
+            }
+
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID) ?: return
 
         val content = toolWindow.contentManager.getContent(0) ?: return
@@ -35,14 +56,11 @@ class OpenGraphAction : AnAction() {
         val configurationService = project.service<JqaConfigurationService>()
         val ruleSet = configurationService.getAvailableRules()
 
-        val currentRule = ruleBase.id.stringValue?.let { ruleSet.findRuleById(it) }
-        if (currentRule == null) {
-            project.notifyBalloon(
-                MessageBundle.message("graph.rule.not.found", ruleBase.id.stringValue ?: "null"),
+        val currentRule =
+            ruleSet.findRuleById(ruleId) ?: return project.notifyBalloon(
+                MessageBundle.message("graph.rule.not.found", ruleId),
                 NotificationType.ERROR,
             )
-            return
-        }
 
         component.refreshGraph(currentRule, ruleSet)
     }
