@@ -1,6 +1,5 @@
 package org.jqassistant.tooling.intellij.plugin.data.rules.xml
 
-import com.buschmais.jqassistant.core.rule.api.filter.RuleFilter
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -9,6 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.util.AstLoadingFilter
 import com.intellij.util.indexing.FileBasedIndex
+import org.jqassistant.tooling.intellij.plugin.common.WildcardUtil
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleDefinition
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategy
 import org.jqassistant.tooling.intellij.plugin.data.rules.JqaRuleIndexingStrategyFactory
@@ -65,14 +65,14 @@ class JqaXmlRuleIndexingStrategy(
         return res
     }
 
-    private fun resolvePattern(identifier: String): List<JqaRuleDefinition> {
+    private fun resolvePattern(identifier: String, type: JqaRuleType?): List<JqaRuleDefinition> {
         val res = mutableListOf<JqaRuleDefinition>()
 
         FileBasedIndex.getInstance().processAllKeys(
             NameIndex.Util.NAME,
             { key ->
-                if (RuleFilter.matches(key, identifier)) {
-                    res.addAll(resolveExact(key))
+                if (WildcardUtil.matches(key, identifier)) {
+                    res.addAll(resolveExact(key, type))
                 }
                 true
             },
@@ -82,7 +82,7 @@ class JqaXmlRuleIndexingStrategy(
         return res
     }
 
-    private fun resolveExact(identifier: String): List<JqaRuleDefinition> {
+    private fun resolveExact(identifier: String, filterType: JqaRuleType?): List<JqaRuleDefinition> {
         val res = mutableListOf<JqaRuleDefinition>()
 
         FileBasedIndex
@@ -100,13 +100,17 @@ class JqaXmlRuleIndexingStrategy(
                             psiFile,
                         ) {
                             values.mapNotNull { (offset, type) ->
-                                val token = psiFile?.findElementAt(offset)
-                                PsiTreeUtil
-                                    .getParentOfType(
-                                        token,
-                                        XmlAttributeValue::class.java,
-                                        false,
-                                    )?.let { Pair(it, type) }
+                                if (filterType != null && filterType != type) {
+                                    null
+                                } else {
+                                    val token = psiFile?.findElementAt(offset)
+                                    PsiTreeUtil
+                                        .getParentOfType(
+                                            token,
+                                            XmlAttributeValue::class.java,
+                                            false,
+                                        )?.let { Pair(it, type) }
+                                }
                             }
                         }
 
@@ -129,10 +133,10 @@ class JqaXmlRuleIndexingStrategy(
         return res
     }
 
-    override fun resolve(identifier: String): List<JqaRuleDefinition> =
-        if ("*" in identifier || "?" in identifier) {
-            resolvePattern(identifier)
+    override fun resolve(identifier: String, type: JqaRuleType?): List<JqaRuleDefinition> =
+        if (WildcardUtil.looksLikeWildcard(identifier)) {
+            resolvePattern(identifier, type)
         } else {
-            resolveExact(identifier)
+            resolveExact(identifier, type)
         }
 }
