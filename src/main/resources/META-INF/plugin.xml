@@ -29,11 +29,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable
-            parentId="tools"
-            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
-            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
-            displayName="jQAssistant Tooling"/>
+
 
     </extensions>
 
@@ -105,9 +101,14 @@
         <annotator
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
             language="yaml"/>
-        <annotator language="XML"
-                   implementationClass="org.jqassistant.tooling.intellij.plugin.editor.rules.annotator.FindUnusedAnnotator"/>
+
+        <projectConfigurable
+            parentId="tools"
+            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            displayName="jQAssistant Tooling"/>
     </extensions>
+
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory
@@ -141,6 +142,8 @@
                 class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
 
-    <applicationListeners>
-    </applicationListeners>
+    <projectListeners>
+        <listener class="org.jqassistant.tooling.intellij.plugin.data.config.SynchronizeListener"
+                  topic="org.jqassistant.tooling.intellij.plugin.data.config.JqaSyncListener"/>
+    </projectListeners>
 </idea-plugin>
