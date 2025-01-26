@@ -28,10 +28,6 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
-    <extensions defaultExtensionNs="com.intellij">
-
-
-    </extensions>
 
     <extensionPoints>
         <extensionPoint name="jqaRuleIndexingStrategy"
@@ -141,9 +137,4 @@
         <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
                 class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
-
-    <projectListeners>
-        <listener class="org.jqassistant.tooling.intellij.plugin.data.config.SynchronizeListener"
-                  topic="org.jqassistant.tooling.intellij.plugin.data.config.JqaSyncListener"/>
-    </projectListeners>
 </idea-plugin>

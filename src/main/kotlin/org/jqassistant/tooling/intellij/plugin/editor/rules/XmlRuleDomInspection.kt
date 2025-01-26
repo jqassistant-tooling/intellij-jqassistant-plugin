@@ -53,7 +53,7 @@ class XmlRuleDomInspection : BasicDomElementsInspection<JqassistantRules>(Jqassi
                     element.id,
                     MessageBundle.message("annotator.inactive.rule"),
                     RemoveTagIntentionFix(xmlElement.name, xmlElement),
-                )
+                ).highlightWholeElement()
         }
     }
 }
