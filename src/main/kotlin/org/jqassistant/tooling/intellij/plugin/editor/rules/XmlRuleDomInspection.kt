@@ -50,7 +50,7 @@ class XmlRuleDomInspection : BasicDomElementsInspection<JqassistantRules>(Jqassi
         if (!ruleUsed) {
             holder
                 .createProblem(
-                    element.id,
+                    element,
                     MessageBundle.message("annotator.inactive.rule"),
                     RemoveTagIntentionFix(xmlElement.name, xmlElement),
                 ).highlightWholeElement()
