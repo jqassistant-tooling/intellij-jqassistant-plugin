@@ -54,7 +54,7 @@
 
         <toolWindow
             factoryClass="org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow.EffectiveConfigToolWindowFactory"
-            id="Effective Configuration"
+            id="Configuration"
             anchor="bottom"
             icon="/icons/jqaIcon_16x16.svg"/>
 
