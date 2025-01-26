@@ -57,13 +57,13 @@ class EffectiveConfigToolWindow(
      *  */
     private fun updateConfigContent(config: FullArtifactConfiguration?) {
         val applicationManager = ApplicationManager.getApplication()
-        val configString = ConfigurationSerializer<FullArtifactConfiguration>().toYaml(config)
 
         applicationManager.invokeLater {
             applicationManager.runWriteAction {
                 if (config == null) {
                     setContent(JLabel(MessageBundle.message("configuration.toolwindow.error.null")))
                 } else {
+                    val configString = ConfigurationSerializer<FullArtifactConfiguration>().toYaml(config)
                     setEditorContent(configString)
                 }
             }
