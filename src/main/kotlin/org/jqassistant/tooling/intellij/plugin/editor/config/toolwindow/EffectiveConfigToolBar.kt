@@ -10,11 +10,7 @@ class EffectiveConfigToolBar(
     private val synchronizeAction: SynchronizeConfig,
 ) {
     fun createToolbar(): JComponent {
-        val actionGroup =
-            DefaultActionGroup().apply {
-                add(synchronizeAction)
-            }
-
+        val actionGroup = DefaultActionGroup(synchronizeAction)
         val actionManager = ActionManager.getInstance()
         val toolBar = actionManager.createActionToolbar("Configuration Toolbar", actionGroup, true)
         toolBar.targetComponent = toolWindow

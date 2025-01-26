@@ -22,7 +22,6 @@ class EffectiveConfigToolWindow(
     JqaSyncListener {
     private val synchronizeAction = SynchronizeConfig()
     private val myToolBar = EffectiveConfigToolBar(this, synchronizeAction)
-    private val loadingPanel = LoadingPanel()
     private val editorFactory = EditorFactory.getInstance()
     private val editor: Editor =
         editorFactory.createEditor(
@@ -62,7 +61,6 @@ class EffectiveConfigToolWindow(
         val applicationManager = ApplicationManager.getApplication()
         applicationManager.invokeLater {
             applicationManager.runWriteAction {
-                setContent(loadingPanel)
                 val configService = project.service<JqaConfigurationService>()
                 val config = configService.getConfiguration()
                 if (config == null) {

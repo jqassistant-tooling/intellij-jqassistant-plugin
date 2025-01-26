@@ -4,8 +4,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 
@@ -18,11 +19,14 @@ class SynchronizeConfig : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 
-        ApplicationManager.getApplication().executeOnPooledThread {
-            project.service<JqaConfigurationService>().synchronize()
-        }
+        object : Task.Backgroundable(project, MessageBundle.message("synchronizing.jqa.config")) {
+            override fun run(indicator: ProgressIndicator) {
+                project.service<JqaConfigurationService>().synchronize()
+            }
+        }.queue()
     }
 
+    // Set the icon, text and description of the action
     override fun update(e: AnActionEvent) {
         super.update(e)
         val presentation = e.presentation
