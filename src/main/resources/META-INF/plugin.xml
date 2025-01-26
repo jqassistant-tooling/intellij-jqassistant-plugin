@@ -45,7 +45,7 @@
 
         <toolWindow
             factoryClass="org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow.EffectiveConfigToolWindowFactory"
-            id="Effective Configuration"
+            id="Configuration"
             anchor="bottom"
             icon="/icons/jqaIcon_16x16.svg"/>
 
@@ -103,6 +103,8 @@
             instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
             id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
             displayName="jQAssistant Tooling"/>
+        <postStartupActivity
+            implementation="org.jqassistant.tooling.intellij.plugin.data.config.AutoSyncConfigProjectActivity"/>
     </extensions>
 
 
