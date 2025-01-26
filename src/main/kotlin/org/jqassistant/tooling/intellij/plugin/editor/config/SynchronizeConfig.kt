@@ -16,12 +16,20 @@ import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
  * This is meant to be the user facing sync action of the plugin.
  */
 class SynchronizeConfig : AnAction() {
+    private var isSynchronizing = false
+
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
+        if (isSynchronizing) return
 
+        isSynchronizing = true
         object : Task.Backgroundable(project, MessageBundle.message("synchronizing.jqa.config")) {
             override fun run(indicator: ProgressIndicator) {
                 project.service<JqaConfigurationService>().synchronize()
+            }
+
+            override fun onSuccess() {
+                isSynchronizing = false
             }
         }.queue()
     }
