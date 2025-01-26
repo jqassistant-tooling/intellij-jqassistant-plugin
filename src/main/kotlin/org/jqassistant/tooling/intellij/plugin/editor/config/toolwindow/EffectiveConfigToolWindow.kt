@@ -2,14 +2,12 @@ package org.jqassistant.tooling.intellij.plugin.editor.config.toolwindow
 
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationSerializer
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import org.jqassistant.tooling.intellij.plugin.data.config.FullArtifactConfiguration
-import org.jqassistant.tooling.intellij.plugin.data.config.JqaConfigurationService
 import org.jqassistant.tooling.intellij.plugin.data.config.JqaSyncListener
 import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 import org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig
@@ -51,22 +49,21 @@ class EffectiveConfigToolWindow(
         this.toolbar = myToolBar.createToolbar()
         bannerPanel.isVisible = false
         add(bannerPanel, BorderLayout.NORTH)
-        updateConfigContent()
+        updateConfigContent(null)
     }
 
     /**
      *  Refreshes the content of the tool window
      *  */
-    private fun updateConfigContent() {
+    private fun updateConfigContent(config: FullArtifactConfiguration?) {
         val applicationManager = ApplicationManager.getApplication()
+        val configString = ConfigurationSerializer<FullArtifactConfiguration>().toYaml(config)
+
         applicationManager.invokeLater {
             applicationManager.runWriteAction {
-                val configService = project.service<JqaConfigurationService>()
-                val config = configService.getConfiguration()
                 if (config == null) {
                     setContent(JLabel(MessageBundle.message("configuration.toolwindow.error.null")))
                 } else {
-                    val configString = ConfigurationSerializer<FullArtifactConfiguration>().toYaml(config)
                     setEditorContent(configString)
                 }
             }
@@ -80,6 +77,6 @@ class EffectiveConfigToolWindow(
     }
 
     override fun synchronize(config: FullArtifactConfiguration?) {
-        updateConfigContent()
+        updateConfigContent(config)
     }
 }
