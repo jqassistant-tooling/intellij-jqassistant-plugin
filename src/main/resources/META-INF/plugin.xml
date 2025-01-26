@@ -22,21 +22,12 @@
 
     <depends
         optional="true"
-        config-file="jqassistant-graphdb.xml"
-    >
+        config-file="jqassistant-graphdb.xml">
         com.albertoventurini.jetbrains.graphdbplugin
     </depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable
-            parentId="tools"
-            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
-            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
-            displayName="jQAssistant Tooling"/>
-
-    </extensions>
 
     <extensionPoints>
         <extensionPoint name="jqaRuleIndexingStrategy"
@@ -107,9 +98,15 @@
             implementationClass="org.jqassistant.tooling.intellij.plugin.editor.config.YamlConfigAnnotator"
             language="yaml"/>
 
+        <projectConfigurable
+            parentId="tools"
+            instance="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            id="org.jqassistant.tooling.intellij.plugin.settings.PluginSettingsConfigurable"
+            displayName="jQAssistant Tooling"/>
         <postStartupActivity
             implementation="org.jqassistant.tooling.intellij.plugin.data.config.AutoSyncConfigProjectActivity"/>
     </extensions>
+
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory
@@ -142,7 +139,4 @@
         <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
                 class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
-
-    <applicationListeners>
-    </applicationListeners>
 </idea-plugin>
