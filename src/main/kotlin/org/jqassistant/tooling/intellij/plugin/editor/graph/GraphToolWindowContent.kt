@@ -322,13 +322,16 @@ class GraphToolWindowContent(
         val directNeighbours =
             centerNode.edges().toList().flatMap { e -> listOf(e.sourceNode, e.targetNode) }
 
+        /*
+        // In case a slider for the degree of separation is added
         val secondDegreeNeighbours =
             directNeighbours
                 .flatMap { n -> n.edges().toList().flatMap { e -> listOf(e.sourceNode, e.targetNode) } }
                 .toSet()
+         */
 
         val displayedNodes = mutableSetOf<Node>(centerNode)
-        displayedNodes.addAll(directNeighbours + secondDegreeNeighbours)
+        displayedNodes.addAll(directNeighbours) // + secondDegreeNeighbours
         val displayedNodeIds = displayedNodes.map { node -> node.id }
 
         val directNeighbourEdges = centerNode.edges().toList()
