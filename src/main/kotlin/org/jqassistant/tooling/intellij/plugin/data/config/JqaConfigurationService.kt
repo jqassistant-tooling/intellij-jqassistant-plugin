@@ -68,8 +68,6 @@ fun interface JqaSyncListener {
 class JqaConfigurationService(
     val project: Project,
 ) {
-    private val jqaConfigFileProvider = JqaConfigFileProvider(project)
-
     class State {
         var dirty = false
 
@@ -81,9 +79,6 @@ class JqaConfigurationService(
 
     @Volatile
     private var state = State()
-
-    @Deprecated("Don't use for new stuff as this contains the old maven effective config logic.")
-    val configProvider = JqaEffectiveConfigProvider(project, jqaConfigFileProvider)
 
     private fun gatherStandardOptions(): Options {
         // Adapted from jQA
@@ -161,10 +156,6 @@ class JqaConfigurationService(
         )
     }
 
-    init {
-        jqaConfigFileProvider.addFileEventListener(configProvider)
-    }
-
     fun synchronize() {
         val settings = project.service<PluginSettings>().state
 
@@ -206,13 +197,6 @@ class JqaConfigurationService(
         project.messageBus.syncPublisher(JqaSyncListener.TOPIC).synchronize(config)
 
         project.notifyBalloon(MessageBundle.message("synchronized.jqa.config"))
-    }
-
-    /**
-     * Adds a listener that is notified when a config file changes.
-     */
-    fun addFileEventListener(listener: EventListener) {
-        jqaConfigFileProvider.addFileEventListener(listener)
     }
 
     fun getConfiguration(): FullArtifactConfiguration? = state.effectiveConfiguration
