@@ -14,4 +14,11 @@ files in your jQAssistant projects.
 - Integrated Effective Configuration toolwindow
 - Running jQA querries (with [Graph Database](https://plugins.jetbrains.com/plugin/20417-graph-database) Plugin)
 
+### FAQ
+
+#### Graph visualisation is outdated after editing
+
+Make sure to execute the "Synchronise jQA Config" action and reopen the graph through the right-click menu to update the
+displayed rules
+
 <!-- Plugin description end -->
