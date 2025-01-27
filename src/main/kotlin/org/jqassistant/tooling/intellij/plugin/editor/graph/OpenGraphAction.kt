@@ -16,10 +16,6 @@ import org.jqassistant.tooling.intellij.plugin.data.rules.xml.RuleBase
 import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 
 class OpenGraphAction : AnAction() {
-    companion object {
-        const val TOOL_WINDOW_ID: String = "Rule Graph"
-    }
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 
@@ -48,7 +44,8 @@ class OpenGraphAction : AnAction() {
                 else -> return invalidRuleNotification()
             }
 
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID) ?: return
+        val toolWindow =
+            ToolWindowManager.getInstance(project).getToolWindow(GraphToolWindowFactory.TOOL_WINDOW_ID) ?: return
 
         val content = toolWindow.contentManager.getContent(0) ?: return
         val component = content.component as? GraphToolWindowContent ?: return

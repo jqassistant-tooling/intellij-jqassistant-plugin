@@ -9,6 +9,10 @@ import com.intellij.ui.content.ContentFactory
 internal class GraphToolWindowFactory :
     ToolWindowFactory,
     DumbAware {
+    companion object {
+        const val TOOL_WINDOW_ID: String = "Rule Graph"
+    }
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         loadToolWindowContent(project, toolWindow)
     }
