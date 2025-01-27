@@ -46,6 +46,9 @@ dependencies {
         exclude(group = "org.neo4j.community")
     }
 
+    implementation(libs.gs.core)
+    implementation(libs.gs.ui.swing)
+
     testImplementation(libs.junit)
 
     implementation(libs.maven.core)

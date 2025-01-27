@@ -52,6 +52,9 @@
         <toolWindow id="jQAssistant Report" secondary="true" icon="AllIcons.Actions.ProjectWideAnalysisOff"
                     anchor="right"
                     factoryClass="org.jqassistant.tooling.intellij.plugin.editor.report.ReportToolWindowFactory"/>
+        <toolWindow id="Rule Graph" secondary="true" icon="AllIcons.Graph.Layout"
+                    anchor="right"
+                    factoryClass="org.jqassistant.tooling.intellij.plugin.editor.graph.GraphToolWindowFactory"/>
         <spellchecker.bundledDictionaryProvider
             implementation="org.jqassistant.tooling.intellij.plugin.editor.spellchecker.JqaBundledDictionaryProvider"/>
         <xml.schemaProvider
@@ -136,6 +139,13 @@
         </action>
         <action id="SynchronizeJqaPlugins" text="Synchronize jQA Plugins"
                 class="org.jqassistant.tooling.intellij.plugin.editor.plugin.SynchronizePlugins"/>
+        <action id="org.jqassistant.tooling.intellij.plugin.editor.graph.OpenGraphAction"
+                class="org.jqassistant.tooling.intellij.plugin.editor.graph.OpenGraphAction"
+                text="Open Rule Graph"
+                icon="/icons/jqaIcon_16x16.svg"
+                description="Opens the graph of rules related to the currently selected element">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="SynchronizeJqaConfig" text="Synchronize jQA Config"
                 class="org.jqassistant.tooling.intellij.plugin.editor.config.SynchronizeConfig"/>
     </actions>
