@@ -257,7 +257,6 @@ class GraphToolWindowContent(
 
                         val e = ruleGraph.addEdge("$currentRuleId->$name", currentNode, newNode, true)
                         e.setAttribute("ui.label", "include")
-                        // e.setAttribute("layout.weight", 5)
                     }
 
                     for (name in currentRule.concepts.keys) {

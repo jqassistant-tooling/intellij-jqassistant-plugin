@@ -28,6 +28,8 @@ class OpenGraphAction : AnAction() {
 
         val currentElement = event.getData(CommonDataKeys.PSI_ELEMENT) ?: return invalidRuleNotification()
 
+        // When clicking on the id directly in the rule definition then the element will be a [PomTargetPsiElement]
+        // otherwise it will be a [XmlAttributeValue]
         val ruleId =
             when (currentElement) {
                 is XmlAttributeValue -> {
