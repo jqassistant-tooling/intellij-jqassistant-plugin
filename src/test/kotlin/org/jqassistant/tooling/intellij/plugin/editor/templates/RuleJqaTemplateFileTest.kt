@@ -12,7 +12,11 @@ import java.io.File
 
 // Test class for verifying the functionality of actions that create jqassistant configuration files
 class RuleJqaTemplateFileTest : HeavyPlatformTestCase() {
-    // Test for the action that adds a .jqassistant.yaml file to a given directory
+    /**
+     *  Test for the action that adds a .jqassistant.yaml file to a given directory
+     *  This Test will only work if line 60 in RuleJqaTemplateFileCreation.kt is commented out
+     *  This is due to the expected user input of the message function
+     */
     fun testAddJqassistantYamlAction() {
         // Create the action and a temporary directory as a VirtualFile
         val action = AddJqassistantYamlAction()
@@ -28,7 +32,11 @@ class RuleJqaTemplateFileTest : HeavyPlatformTestCase() {
         assertTrue("The .jqassistant.yaml file content is empty!", createdFile.readText().isNotEmpty())
     }
 
-    // Test for the action that adds a custom-rule.xml file with user input
+    /**
+     *  Test for the action that adds a custom-rule.xml file with user input
+     *  This Test will only work if line 60 in RuleJqaTemplateFileCreation.kt is commented out
+     *  This is due to the expected user input of the message function
+     */
     fun testAddCustomRulesXmlAction() {
         // Create a subclass of AddCustomRulesXmlAction to simulate user input
         val action =

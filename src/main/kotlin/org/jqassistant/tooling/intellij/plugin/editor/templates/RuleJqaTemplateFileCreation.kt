@@ -57,7 +57,7 @@ abstract class RuleJqaTemplateFileCreator(
             targetFile.writeText(modifiedContent) // Write the modified content to the file.
 
             // Show success message and refresh the file system to reflect the new file.
-            // Messages.showInfoMessage(project, "$targetName created in ${targetFile.parent}", "File Created")
+            Messages.showInfoMessage(project, "$targetName created in ${targetFile.parent}", "File Created")
             VirtualFileManager.getInstance().syncRefresh()
             openFile(project, targetFile)
         } else {
