@@ -12,10 +12,7 @@ import org.jetbrains.yaml.YAMLLanguage
  * Injects a chosen language into the given context
  */
 class YamlPomXmlInjector : MultiHostInjector {
-    override fun getLanguagesToInject(
-        registrar: MultiHostRegistrar,
-        context: PsiElement,
-    ) {
+    override fun getLanguagesToInject(registrar: MultiHostRegistrar, context: PsiElement) {
         // Check if the context element is an `XmlTag` and has the desired structure
         if (context is XmlTag && isConfigPlace(context)) {
             // Check if we can find the `yaml` tag

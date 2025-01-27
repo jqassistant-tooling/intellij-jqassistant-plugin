@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.readText
+import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.PsiManager
@@ -60,5 +61,16 @@ class VirtualFileExtractor : AnAction() {
         }
 
         return null
+    }
+}
+
+class YamlConfigReader : PsiElementVisitor() {
+    override fun visitElement(element: com.intellij.psi.PsiElement) {
+        if (element is XmlTag && element.name == "yaml") {
+            val yamlContent = element.value.text
+            // Verarbeiten Sie den YAML-Inhalt
+            println("Gefundener YAML-Inhalt: $yamlContent")
+        }
+        super.visitElement(element)
     }
 }

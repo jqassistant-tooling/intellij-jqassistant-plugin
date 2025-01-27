@@ -70,6 +70,8 @@
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleSafeDeleteProcessorDelegate"/>
         <refactoring.safeDeleteProcessor
             implementation="org.jqassistant.tooling.intellij.plugin.editor.rules.refactoring.delete.RuleFileSafeDeleteProcessorDelegate"/>
+        <lang.language
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlJqaConfigLanguage"/>
         <multiHostInjector
             implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlPomXmlInjector"/>
     </extensions>
