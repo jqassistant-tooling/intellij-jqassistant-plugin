@@ -2,7 +2,7 @@
 # libraries
 junit = "4.13.2"
 
-jqa-cli-application = "2.6.0-M3"
+jqa-cli-application = "2.6.0-RC1"
 jqa-core-report = "2.6.0-RC1"
 jqa-core-runtime = "2.6.0-RC1"
 jqa-core-schemata = "2.6.0-RC1"
