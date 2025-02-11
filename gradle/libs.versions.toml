@@ -8,7 +8,7 @@ jqa-core-runtime = "2.6.0-RC1"
 jqa-core-schemata = "2.6.0-RC1"
 jqa-maven = "2.6.0-RC1"
 
-jqa-core-configuration = "2.0.0-RC1"
+jqa-core-configuration = "2.6.0-RC1"
 
 maven-bom = "3.9.9"
 
