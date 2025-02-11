@@ -6,7 +6,7 @@ jqa-cli-application = "2.6.0-M3"
 jqa-core-report = "2.6.0-M3"
 jqa-core-runtime = "2.6.0-RC1"
 jqa-core-schemata = "2.6.0-RC1"
-jqa-maven = "2.6.0-M3"
+jqa-maven = "2.6.0-RC1"
 
 jqa-core-configuration = "2.0.0-RC1"
 
