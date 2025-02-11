@@ -51,13 +51,13 @@ class PluginSettingsComponent(
         ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
-                .withRoots(baseFile)
+                .withRoots(project.guessProjectDir())
                 .withTreeRootVisible(true),
         ).apply {
             setEmptyState("Use project root")
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
+                    text = toRelativePath(project.guessProjectDir()!!, it)
                 }
             }
         }
@@ -70,13 +70,13 @@ class PluginSettingsComponent(
         ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFileDescriptor("xml")
-                .withRoots(baseFile)
+                .withRoots(project.guessProjectDir())
                 .withTreeRootVisible(true),
         ).apply {
             setEmptyState("Use default jQA Maven Plugin")
             addActionListener {
                 FileChooser.chooseFile(this.descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
+                    text = toRelativePath(project.guessProjectDir()!!, it)
                 }
             }
         }
@@ -88,12 +88,12 @@ class PluginSettingsComponent(
         ValidatorTextFieldWithBrowseButton(
             FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
-                .withRoots(baseFile)
+                .withRoots(project.guessProjectDir())
                 .withTreeRootVisible(true),
         ).apply {
             addActionListener {
                 FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
+                    text = toRelativePath(project.guessProjectDir()!!, it)
                 }
             }
         }
