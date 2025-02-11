@@ -47,7 +47,7 @@ class PluginSettingsComponent(
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
     private val labelCliExecRootDir = JLabel("Execution root:")
 
-    private val cliExecRootDir:ValidatorTextFieldWithBrowseButton
+    private val cliExecRootDir: ValidatorTextFieldWithBrowseButton
 
     private val labelCliParams = JLabel("Additional parameters:")
     private val cliParams = JBTextField()
@@ -67,14 +67,16 @@ class PluginSettingsComponent(
         baseFile = project.guessProjectDir()
         labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
 
-        val cliExecRootDirFactory = FileChooserDescriptorFactory
+        val cliExecRootDirFactory =
+            FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
                 .withTreeRootVisible(true)
         if (baseFile != null) {
             cliExecRootDirFactory.withRoots(baseFile)
         }
-        cliExecRootDir = ValidatorTextFieldWithBrowseButton(
-            cliExecRootDirFactory,
+        cliExecRootDir =
+            ValidatorTextFieldWithBrowseButton(
+                cliExecRootDirFactory
         ).apply {
             setEmptyState("Use project root")
             addActionListener {
@@ -84,7 +86,8 @@ class PluginSettingsComponent(
             }
         }
 
-        val mavenProjectFileFactory = FileChooserDescriptorFactory
+        val mavenProjectFileFactory =
+            FileChooserDescriptorFactory
                 .createSingleFileDescriptor("xml")
                 .withTreeRootVisible(true)
         if (baseFile != null) {
@@ -92,7 +95,7 @@ class PluginSettingsComponent(
         }
         mavenProjectFile =
             ValidatorTextFieldWithBrowseButton(
-                mavenProjectFileFactory,
+                mavenProjectFileFactory
             ).apply {
                 setEmptyState("Use default jQA Maven Plugin")
                 addActionListener {
@@ -102,7 +105,8 @@ class PluginSettingsComponent(
                 }
             }
 
-        val mavenScriptSourceDirFactory = FileChooserDescriptorFactory
+        val mavenScriptSourceDirFactory =
+            FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
                 .withTreeRootVisible(true)
         if (baseFile != null) {
@@ -110,7 +114,7 @@ class PluginSettingsComponent(
         }
         mavenScriptSourceDir =
             ValidatorTextFieldWithBrowseButton(
-                mavenScriptSourceDirFactory,
+                mavenScriptSourceDirFactory
             ).apply {
                 addActionListener {
                     FileChooser.chooseFile(descriptor, project, baseFile) {
