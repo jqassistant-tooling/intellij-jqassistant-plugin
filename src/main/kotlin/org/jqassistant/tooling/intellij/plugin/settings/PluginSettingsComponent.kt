@@ -34,11 +34,10 @@ class PluginSettingsComponent(
     private val mavenOrCliButtonGroup = ButtonGroup()
     val panel: JPanel
 
-    // TODO: Find a proper solution for project root paths.
-    private val baseFile = project.guessProjectDir()
+    private val baseFile: VirtualFile?
 
     // Labels
-    private val labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
+    private val labelBasePath: JLabel
     private val labelMavenWarning = JLabel()
     private val labelMavenProjectFile = JLabel("Maven project file:")
     private val labelMavenAdditionalProps = JLabel("Additional Maven parameters:")
@@ -47,59 +46,83 @@ class PluginSettingsComponent(
     // CLI components
     private val radioBtnCli = JRadioButton("Use CLI Distribution")
     private val labelCliExecRootDir = JLabel("Execution root:")
-    private val cliExecRootDir =
-        ValidatorTextFieldWithBrowseButton(
-            FileChooserDescriptorFactory
-                .createSingleFolderDescriptor()
-                .withRoots(baseFile)
-                .withTreeRootVisible(true),
-        ).apply {
-            setEmptyState("Use project root")
-            addActionListener {
-                FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
-                }
-            }
-        }
+
+    private val cliExecRootDir: ValidatorTextFieldWithBrowseButton
+
     private val labelCliParams = JLabel("Additional parameters:")
     private val cliParams = JBTextField()
 
     // Maven components
     private val radioBtnMaven = JRadioButton("Use Maven Distribution")
-    private val mavenProjectFile =
-        ValidatorTextFieldWithBrowseButton(
-            FileChooserDescriptorFactory
-                .createSingleFileDescriptor("xml")
-                .withRoots(baseFile)
-                .withTreeRootVisible(true),
-        ).apply {
-            setEmptyState("Use default jQA Maven Plugin")
-            addActionListener {
-                FileChooser.chooseFile(this.descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
-                }
-            }
-        }
+    private val mavenProjectFile: ValidatorTextFieldWithBrowseButton
     private val mavenAdditionalProps = JBTextField()
 
     // Advanced settings
     private var mavenProjectDescription = JBTextField()
-    private var mavenScriptSourceDir =
-        ValidatorTextFieldWithBrowseButton(
-            FileChooserDescriptorFactory
-                .createSingleFolderDescriptor()
-                .withRoots(baseFile)
-                .withTreeRootVisible(true),
-        ).apply {
-            addActionListener {
-                FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
-                }
-            }
-        }
+    private var mavenScriptSourceDir: ValidatorTextFieldWithBrowseButton
     private var mavenOutputEncoding = JBTextField()
 
     init {
+        // base dir and file choosers
+        baseFile = project.guessProjectDir()
+        labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
+
+        val cliExecRootDirFactory =
+            FileChooserDescriptorFactory
+                .createSingleFolderDescriptor()
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            cliExecRootDirFactory.withRoots(baseFile)
+        }
+        cliExecRootDir =
+            ValidatorTextFieldWithBrowseButton(
+                cliExecRootDirFactory,
+            ).apply {
+                setEmptyState("Use project root")
+                addActionListener {
+                    FileChooser.chooseFile(descriptor, project, baseFile) {
+                        text = toRelativePath(baseFile!!, it)
+                    }
+                }
+            }
+
+        val mavenProjectFileFactory =
+            FileChooserDescriptorFactory
+                .createSingleFileDescriptor("xml")
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            mavenProjectFileFactory.withRoots(baseFile)
+        }
+        mavenProjectFile =
+            ValidatorTextFieldWithBrowseButton(
+                mavenProjectFileFactory,
+            ).apply {
+                setEmptyState("Use default jQA Maven Plugin")
+                addActionListener {
+                    FileChooser.chooseFile(this.descriptor, project, baseFile) {
+                        text = toRelativePath(baseFile!!, it)
+                    }
+                }
+            }
+
+        val mavenScriptSourceDirFactory =
+            FileChooserDescriptorFactory
+                .createSingleFolderDescriptor()
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            mavenScriptSourceDirFactory.withRoots(baseFile)
+        }
+        mavenScriptSourceDir =
+            ValidatorTextFieldWithBrowseButton(
+                mavenScriptSourceDirFactory,
+            ).apply {
+                addActionListener {
+                    FileChooser.chooseFile(descriptor, project, baseFile) {
+                        text = toRelativePath(baseFile!!, it)
+                    }
+                }
+            }
+
         // RadioGroup
         mavenOrCliButtonGroup.add(radioBtnCli)
         mavenOrCliButtonGroup.add(radioBtnMaven)

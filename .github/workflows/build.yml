@@ -48,7 +48,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
 
       # Setup Gradle
       - name: Setup Gradle
@@ -103,7 +103,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
 
       # Setup Gradle
       - name: Setup Gradle
@@ -144,7 +144,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
 
       # Setup Gradle
       # 'cache-disabled: true' because the free GitHub cache only allows 10GB which is easily filled up by the gradle cache
@@ -178,7 +178,7 @@ jobs:
   releaseDraft:
     name: Release draft
     if: github.event_name != 'pull_request'
-    needs: [ build, test, verify ]
+    needs: [ build, test ] # TODO temporarily removed verify due to EAP issue
     runs-on: ubuntu-latest
     permissions:
       contents: write

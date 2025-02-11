@@ -14,7 +14,7 @@ version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 // Configure project's dependencies
@@ -58,6 +58,13 @@ dependencies {
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+
+        // TODO Temporary fix for EAP 225
+        // https://youtrack.jetbrains.com/issue/IJPL-177264
+        // still doesn't fix plugin verifier
+        if (providers.gradleProperty("platformVersion").get().startsWith("251.20015.29")) {
+            bundledModule("intellij.yaml.editing")
+        }
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
