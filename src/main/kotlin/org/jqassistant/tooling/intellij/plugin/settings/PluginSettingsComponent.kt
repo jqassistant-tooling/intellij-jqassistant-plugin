@@ -76,15 +76,15 @@ class PluginSettingsComponent(
         }
         cliExecRootDir =
             ValidatorTextFieldWithBrowseButton(
-                cliExecRootDirFactory
-        ).apply {
-            setEmptyState("Use project root")
-            addActionListener {
-                FileChooser.chooseFile(descriptor, project, baseFile) {
-                    text = toRelativePath(baseFile!!, it)
+                cliExecRootDirFactory,
+            ).apply {
+                setEmptyState("Use project root")
+                addActionListener {
+                    FileChooser.chooseFile(descriptor, project, baseFile) {
+                        text = toRelativePath(baseFile!!, it)
+                    }
                 }
             }
-        }
 
         val mavenProjectFileFactory =
             FileChooserDescriptorFactory
@@ -95,7 +95,7 @@ class PluginSettingsComponent(
         }
         mavenProjectFile =
             ValidatorTextFieldWithBrowseButton(
-                mavenProjectFileFactory
+                mavenProjectFileFactory,
             ).apply {
                 setEmptyState("Use default jQA Maven Plugin")
                 addActionListener {
@@ -114,7 +114,7 @@ class PluginSettingsComponent(
         }
         mavenScriptSourceDir =
             ValidatorTextFieldWithBrowseButton(
-                mavenScriptSourceDirFactory
+                mavenScriptSourceDirFactory,
             ).apply {
                 addActionListener {
                     FileChooser.chooseFile(descriptor, project, baseFile) {
