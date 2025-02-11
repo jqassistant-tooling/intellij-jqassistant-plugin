@@ -67,11 +67,14 @@ class PluginSettingsComponent(
         baseFile = project.guessProjectDir()
         labelBasePath = JLabel("Base path: ${baseFile?.presentableUrl}/").apply { isEnabled = false }
 
-        cliExecRootDir = ValidatorTextFieldWithBrowseButton(
-            FileChooserDescriptorFactory
+        val cliExecRootDirFactory = FileChooserDescriptorFactory
                 .createSingleFolderDescriptor()
-                .withRoots(baseFile)
-                .withTreeRootVisible(true),
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            cliExecRootDirFactory.withRoots(baseFile)
+        }
+        cliExecRootDir = ValidatorTextFieldWithBrowseButton(
+            cliExecRootDirFactory,
         ).apply {
             setEmptyState("Use project root")
             addActionListener {
@@ -81,12 +84,15 @@ class PluginSettingsComponent(
             }
         }
 
+        val mavenProjectFileFactory = FileChooserDescriptorFactory
+                .createSingleFileDescriptor("xml")
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            mavenProjectFileFactory.withRoots(baseFile)
+        }
         mavenProjectFile =
             ValidatorTextFieldWithBrowseButton(
-                FileChooserDescriptorFactory
-                    .createSingleFileDescriptor("xml")
-                    .withRoots(baseFile)
-                    .withTreeRootVisible(true),
+                mavenProjectFileFactory,
             ).apply {
                 setEmptyState("Use default jQA Maven Plugin")
                 addActionListener {
@@ -96,12 +102,15 @@ class PluginSettingsComponent(
                 }
             }
 
+        val mavenScriptSourceDirFactory = FileChooserDescriptorFactory
+                .createSingleFolderDescriptor()
+                .withTreeRootVisible(true)
+        if (baseFile != null) {
+            mavenScriptSourceDirFactory.withRoots(baseFile)
+        }
         mavenScriptSourceDir =
             ValidatorTextFieldWithBrowseButton(
-                FileChooserDescriptorFactory
-                    .createSingleFolderDescriptor()
-                    .withRoots(baseFile)
-                    .withTreeRootVisible(true),
+                mavenScriptSourceDirFactory,
             ).apply {
                 addActionListener {
                     FileChooser.chooseFile(descriptor, project, baseFile) {
