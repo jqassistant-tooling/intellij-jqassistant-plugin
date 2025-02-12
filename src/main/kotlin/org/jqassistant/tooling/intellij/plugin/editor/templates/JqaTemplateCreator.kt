@@ -57,7 +57,7 @@ abstract class RuleJqaTemplateFileCreator(
             targetFile.writeText(modifiedContent) // Write the modified content to the file.
 
             // Show success message and refresh the file system to reflect the new file.
-            Messages.showInfoMessage(project, "$targetName created in ${targetFile.parent}", "File Created")
+            // Messages.showInfoMessage(project, "$targetName created in ${targetFile.parent}", "File Created")
             VirtualFileManager.getInstance().syncRefresh()
             openFile(project, targetFile)
         } else {
@@ -99,7 +99,7 @@ abstract class RuleJqaTemplateFileCreator(
     }
 
     // Displays an input dialog and returns the user's input.
-    private fun getUserInput(project: Project, message: String, initialValue: String?): String? =
+    open fun getUserInput(project: Project, message: String, initialValue: String?): String? =
         Messages
             .showInputDialog(
                 project,
@@ -149,7 +149,7 @@ class AddJqassistantYamlAction :
 /**
  * Action to create a custom XML rules file, prompting the user for a name.
  */
-class AddCustomRulesXmlAction :
+open class AddCustomRulesXmlAction :
     RuleJqaTemplateFileCreator(
         fileName = "Custom Rules File",
         templatePath = "/templates/my_rules.xml",
