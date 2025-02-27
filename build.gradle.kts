@@ -45,6 +45,9 @@ dependencies {
     implementation(libs.jqa.maven.plugin) {
         exclude(group = "org.neo4j.community")
     }
+    implementation(libs.jqa.plugin.common) {
+        exclude(group = "org.neo4j.community")
+    }
 
     implementation(libs.gs.core)
     implementation(libs.gs.ui.swing)

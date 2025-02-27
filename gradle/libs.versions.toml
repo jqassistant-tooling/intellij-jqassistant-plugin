@@ -30,6 +30,7 @@ jqa-core-configuration = { group = "com.buschmais.jqassistant.core", name = "con
 jqa-core-runtime = { group = "com.buschmais.jqassistant.core", name = "runtime", version.ref = "jqa-core-runtime" }
 jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa-cli-application" }
 jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa-maven" }
+jqa-plugin-common = { group = "com.buschmais.jqassistant.plugin", name = "common", version.ref = "jqa-maven" }
 
 gs-core = { group = "org.graphstream", name = "gs-core", version.ref = "graphstream" }
 gs-ui-swing = { group = "org.graphstream", name = "gs-ui-swing", version.ref = "graphstream" }
