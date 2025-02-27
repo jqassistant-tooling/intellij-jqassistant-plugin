@@ -177,11 +177,20 @@ class MavenConfigFactory : JqaConfigFactory {
                 val jqaMavenPlugin =
                     mavenProject.plugins.firstOrNull {
                         it.isJqaPlugin()
-                    } ?: continue
-                return Pair(
-                    mavenProject,
-                    JqaMavenConfiguration.fromJDomElement(jqaMavenPlugin.configurationElement),
-                )
+                    }
+                if (jqaMavenPlugin != null) {
+                    return Pair(
+                        mavenProject,
+                        JqaMavenConfiguration.fromJDomElement(jqaMavenPlugin.configurationElement),
+                    )
+                } else if (mavenProject.directoryFile.children.firstOrNull {
+                        it.name == ".jqassistant.yaml" || it.name == ".jqassistant.yml"
+                    } != null){
+                    return Pair(
+                        mavenProject,
+                        JqaMavenConfiguration.fromJDomElement(null)
+                    )
+                }
             }
 
             project.notifyBalloon(MessageBundle.message("no.maven.project.with.plugin"), NotificationType.ERROR)
