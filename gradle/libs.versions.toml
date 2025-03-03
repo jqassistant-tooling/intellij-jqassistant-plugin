@@ -2,13 +2,13 @@
 # libraries
 junit = "4.13.2"
 
-jqa-cli-application = "2.6.0-RC1"
-jqa-core-report = "2.6.0-RC1"
-jqa-core-runtime = "2.6.0-RC1"
-jqa-core-schemata = "2.6.0-RC1"
-jqa-maven = "2.6.0-RC1"
+jqa-cli-application = "2.6.0"
+jqa-core-report = "2.6.0"
+jqa-core-runtime = "2.6.0"
+jqa-core-schemata = "2.6.0"
+jqa-maven = "2.6.0"
 
-jqa-core-configuration = "2.6.0-RC1"
+jqa-core-configuration = "2.6.0"
 
 maven-bom = "3.9.9"
 
