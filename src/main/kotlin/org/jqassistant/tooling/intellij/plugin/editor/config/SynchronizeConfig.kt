@@ -31,6 +31,15 @@ class SynchronizeConfig : AnAction() {
             override fun onSuccess() {
                 isSynchronizing = false
             }
+
+            override fun onCancel() {
+                isSynchronizing = false
+            }
+
+            override fun onThrowable(error: Throwable) {
+                isSynchronizing = false
+                super.onThrowable(error)
+            }
         }.queue()
     }
 
