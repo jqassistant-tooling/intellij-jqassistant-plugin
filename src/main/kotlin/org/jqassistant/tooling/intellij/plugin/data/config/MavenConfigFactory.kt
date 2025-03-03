@@ -124,7 +124,8 @@ class MavenConfigFactory : JqaConfigFactory {
         settings: PluginSettings.State,
     ): Pair<org.jetbrains.idea.maven.project.MavenProject, JqaMavenConfiguration>? {
         val mavenProjectManager = MavenProjectsManager.getInstance(project)
-        return if (settings.mavenProjectFile != null) {
+
+        if (settings.mavenProjectFile != null) {
             // Check whether the selected maven project is valid.
 
             val projectFile =
@@ -151,20 +152,14 @@ class MavenConfigFactory : JqaConfigFactory {
                 return null
             }
 
-            val plugin = mavenProject.plugins.firstOrNull { it.isJqaPlugin() }
+            val resolvedProject = isJQAProject(mavenProject)
 
-            if (plugin == null) {
-                project.notifyBalloon(
-                    MessageBundle.message("maven.project.without.plugin", projectFile.presentableUrl),
-                    NotificationType.ERROR,
-                )
+            if (resolvedProject == null) {
+                project.notifyBalloon(MessageBundle.message("maven.project.without.plugin", projectFile.presentableUrl), NotificationType.ERROR)
                 return null
+            } else {
+                return resolvedProject
             }
-
-            Pair(
-                mavenProject,
-                JqaMavenConfiguration.fromJDomElement(plugin.configurationElement),
-            )
         } else {
             // Search for an arbitrary project that contains the jQA Plugin.
 
@@ -174,28 +169,33 @@ class MavenConfigFactory : JqaConfigFactory {
                     (mavenProjectManager.projects - mavenProjectManager.rootProjects.toSet())
 
             for (mavenProject in availableProjects) {
-                val jqaMavenPlugin =
-                    mavenProject.plugins.firstOrNull {
-                        it.isJqaPlugin()
-                    }
-                if (jqaMavenPlugin != null) {
-                    return Pair(
-                        mavenProject,
-                        JqaMavenConfiguration.fromJDomElement(jqaMavenPlugin.configurationElement),
-                    )
-                } else if (mavenProject.directoryFile.children.firstOrNull {
-                        it.name == ".jqassistant.yaml" || it.name == ".jqassistant.yml"
-                    } != null){
-                    return Pair(
-                        mavenProject,
-                        JqaMavenConfiguration.fromJDomElement(null)
-                    )
+                val resolvedProject = isJQAProject(mavenProject)
+                if (resolvedProject != null) {
+                    return resolvedProject
                 }
             }
-
             project.notifyBalloon(MessageBundle.message("no.maven.project.with.plugin"), NotificationType.ERROR)
-            null
+            return null
         }
+    }
+
+    private fun isJQAProject(project: org.jetbrains.idea.maven.project.MavenProject): Pair<org.jetbrains.idea.maven.project.MavenProject, JqaMavenConfiguration>? {
+        val jqaMavenPlugin = project.plugins.firstOrNull { it.isJqaPlugin() }
+
+        if (jqaMavenPlugin != null) {
+            return Pair(
+                project,
+                JqaMavenConfiguration.fromJDomElement(jqaMavenPlugin.configurationElement),
+            )
+        } else if (project.directoryFile.children.firstOrNull {
+                it.name == ".jqassistant.yaml" || it.name == ".jqassistant.yml"
+            } != null){
+            return Pair(
+                project,
+                JqaMavenConfiguration.fromJDomElement(null)
+            )
+        }
+        return null
     }
 
     override fun assembleConfig(project: Project): FullArtifactConfiguration? =
