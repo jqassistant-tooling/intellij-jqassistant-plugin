@@ -155,7 +155,10 @@ class MavenConfigFactory : JqaConfigFactory {
             val resolvedProject = isJQAProject(mavenProject)
 
             if (resolvedProject == null) {
-                project.notifyBalloon(MessageBundle.message("maven.project.without.plugin", projectFile.presentableUrl), NotificationType.ERROR)
+                project.notifyBalloon(
+                    MessageBundle.message("maven.project.without.plugin", projectFile.presentableUrl),
+                    NotificationType.ERROR,
+                )
                 return null
             } else {
                 return resolvedProject
@@ -179,7 +182,9 @@ class MavenConfigFactory : JqaConfigFactory {
         }
     }
 
-    private fun isJQAProject(project: org.jetbrains.idea.maven.project.MavenProject): Pair<org.jetbrains.idea.maven.project.MavenProject, JqaMavenConfiguration>? {
+    private fun isJQAProject(
+        project: org.jetbrains.idea.maven.project.MavenProject,
+    ): Pair<org.jetbrains.idea.maven.project.MavenProject, JqaMavenConfiguration>? {
         val jqaMavenPlugin = project.plugins.firstOrNull { it.isJqaPlugin() }
 
         if (jqaMavenPlugin != null) {
@@ -189,10 +194,11 @@ class MavenConfigFactory : JqaConfigFactory {
             )
         } else if (project.directoryFile.children.firstOrNull {
                 it.name == ".jqassistant.yaml" || it.name == ".jqassistant.yml"
-            } != null){
+            } != null
+        ) {
             return Pair(
                 project,
-                JqaMavenConfiguration.fromJDomElement(null)
+                JqaMavenConfiguration.fromJDomElement(null),
             )
         }
         return null

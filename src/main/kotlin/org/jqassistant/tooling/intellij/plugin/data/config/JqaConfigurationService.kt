@@ -167,7 +167,6 @@ class JqaConfigurationService(
 
         val ruleProvider =
             withServiceLoader {
-                try {
                     val artifactProvider =
                         ArtifactProviderFactory.getArtifactProvider(config, File(System.getProperty("user.home")))
 
@@ -179,13 +178,6 @@ class JqaConfigurationService(
                         )
 
                     RuleProvider.create(config, "", pluginRepository)
-                } catch (e: Exception) {
-                    project.notifyBalloon(
-                        MessageBundle.message("jqa.exception", e.message ?: "TwT"),
-                        NotificationType.ERROR,
-                    )
-                    null
-                }
                 // Default directories are handled through the config, since the plugin needs to make them absolute based on the maven project.
             } ?: return
 
