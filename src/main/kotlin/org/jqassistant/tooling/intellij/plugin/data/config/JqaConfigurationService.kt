@@ -167,17 +167,17 @@ class JqaConfigurationService(
 
         val ruleProvider =
             withServiceLoader {
-                    val artifactProvider =
-                        ArtifactProviderFactory.getArtifactProvider(config, File(System.getProperty("user.home")))
+                val artifactProvider =
+                    ArtifactProviderFactory.getArtifactProvider(config, File(System.getProperty("user.home")))
 
-                    val pluginRepository: PluginRepository =
-                        PluginRepositoryFactory.getPluginRepository(
-                            config,
-                            javaClass.classLoader,
-                            artifactProvider,
-                        )
+                val pluginRepository: PluginRepository =
+                    PluginRepositoryFactory.getPluginRepository(
+                        config,
+                        javaClass.classLoader,
+                        artifactProvider,
+                    )
 
-                    RuleProvider.create(config, "", pluginRepository)
+                RuleProvider.create(config, "", pluginRepository)
                 // Default directories are handled through the config, since the plugin needs to make them absolute based on the maven project.
             } ?: return
 
