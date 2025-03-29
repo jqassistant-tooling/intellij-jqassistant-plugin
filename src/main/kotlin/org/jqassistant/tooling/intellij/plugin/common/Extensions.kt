@@ -34,6 +34,8 @@ inline fun <T> withServiceLoader(block: () -> T, classLoader: ClassLoader?): T {
     }
 }
 
+inline fun <reified T> arrayOfNotNull(vararg elements: T?): Array<T> = elements.filterNotNull().toTypedArray()
+
 /**
  * Runs code and replaces the IntelliJ Class loader with the one of [Loader].
  *

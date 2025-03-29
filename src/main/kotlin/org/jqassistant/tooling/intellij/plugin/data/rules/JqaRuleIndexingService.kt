@@ -40,7 +40,8 @@ class JqaRuleIndexingService(
 
     fun getAll(type: JqaRuleType? = null): List<JqaRuleDefinition> = indexes.flatMap { it.getAll(type) }
 
-    fun resolve(identifier: String): List<JqaRuleDefinition> = indexes.flatMap { it.resolve(identifier) }
+    fun resolve(identifier: String, type: JqaRuleType? = null): List<JqaRuleDefinition> =
+        indexes.flatMap { it.resolve(identifier, type) }
 
-    fun has(identifier: String): Boolean = indexes.any { it.has(identifier) }
+    fun has(identifier: String, type: JqaRuleType? = null): Boolean = indexes.any { it.has(identifier, type) }
 }

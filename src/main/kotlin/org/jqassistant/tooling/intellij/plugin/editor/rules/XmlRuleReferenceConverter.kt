@@ -16,7 +16,8 @@ open class XmlRuleReferenceConverter(
         context: ConvertContext?,
     ): Array<PsiReference> {
         if (element == null) return emptyArray()
-        return arrayOf(RuleReference(element, value?.value ?: element.text, type))
+        // All references injected into DOM should be soft. DOM has a separate soft/hard system controlled by annotation parameters.
+        return arrayOf(RuleReference(element, value?.value ?: element.text, type, true))
     }
 }
 
