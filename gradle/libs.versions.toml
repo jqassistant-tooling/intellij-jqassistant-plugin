@@ -4,7 +4,7 @@ junit = "4.13.2"
 
 jqa-cli-application = "2.6.0"
 jqa-core-report = "2.6.0"
-jqa-core-runtime = "2.6.0"
+jqa-core-runtime = "2.7.0"
 jqa-core-schemata = "2.6.0"
 jqa-maven = "2.6.0"
 
