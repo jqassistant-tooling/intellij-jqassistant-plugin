@@ -1,6 +1,7 @@
 package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
+import com.buschmais.jqassistant.core.report.api.BuildConfigBuilder
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationBuilder
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
 import com.buschmais.jqassistant.scm.maven.AbstractRuleMojo
@@ -26,6 +27,7 @@ import org.jqassistant.tooling.intellij.plugin.common.withServiceLoader
 import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 import org.jqassistant.tooling.intellij.plugin.settings.PluginSettings
 import java.io.File
+import java.time.ZonedDateTime
 import java.util.Properties
 import kotlin.io.path.Path
 
@@ -216,6 +218,12 @@ class MavenConfigFactory : JqaConfigFactory {
             // Find any maven project that has the jqa maven plugin activated, so that we can access the config.
             val (mavenProject, mavenConfig) = findMavenProject(project, settings) ?: return@withServiceLoader null
 
+            val buildConfigSource =
+                BuildConfigBuilder.getConfigSource(
+                    project.name,
+                    ZonedDateTime.now(),
+                )
+
             val projectConfigSource =
                 MavenProjectConfigSource(
                     MavenProjectAdapter(
@@ -266,6 +274,7 @@ class MavenConfigFactory : JqaConfigFactory {
 
             val configSources =
                 arrayOf(
+                    buildConfigSource,
                     configurationBuilder.build(),
                     projectConfigSource,
                     settingsConfigSource,
@@ -296,6 +305,12 @@ class MavenConfigFactory : JqaConfigFactory {
                         mavenProject.activatedProfilesIds.enabledProfiles.toList(),
                     ).withIgnoreProperties(setOf("jqassistant.configuration.locations"))
                     .withWorkingDirectory(executionRootDirectory)
-            return@withServiceLoader FullArtifactConfigurationWrapper(builder.load(*configSources))
+
+            try {
+                return@withServiceLoader FullArtifactConfigurationWrapper(builder.load(*configSources))
+            } catch (t: Throwable) {
+                project.notifyBalloon(MessageBundle.message("jqa.exception", t.message), NotificationType.ERROR)
+                return@withServiceLoader null
+            }
         }
 }
