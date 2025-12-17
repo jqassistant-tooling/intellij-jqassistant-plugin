@@ -32,21 +32,27 @@ dependencies {
     implementation(libs.jqa.core.report) {
         // jqa.core has runtime dependency on neo4j integration tests, the intellij plugin can't handle those integration tests
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
     implementation(libs.jqa.core.schemata) {
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
     implementation(libs.jqa.core.runtime) {
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
     implementation(libs.jqa.cli.application) {
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
     implementation(libs.jqa.maven.plugin) {
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
     implementation(libs.jqa.plugin.common) {
         exclude(group = "org.neo4j.community")
+        exclude(group = "javax.xml.bind", module = "jaxb-api")
     }
 
     implementation(libs.gs.core)
@@ -60,17 +66,17 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        intellijIdea("2025.3")
 
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
-
-        bundledModule("intellij.yaml.backend")
+        // Plugin Dependencies. See: https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html?from=jetbrains#preparing-sandbox
+        bundledPlugin("com.intellij.java")
+        bundledPlugin("com.intellij.modules.json")
+        bundledPlugin("org.jetbrains.plugins.yaml")
+        bundledPlugin("org.jetbrains.idea.maven")
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
-        instrumentationTools()
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)

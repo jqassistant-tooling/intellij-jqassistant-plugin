@@ -2,13 +2,7 @@
 # libraries
 junit = "4.13.2"
 
-jqa-cli-application = "2.6.0"
-jqa-core-report = "2.6.0"
-jqa-core-runtime = "2.6.0"
-jqa-core-schemata = "2.6.0"
-jqa-maven = "2.6.0"
-
-jqa-core-configuration = "2.6.0"
+jqa = "2.8.0"
 
 maven-bom = "3.9.9"
 
@@ -17,20 +11,20 @@ graphstream = "2.0"
 
 # plugins
 changelog = "2.2.1"
-intelliJPlatform = "2.3.0"
+intelliJPlatform = "2.10.5"
 kotlin = "2.1.10"
 ktlint = "12.1.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-jqa-core-report = { group = "com.buschmais.jqassistant.core", name = "report", version.ref = "jqa-core-report" }
-jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata", version.ref = "jqa-core-schemata" }
-jqa-core-configuration = { group = "com.buschmais.jqassistant.core", name = "configuration", version.ref = "jqa-core-configuration" }
-jqa-core-runtime = { group = "com.buschmais.jqassistant.core", name = "runtime", version.ref = "jqa-core-runtime" }
-jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa-cli-application" }
-jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa-maven" }
-jqa-plugin-common = { group = "com.buschmais.jqassistant.plugin", name = "common", version.ref = "jqa-maven" }
+jqa-core-report = { group = "com.buschmais.jqassistant.core", name = "report", version.ref = "jqa" }
+jqa-core-schemata = { group = "com.buschmais.jqassistant.core", name = "schemata", version.ref = "jqa" }
+jqa-core-configuration = { group = "com.buschmais.jqassistant.core", name = "configuration", version.ref = "jqa" }
+jqa-core-runtime = { group = "com.buschmais.jqassistant.core", name = "runtime", version.ref = "jqa" }
+jqa-cli-application = { group = "com.buschmais.jqassistant.cli", name = "application", version.ref = "jqa" }
+jqa-maven-plugin = { group = "com.buschmais.jqassistant", name = "jqassistant-maven-plugin", version.ref = "jqa" }
+jqa-plugin-common = { group = "com.buschmais.jqassistant.plugin", name = "common", version.ref = "jqa" }
 
 gs-core = { group = "org.graphstream", name = "gs-core", version.ref = "graphstream" }
 gs-ui-swing = { group = "org.graphstream", name = "gs-ui-swing", version.ref = "graphstream" }
