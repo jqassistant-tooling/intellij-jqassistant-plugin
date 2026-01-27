@@ -222,11 +222,17 @@ class GraphToolWindowContent(
                         e.setAttribute("ui.label", "requires")
                     }
 
-                    for (name in currentRule.providedConcepts) {
-                        val newNode = buildGraph(name, ruleSet) ?: continue
+                    for (providedConcept in currentRule.providedConcepts) {
+                        val newNode = buildGraph(providedConcept.providedConceptId, ruleSet) ?: continue
                         newNode.setAttribute("ui.class", "providesConcept", "concept")
 
-                        val e = ruleGraph.addEdge("$currentRuleId<-$name", currentNode, newNode, true)
+                        val e =
+                            ruleGraph.addEdge(
+                                "$currentRuleId<-${providedConcept.providedConceptId}",
+                                currentNode,
+                                newNode,
+                                true,
+                            )
                         e.setAttribute("ui.label", "provides")
                     }
 

@@ -2,6 +2,10 @@ package org.jqassistant.tooling.intellij.plugin.common
 
 import com.buschmais.jqassistant.core.rule.api.source.ClasspathRuleSource
 import com.buschmais.jqassistant.core.runtime.api.plugin.PluginConfigurationReader
+import com.buschmais.jqassistant.core.runtime.api.plugin.PluginConfigurationReader.NAMESPACE
+import com.buschmais.jqassistant.core.runtime.api.plugin.PluginConfigurationReader.PLUGIN_SCHEMA_RESOURCE
+import com.buschmais.jqassistant.core.shared.xml.JAXBHelper
+import com.buschmais.jqassistant.core.shared.xml.XmlHelper
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -21,7 +25,13 @@ object PluginUtil {
         val pluginFile =
             jarRoot.findFileByRelativePath(PLUGIN_FILE_PATH) ?: return null
 
-        val pluginConfig = JaxbUtil.unmarshal<JqassistantPlugin>(pluginFile.inputStream)
+        val jaxbHelper =
+            JAXBHelper(
+                JqassistantPlugin::class.java,
+                XmlHelper.getSchema(PLUGIN_SCHEMA_RESOURCE),
+                NAMESPACE,
+            )
+        val pluginConfig = jaxbHelper.unmarshal(pluginFile.inputStream)
 
         return JqaPlugin(
             jarRoot = jarRoot,

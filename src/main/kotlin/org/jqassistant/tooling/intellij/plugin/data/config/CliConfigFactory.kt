@@ -2,6 +2,7 @@ package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.buschmais.jqassistant.commandline.configuration.CliConfiguration
 import com.buschmais.jqassistant.commandline.task.AbstractRuleTask
+import com.buschmais.jqassistant.core.report.api.BuildConfigBuilder
 import com.buschmais.jqassistant.core.resolver.api.MavenSettingsConfigSourceBuilder
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationBuilder
 import com.buschmais.jqassistant.core.shared.configuration.ConfigurationMappingLoader
@@ -17,6 +18,7 @@ import org.jqassistant.tooling.intellij.plugin.common.withServiceLoader
 import org.jqassistant.tooling.intellij.plugin.editor.MessageBundle
 import org.jqassistant.tooling.intellij.plugin.settings.PluginSettings
 import java.io.File
+import java.time.ZonedDateTime
 import kotlin.io.path.Path
 
 class CliConfigFactory : JqaConfigFactory {
@@ -37,6 +39,12 @@ class CliConfigFactory : JqaConfigFactory {
 
             val configurationBuilder = ConfigurationBuilder("TaskConfigSource", 200)
 
+            val buildConfigSource =
+                BuildConfigBuilder.getConfigSource(
+                    project.name,
+                    ZonedDateTime.now(),
+                )
+
             val commandLineProperties =
                 PropertiesConfigSource(commandLineOptions.properties, "Command line properties", 400)
             val mavenSettingsConfigSource =
@@ -45,6 +53,7 @@ class CliConfigFactory : JqaConfigFactory {
                     commandLineOptions.mavenSettings,
                     commandLineOptions.profiles,
                 )
+
             val configSource = configurationBuilder.build()
 
             val baseDir = MyVfsUtil.findFileRelativeToProject(project, settings.cliExecRootDir)
@@ -79,6 +88,7 @@ class CliConfigFactory : JqaConfigFactory {
                     .withProfiles(commandLineOptions.profiles)
                     .withIgnoreProperties(setOf("jqassistant.opts", "jqassistant.home"))
                     .load(
+                        buildConfigSource,
                         configSource,
                         SysPropConfigSource(),
                         commandLineProperties,

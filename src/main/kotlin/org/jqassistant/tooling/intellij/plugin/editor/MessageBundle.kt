@@ -19,7 +19,7 @@ object MessageBundle {
         key:
             @PropertyKey(resourceBundle = BUNDLE)
             String,
-        vararg params: Any,
+        vararg params: String?,
     ): @Nls String = INSTANCE.getMessage(key, *params)
 
     fun lazyMessage(

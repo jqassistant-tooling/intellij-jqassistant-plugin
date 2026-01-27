@@ -57,6 +57,7 @@ class RuleFileSafeDeleteProcessorDelegate : RuleSafeDeleteProcessorDelegate() {
      * @param allElementsToDelete all elements selected for deletion.
      * @return the list of conflicts as String to be display to the user
      */
+    @Deprecated("Deprecated in IDEA")
     override fun findConflicts(
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,

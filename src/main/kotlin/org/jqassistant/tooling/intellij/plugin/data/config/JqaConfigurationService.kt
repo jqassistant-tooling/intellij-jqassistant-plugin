@@ -2,6 +2,7 @@ package org.jqassistant.tooling.intellij.plugin.data.config
 
 import com.buschmais.jqassistant.core.resolver.api.ArtifactProviderFactory
 import com.buschmais.jqassistant.core.rule.api.executor.CollectRulesVisitor
+import com.buschmais.jqassistant.core.rule.api.model.Concept
 import com.buschmais.jqassistant.core.rule.api.model.ConceptBucket
 import com.buschmais.jqassistant.core.rule.api.model.ConstraintBucket
 import com.buschmais.jqassistant.core.rule.api.model.GroupsBucket
@@ -201,9 +202,10 @@ class JqaConfigurationService(
         state.availableRules ?: object : RuleSet {
             override fun getConceptBucket(): ConceptBucket = ConceptBucket()
 
-            override fun getProvidedConcepts(): MutableMap<String, MutableSet<String>> = mutableMapOf()
+            override fun getProvidedConcepts(): MutableMap<String, MutableSet<Concept.ProvidedConcept?>> =
+                mutableMapOf()
 
-            override fun getProvidingConcepts(): MutableMap<String, MutableSet<String>> = mutableMapOf()
+            override fun getProvidingConceptIds(): MutableMap<String, MutableSet<String>> = mutableMapOf()
 
             override fun getConstraintBucket(): ConstraintBucket = ConstraintBucket()
 

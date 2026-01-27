@@ -99,6 +99,7 @@ open class RuleSafeDeleteProcessorDelegate : SafeDeleteProcessorDelegate {
      * @param allElementsToDelete all elements selected for deletion.
      * @return collection of conflict messages which would be shown to the user before delete can be performed.
      */
+    @Deprecated("Deprecated in IDEA")
     override fun findConflicts(
         element: PsiElement,
         allElementsToDelete: Array<out PsiElement>,
