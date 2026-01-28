@@ -10,7 +10,7 @@ graphstream = "2.0"
 
 
 # plugins
-changelog = "2.2.1"
+changelog = "2.5.0"
 intelliJPlatform = "2.11.0"
 kotlin = "2.3.0"
 ktlint = "14.0.1"
