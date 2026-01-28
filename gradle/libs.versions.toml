@@ -13,7 +13,7 @@ graphstream = "2.0"
 changelog = "2.2.1"
 intelliJPlatform = "2.11.0"
 kotlin = "2.3.0"
-ktlint = "12.1.1"
+ktlint = "14.0.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
