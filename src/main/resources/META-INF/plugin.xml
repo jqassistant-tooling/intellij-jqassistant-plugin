@@ -108,6 +108,8 @@
             displayName="jQAssistant Tooling"/>
         <postStartupActivity
             implementation="org.jqassistant.tooling.intellij.plugin.data.config.AutoSyncConfigProjectActivity"/>
+        <multiHostInjector
+            implementation="org.jqassistant.tooling.intellij.plugin.editor.config.YamlPomXmlInjector"/>
     </extensions>
 
 
